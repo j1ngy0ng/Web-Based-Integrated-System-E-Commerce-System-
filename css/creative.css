@@ -53,7 +53,7 @@ body {
 
 
 /* Login button */
-#login {
+#logout {
   background-color: black;
   color: #fff !important;
   border-radius: 50px;
@@ -61,12 +61,6 @@ body {
   text-align: center;
   display: inline-block;
   font-size: 16px;
-}
-
-/* Dots image */
-#three-dots {
-  height: 30px;
-  cursor: pointer;
 }
 
 .search-cart-section {
