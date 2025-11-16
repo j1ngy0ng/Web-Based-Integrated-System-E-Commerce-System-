@@ -15,7 +15,7 @@
 
 		<ul class="navbar-nav large-device-padding medium-device-padding small-device-padding" id="nav-menu">
 			<?php if ($_user?->role == 'Member'): ?>
-				<li class="nav-item"><a class="nav-link" href="product.html">Product</a></li>
+				<li class="nav-item"><a class="nav-link" href="../product/detail.php">Product</a></li>
 				<li class="nav-item"><a class="nav-link" href="trackOrder.html">Track Order</a></li>
 				<li class="nav-item"><a class="nav-link" href="contact.html">Contact Us</a></li>
 			<?php endif ?>
@@ -53,7 +53,7 @@
 			</div>
 
 			<div class="cart-container">
-				<a href="cart.html" class="cart-link">
+				<a href="/order/cart.php" class="cart-link">
 					<i class="fa fa-shopping-cart" aria-hidden="true" style="font-size: 1.5lh; color:black;"></i>
 				</a>
 			</div>
