@@ -74,7 +74,7 @@ include '../_head.php';
                         AND i.order_id = ?
                     ');
                     $stm->execute([$o->id]);
-                    $photo = $stm->fetchAll(PDO:: FETCH_COLUMN);
+                    $photos = $stm->fetchAll(PDO:: FETCH_COLUMN);
                     foreach ($photos as $photo) {
                         echo "<img src='/products/$photo'>";
                     }
