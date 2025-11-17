@@ -27,10 +27,10 @@
 				<li class="nav-item"><a class="nav-link" href="manageAccount.html">Manage Account</a></li>
 			<?php endif ?>
 
-			<li class="nav-item"><a class="nav-link"  href="profile.php">Profile</a></li>
-			<li class="nav-item"><a class="nav-link"  href="password.php">Password</a></li>
+			<li class="nav-item"><a class="nav-link"  href="/user/profile.php">Profile</a></li>
+			<li class="nav-item"><a class="nav-link"  href="/user/password.php">Password</a></li>
 			<li class="nav-item">
-				<a class="nav-link" id="logout" href="logout.php">Logout</a>
+				<a class="nav-link" id="logout" href="../logout.php">Logout</a>
 			</li>
 
 

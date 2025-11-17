@@ -118,10 +118,10 @@ if (is_post()) {
             <button type="submit">Login</button>
 
             <p style="text-align:center; margin-top:15px;">
-                <a href="reset.php">Forgot Password?</a>
+                <a href="/user/reset.php">Forgot Password?</a>
                 
             <p style="text-align:center; margin-top:15px;">
-                <a href="register.php">New User? Register Here</a>
+                <a href="/user/register.php">New User? Register Here</a>
             </p>
         </form>
     </div>

@@ -1,5 +1,5 @@
 <?php
-include '_base.php';
+include '../_base.php';
 
 // ----------------------------------------------------------------------------
 
@@ -35,12 +35,12 @@ if (is_post()) {
         $stm->execute([$u->id, $id, $u->id]);
 
         // TODO: (4) Generate token url
-        $url = base("token.php?id=$id");
+        $url = base("/user/token.php?id=$id");
 
         // TODO: (5) Send email
         $m = get_mail();
         $m->addAddress($u->email, $u->name);
-        $m->addEmbeddedImage("photos/{$u->photo}", 'photo');
+        $m->addEmbeddedImage("../photos/{$u->photo}", 'photo');
         $m->isHTML(true);
         $m->Subject = 'Reset Password';
         $m->Body = "
@@ -57,7 +57,7 @@ if (is_post()) {
         ";
         $m->send();
         temp('info', 'Email sent');
-        redirect('/login.php');
+        redirect('../login.php');
     }
 }
 

@@ -1,5 +1,5 @@
 <?php
-include '_base.php';
+include '../_base.php';
 
 // ----------------------------------------------------------------------------
 
@@ -101,7 +101,7 @@ if (is_post()) {
 // ----------------------------------------------------------------------------
 
 $_title = 'User | Profile';
-include 'navbar.php';
+include '../navbar.php';
 ?>
 
 <style>
@@ -234,4 +234,4 @@ form button[type="reset"]:hover {
 </form>
 
 <?php
-include 'footer.php';
+include '../footer.php';
