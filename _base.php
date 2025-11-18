@@ -226,7 +226,7 @@ function html_time($key, $attr = '') {
 // Generate <textarea>
 function html_textarea($key, $attr = '') {
     $value = encode($GLOBALS[$key] ?? '');
-    echo "<textarea id='$key' name='$key' $attr>$value</textarea>";
+    echo "<textarea type='textarea' id='$key' name='$key' $attr>$value</textarea>";
 }
 
 // Generate SINGLE <input type='checkbox'>
