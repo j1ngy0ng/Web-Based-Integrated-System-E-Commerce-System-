@@ -34,9 +34,6 @@ CREATE TABLE productPhoto (
     FOREIGN KEY (productID) REFERENCES product(productID) ON DELETE CASCADE
 );
 
-ALTER TABLE productPhoto
-ADD CONSTRAINT one_main_photo UNIQUE (productID, is_main);
-
 CREATE TABLE cart (
     cartID INT AUTO_INCREMENT PRIMARY KEY,
     userID INT NOT NULL,
@@ -69,3 +66,12 @@ CREATE TABLE productRating (
 
     CONSTRAINT unique_user_product_rating UNIQUE (productID, userID)
 );
+
+INSERT INTO product (categoryID, name, description, price, stock, video_url)
+VALUES (3, 'Vaseline Original Petroleum Jelly', 'Multi-purpose petroleum jelly for skin protection and moisturizing.', 12.90, 200, NULL);
+
+INSERT INTO productPhoto (productID, photoURL, is_main)
+VALUES 
+(LAST_INSERT_ID(), 'vaseline_main.jpg', 1),  -- main photo
+(LAST_INSERT_ID(), 'vaseline_side.jpg', 0),  -- additional photo
+(LAST_INSERT_ID(), 'vaseline_open.jpg', 0);  -- additional photo
