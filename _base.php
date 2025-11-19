@@ -389,6 +389,45 @@ function get_mail() {
 }
 
 // ============================================================================
+// Product Photo Functions
+// ============================================================================
+
+// Get main product photo
+function get_main_photo($productID) {
+    global $_db;
+    $stm = $_db->prepare('
+        SELECT photoURL FROM productPhoto 
+        WHERE productID = ? AND is_main = 1
+    ');
+    $stm->execute([$productID]);
+    return $stm->fetchColumn();
+}
+
+// Get all product photos
+function get_product_photos($productID) {
+    global $_db;
+    $stm = $_db->prepare('
+        SELECT photoURL, is_main FROM productPhoto 
+        WHERE productID = ? 
+        ORDER BY is_main DESC, photoID
+    ');
+    $stm->execute([$productID]);
+    return $stm->fetchAll();
+}
+
+// Get additional product photos (excluding main)
+function get_additional_photos($productID) {
+    global $_db;
+    $stm = $_db->prepare('
+        SELECT photoURL FROM productPhoto 
+        WHERE productID = ? AND is_main = 0 
+        ORDER BY photoID
+    ');
+    $stm->execute([$productID]);
+    return $stm->fetchAll();
+}
+
+// ============================================================================
 // Shopping Cart
 // ============================================================================
 
@@ -406,7 +445,7 @@ function set_cart($cart = []) {
 function update_cart($id, $unit) {
     $cart = get_cart();
 
-    if ($unit >= 1 && $unit <= 10 && is_exists($id, 'product', 'id')) {
+    if ($unit >= 1 && $unit <= 10 && is_exists($id, 'product', 'productID')) {
         $cart[$id] = $unit;
         ksort($cart);
     }

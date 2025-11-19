@@ -1,0 +1,39 @@
+-- Product 2: Cetaphil Gentle Skin Cleanser
+INSERT INTO product (categoryID, name, description, price, stock, video_url)
+VALUES (1, 'Cetaphil Gentle Skin Cleanser', 'Daily facial cleanser for sensitive skin. Non-irritating and hypoallergenic formula that cleanses without stripping natural oils.', 45.90, 150, NULL);
+
+INSERT INTO productPhoto (productID, photoURL, is_main)
+VALUES 
+(LAST_INSERT_ID(), 'cetaphil_cleanser_main.jpg', 1),
+(LAST_INSERT_ID(), 'cetaphil_cleanser_back.jpg', 0),
+(LAST_INSERT_ID(), 'cetaphil_cleanser_usage.jpg', 0);
+
+-- Product 3: L''Oreal Paris Elvive Shampoo
+INSERT INTO product (categoryID, name, description, price, stock, video_url)
+VALUES (2, 'L''Oreal Paris Elvive Shampoo', 'Hydrating shampoo for dry and damaged hair. Enriched with Pro-Keratin and Ceramide to repair and strengthen hair fibers.', 28.50, 300, NULL);
+
+INSERT INTO productPhoto (productID, photoURL, is_main)
+VALUES 
+(LAST_INSERT_ID(), 'loreal_shampoo_main.jpg', 1),
+(LAST_INSERT_ID(), 'loreal_shampoo_back.jpg', 0),
+(LAST_INSERT_ID(), 'loreal_shampoo_bottle.jpg', 0);
+
+-- Product 4: Vitamin C 1000mg Supplements
+INSERT INTO product (categoryID, name, description, price, stock, video_url)
+VALUES (4, 'Vitamin C 1000mg Supplements', 'High-potency Vitamin C tablets for immune support and antioxidant protection. 60 tablets per bottle.', 35.00, 200, NULL);
+
+INSERT INTO productPhoto (productID, photoURL, is_main)
+VALUES 
+(LAST_INSERT_ID(), 'vitamin_c_main.jpg', 1),
+(LAST_INSERT_ID(), 'vitamin_c_label.jpg', 0),
+(LAST_INSERT_ID(), 'vitamin_c_tablets.jpg', 0);
+
+-- Product 5: Digital Thermometer
+INSERT INTO product (categoryID, name, description, price, stock, video_url)
+VALUES (5, 'Digital Thermometer', 'Fast and accurate digital thermometer with LCD display. Suitable for oral, underarm, and rectal use with beep alert.', 39.90, 100, NULL);
+
+INSERT INTO productPhoto (productID, photoURL, is_main)
+VALUES 
+(LAST_INSERT_ID(), 'thermometer_main.jpg', 1),
+(LAST_INSERT_ID(), 'thermometer_back.jpg', 0),
+(LAST_INSERT_ID(), 'thermometer_packaging.jpg', 0);

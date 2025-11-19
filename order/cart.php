@@ -20,77 +20,105 @@ if (is_post()) {
 
 $_title = 'Order | Shopping Cart';
 include '../navbar.php';
+
+$cart = get_cart();
+$count = 0;
+$total = 0;
 ?>
 
-<style>
-    .popup {
-        width: 100px;
-        height: 100px;
-    }
-</style>
-
-<table class="table">
-    <tr>
-        <th>Id</th>
-        <th>Name</th>
-        <th>Price (RM)</th>
-        <th>Unit</th>
-        <th>Subtotal (RM)</th>
-    </tr>
-
-    <?php
-        $count = 0;
-        $total = 0; 
-        
-        $stm = $_db->prepare('SELECT * FROM product WHERE id = ?');
-        $cart = get_cart();
-        
-        foreach ($cart as $id => $unit):
-            $stm->execute([$id]);
-            $p = $stm->fetch();
-            
-            $subtotal = $p->price * $unit;
-            $count += $unit;
-            $total += $subtotal; 
-    ?>
-        <tr>
-            <td><?= $p->id ?></td>
-            <td><?= $p->name ?></td>
-            <td class="right"><?= $p->price ?></td>
-            <td>
-                <form method="post">
-                    <?= html_hidden('id') ?>
-                    <?= html_select('unit', $_units, '') ?>
-                </form>            
-            </td>
-            <td class="right">
-                <?= sprintf('%.2f', $subtotal) ?>
-                <img src="/products/<?= $p->photo ?>" class="popup">
-            </td>
-        </tr>
-    <?php endforeach ?>
-
-    <tr>
-        <th colspan="3"></th>
-        <th class="right"><?= $count ?></th>
-        <th class="right"><?= sprintf('%.2f', $total) ?></th>
-    </tr>
-</table>
-
-<p>
+<div class="cart-page-container">
+    <div class="cart-header">
+        <h1>🛒 Shopping Cart</h1>
+        <p>Review your items and proceed to checkout</p>
+    </div>
+    
     <?php if ($cart): ?>
-        <button data-post="?btn=clear">Clear</button>
+        <div class="cart-summary">
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($cart as $id => $unit): 
+                        $stm = $_db->prepare('SELECT * FROM product WHERE productID = ?');
+                        $stm->execute([$id]);
+                        $p = $stm->fetch();
+                        if (!$p) continue;
+                        
+                        $subtotal = $p->price * $unit;
+                        $count += $unit;
+                        $total += $subtotal; 
 
-        <?php if ($_user?->role == 'Member'): ?>
-            <button data-post="checkout.php">Checkout</button>
-        <?php else: ?>
-            Please <a href="/login.php">login</a> as member to checkout
-        <?php endif ?>
-    <?php endif ?>
-</p>
+                        // Generate quantity options
+                        $units_options = ['' => 'Select quantity'];
+                        $max_units = min($p->stock, 10);
+                        for ($i = 1; $i <= $max_units; $i++) {
+                            $units_options[$i] = $i . ' unit' . ($i > 1 ? 's' : '');
+                        }
+                        
+                        $main_photo = get_main_photo($id);
+                    ?>
+                    <tr>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div class="cart-item-image">
+                                    <?php if (!empty($main_photo)): ?>
+                                        <img src="/products/<?= $main_photo ?>" alt="<?= $p->name ?>">
+                                    <?php else: ?>
+                                        <div style="width: 100%; height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 0.8em;">
+                                            No Image
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="cart-item-name"><?= $p->name ?></div>
+                            </div>
+                        </td>
+                        <td class="cart-item-price">RM <?= number_format($p->price, 2) ?></td>
+                        <td>
+                            <form method="post" class="quantity-form">
+                                <?= html_hidden('id', "value='$p->productID'") ?>
+                                <?= html_select('unit', $units_options, '', $unit) ?>
+                            </form>
+                        </td>
+                        <td class="cart-subtotal">RM <?= number_format($subtotal, 2) ?></td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+            
+            <div class="cart-total">
+                Total (<?= $count ?> items): RM <?= number_format($total, 2) ?>
+            </div>
+        </div>
+        
+        <div class="cart-actions">
+            <button class="btn btn-secondary" data-post="?btn=clear">Clear Cart</button>
+            <?php if ($_user?->role == 'Member'): ?>
+                <button class="btn btn-primary" data-post="checkout.php">Proceed to Checkout</button>
+            <?php else: ?>
+                <a href="/login.php" class="btn btn-outline">Login to Checkout</a>
+            <?php endif; ?>
+        </div>
+    <?php else: ?>
+        <div class="empty-cart">
+            <h3>Your cart is empty</h3>
+            <p>Browse our products and add some items to your cart!</p>
+            <a href="../product/list.php" class="btn btn-primary">Start Shopping</a>
+        </div>
+    <?php endif; ?>
+</div>
 
 <script>
-    $('select').on('change', e => e.target.form.submit());
+    $('select').on('change', function(e) {
+        if (this.value !== '') {
+            e.target.form.submit();
+        }
+    });
 </script>
 
 <?php

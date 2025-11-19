@@ -52,7 +52,7 @@
 				<button class="search-btn"><i class="fa fa-search" aria-hidden="true"></i></button>
 			</div>
 
-			<div class="cart-container">
+			<div class="header-cart">
 				<a href="/order/cart.php" class="cart-link">
 					<i class="fa fa-shopping-cart" aria-hidden="true" style="font-size: 1.5lh; color:black;"></i>
 				</a>
