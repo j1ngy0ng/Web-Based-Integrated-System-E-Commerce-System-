@@ -1,99 +1,241 @@
 <?php
 include '../_base.php';
 
-// ----------------------------------------------------------------------------
+// --------------------------------------------------------------------
+// Authenticated users
+auth();
+$role = $_user->role;
 
-// (1) Authorization (member)
-// TODO
-auth('Member');
+// --------------------------------------------------------------------
+// Get orderID
+$orderID = req('orderID');
+if (!$orderID) redirect($role === 'Admin' ? 'order.php' : 'history.php');
 
-// (2) Return order (based on id) belong to the user
-// TODO
-$id = req('id');
+// --------------------------------------------------------------------
+// Fetch order
+$stm = $_db->prepare('SELECT * FROM `order` WHERE orderID = ?');
+$stm->execute([$orderID]);
+$order = $stm->fetch();
+if (!$order) redirect($role === 'Admin' ? 'order.php' : 'history.php');
+
+// Members can only view their own orders
+if ($role === 'Member' && $order->userID != $_user->id) redirect('history.php');
+
+// --------------------------------------------------------------------
+// Fetch order items + main photo
 $stm = $_db->prepare('
-    SELECT * FROM `order`
-    WHERE id = ? AND user_id = ?
+    SELECT oi.*, p.name, p.price AS product_price, pp.photoURL
+    FROM order_item oi
+    JOIN product p ON oi.productID = p.productID
+    LEFT JOIN productPhoto pp ON p.productID = pp.productID AND pp.is_main = 1
+    WHERE oi.orderID = ?
 ');
-$stm->execute([$id, $_user->id]);
-$o = $stm->fetch();
-if (!$o) redirect('history.php');
-
-// (3) Return items (and products) belong to the order
-// TODO
-$stm = $_db->prepare('
-    SELECT i.*, p.name, p.photo
-    FROM item AS i, product AS p
-    WHERE i.product_id = p.id
-    AND i.order_id = ?
-');
-$stm->execute([$id]);
-$arr = $stm->fetchALl();
-
-// ----------------------------------------------------------------------------
+$stm->execute([$orderID]);
+$items = $stm->fetchAll();
 
 $_title = 'Order | Detail';
-include '../_head.php';
+include '../navbar.php';
 ?>
 
 <style>
-    .popup {
-        width: 100px;
-        height: 100px;
+/* Form styling */
+form.form {
+    width: 90%;
+    margin: 20px auto;
+    background: #fff;
+    padding: 20px 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+form.form label {
+    display: block;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+form.form div, form.form select, form.form textarea {
+    margin-top: 5px;
+    padding: 8px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+form.form select, form.form textarea {
+    font-size: 1rem;
+}
+
+form.form button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #007bff;
+    color: #fff;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+form.form button:hover {
+    background: #0056b3;
+}
+
+/* Table styling */
+table.table {
+    width: 90%;
+    margin: 20px auto 40px auto;
+    border-collapse: collapse;
+    background: #fff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table.table th, table.table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+table.table th {
+    background: #f4f6f9;
+    font-weight: 700;
+}
+
+table.table tr:hover {
+    background: #fafafa;
+}
+
+table.table td.right {
+    text-align: right;
+}
+
+/* Popup image hover */
+.popup {
+    display: none;
+}
+
+tr:hover .popup {
+    display: grid !important;
+    grid-template-columns: repeat(5, auto);
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.popup img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border: 1px solid #333;
+    border-radius: 5px;
+}
+
+/* Back button */
+button.back-btn {
+    margin: 0 5%;
+    padding: 10px 20px;
+    background: #28a745;
+    color: white;
+    border-radius: 6px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button.back-btn:hover {
+    background: #1e7e34;
+}
+
+/* Responsive */
+@media screen and (max-width: 768px) {
+    .popup img {
+        width: 40px;
+        height: 40px;
     }
+    form.form, table.table {
+        width: 95%;
+    }
+}
 </style>
 
-<form class="form">
-    <label>Order Id</label>
-    <b><?= $o->id ?></b>
-    <br>
+<h2 style="text-align:center; margin-top:20px;">Order Detail</h2>
 
-    <label>Datetime</label>
-    <div><?= $o->datetime ?></div>
-    <br>
+<form class="form" method="post" action="saveOrder.php">
+    <input type="hidden" name="orderID" value="<?= $order->orderID ?>">
 
-    <label>Count</label>
-    <div><?= $o->count ?></div>
-    <br>
+    <label>Order ID</label>
+    <div><?= $order->orderID ?></div>
 
-    <label>Total</label>
-    <div>RM <?= $o->total ?></div>
-    <br>
+    <label>Date</label>
+    <div><?= $order->OrderDate ?></div>
+
+    <label>Status</label>
+    <?php if ($role === 'Admin'): ?>
+        <select name="status">
+            <?php foreach (['Pending','Paid','Shipped','Completed','Cancelled'] as $s): ?>
+                <option value="<?= $s ?>" <?= $order->status==$s?'selected':'' ?>><?= $s ?></option>
+            <?php endforeach; ?>
+        </select>
+    <?php else: ?>
+        <div><?= htmlspecialchars($order->status) ?></div>
+    <?php endif; ?>
+
+    <label>Shipping Address</label>
+    <?php if ($role === 'Admin'): ?>
+        <textarea name="ShippingAddress" rows="3"><?= htmlspecialchars($order->ShippingAddress) ?></textarea>
+    <?php else: ?>
+        <div><?= nl2br(htmlspecialchars($order->ShippingAddress)) ?></div>
+    <?php endif; ?>
+
+    <label>Total Amount</label>
+    <div>RM <?= number_format($order->TotalAmount, 2) ?></div>
+
+    <?php if ($role === 'Admin'): ?>
+        <button type="submit">Save Changes</button>
+    <?php endif; ?>
 </form>
 
-<p><?= count($arr) ?> item(s)</p>
+<p style="width:90%; margin:10px auto; font-weight:600;"><?= count($items) ?> item(s)</p>
 
 <table class="table">
     <tr>
-        <th>Product Id</th>
+        <th>Product ID</th>
         <th>Product Name</th>
         <th>Price (RM)</th>
-        <th>Unit</th>
+        <th>Quantity</th>
         <th>Subtotal (RM)</th>
+        <th>Photo</th>
     </tr>
 
-    <?php foreach ($arr as $i): ?>
+    <?php foreach ($items as $item): ?>
     <tr>
-        <td><?= $i->product_id ?></td>
-        <td><?= $i->name ?></td>
-        <td class="right"><?= $i->price ?></td>
-        <td class="right"><?= $i->unit ?></td>
-        <td class="right">
-            <?= $i->subtotal ?>
-            <img src="/products/<?= $i->photo ?>" class="popup">
+        <td><?= $item->productID ?></td>
+        <td><?= htmlspecialchars($item->name) ?></td>
+        <td class="right"><?= number_format($item->product_price, 2) ?></td>
+        <td class="right"><?= $item->quantity ?></td>
+        <td class="right"><?= number_format($item->product_price * $item->quantity, 2) ?></td>
+        <td>
+            <?php if ($item->photoURL): ?>
+                <img src="/products/<?= $item->photoURL ?>" class="popup">
+            <?php endif; ?>
         </td>
     </tr>
-    <?php endforeach ?>
+    <?php endforeach; ?>
 
     <tr>
         <th colspan="3"></th>
-        <th class="right"><?= $o->count ?></th>
-        <th class="right"><?= $o->total ?></th>
+        <th class="right"><?= array_sum(array_map(fn($i)=>$i->quantity,$items)) ?></th>
+        <th class="right"><?= number_format($order->TotalAmount,2) ?></th>
+        <th></th>
     </tr>
 </table>
 
 <p>
-    <button data-get="history.php">History</button>
+    <button class="back-btn" data-get="<?= $role==='Admin'?'maintenance.php':'history.php' ?>">Back</button>
 </p>
 
-<?php
-include '../_foot.php';
+<?php include '../footer.php'; ?>

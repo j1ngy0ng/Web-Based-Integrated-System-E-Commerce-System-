@@ -1,89 +1,127 @@
 <?php
 include '../_base.php';
 
-// ----------------------------------------------------------------------------
-
-// (1) Authorization (member)
-// TODO
+// --------------------------------------------------------------------
+// Authorization (member only)
 auth('Member');
 
-// (2) Return orders belong to the user (descending)
-// TODO
+// --------------------------------------------------------------------
+// Fetch orders belonging to logged-in user
 $stm = $_db->prepare('
-    SELECT * FROM `order`
-    WHERE user_id = ?
-    ORDER BY id DESC
+    SELECT *
+    FROM `order`
+    WHERE userID = ?
+    ORDER BY orderID DESC
 ');
 $stm->execute([$_user->id]);
-$arr = $stm->fetchAll();
+$orders = $stm->fetchAll();
 
-// ----------------------------------------------------------------------------
-
-$_title = 'Order | History';
-include '../_head.php';
+// --------------------------------------------------------------------
+$_title = "Order | History";
+include '../navbar.php';
 ?>
 
-<!-- (B) EXTRA: CSS -->
-<!-- TODO -->
 <style>
+    table {
+        width: 90%;
+        margin: 30px auto;
+        border-collapse: collapse;
+        background: #fff;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    th,
+    td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        text-align: left;
+    }
+
+    th {
+        background: #f4f6f9;
+        font-weight: 700;
+    }
+
+    tr:hover {
+        background: #fafafa;
+    }
+
+    .popup {
+        display: none;
+    }
+
     tr:hover .popup {
         display: grid !important;
-        grid: auto / repeat(5, auto);
-        gap: 1px;
-        border: none;
+        grid-template-columns: repeat(5, auto);
+        gap: 3px;
+        margin-top: 5px;
     }
 
     .popup img {
         width: 50px;
         height: 50px;
-        outline: 1px solid #333;
+        border: 1px solid #333;
+        object-fit: cover;
     }
 </style>
 
-<p>
-    <button data-post="reset.php" data-confirm>Reset</button>
-</p>
+<h2 style="text-align:center; margin-top:30px;">Order History</h2>
 
-<p><?= count($arr) ?> record(s)</p>
+<p style="width:90%; margin: 10px auto;"><?= count($orders) ?> record(s)</p>
 
-<table class="table">
-    <tr>
-        <th>Id</th>
-        <th>Datetime</th>
-        <th>Count</th>
-        <th>Total (RM)</th>
-        <th></th>
-    </tr>
+<table>
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Total (RM)</th>
+            <th></th>
+        </tr>
+    </thead>
 
-    <?php foreach ($arr as $o): ?>
-    <tr>
-        <td><?= $o->id ?></td>
-        <td><?= $o->datetime ?></td>
-        <td class="right"><?= $o->count ?></td>
-        <td class="right"><?= $o->total ?></td>
-        <td>
-            <button data-get="detail.php?id=<?= $o->id ?>">Detail</button>
-            <!-- (A) EXTRA: Product photos -->
-            <!-- TODO -->
-             <div class="popup">
-                <?php 
-                    $stm = $_db->prepare('
-                        SELECT p.photo
-                        FROM item AS i, product AS p
-                        WHERE i.product_id = p.id
-                        AND i.order_id = ?
-                    ');
-                    $stm->execute([$o->id]);
-                    $photos = $stm->fetchAll(PDO:: FETCH_COLUMN);
-                    foreach ($photos as $photo) {
-                        echo "<img src='/products/$photo'>";
-                    }
-                ?>
-             </div>
-        </td>
-    </tr>
-    <?php endforeach ?>
+    <tbody>
+        <?php if (!$orders): ?>
+            <tr>
+                <td colspan="5" style="text-align:center; padding:20px; color:#888;">
+                    No orders found.
+                </td>
+            </tr>
+        <?php else: ?>
+            <?php foreach ($orders as $o): ?>
+                <tr>
+                    <td><?= $o->orderID ?></td>
+                    <td><?= $o->OrderDate ?></td>
+                    <td><?= htmlspecialchars($o->status) ?></td>
+                    <td>RM <?= number_format($o->TotalAmount, 2) ?></td>
+
+                    <td>
+                        <button data-get="detail.php?orderID=<?= $o->orderID ?>">Detail</button>
+
+                        <div class="popup">
+                            <?php
+                            $stm = $_db->prepare('
+            SELECT pp.photoURL
+            FROM order_item oi
+            JOIN productPhoto pp ON oi.productID = pp.productID
+            WHERE oi.orderID = ?
+            AND pp.is_main = 1
+        ');
+                            $stm->execute([$o->orderID]);
+                            $photos = $stm->fetchAll(PDO::FETCH_COLUMN);
+
+                            foreach ($photos as $photo) {
+                                echo "<img src='/products/$photo'>";
+                            }
+                            ?>
+                        </div>
+                    </td>
+                </tr>
+            <?php endforeach ?>
+        <?php endif ?>
+    </tbody>
 </table>
 
-<?php
-include '../_foot.php';
+<?php include '../footer.php'; ?>
