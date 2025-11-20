@@ -1,135 +1,208 @@
 <?php
+// IMPORTANT: Return JSON responses only
+header('Content-Type: application/json');
+
+// Error handling for JSON
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+
+// Start output buffering to catch any unexpected output
+ob_start();
+
 require_once '../vendor/autoload.php';
 include '../_base.php';
 
-// ----------------------------------------------------------------------------
-
-// (1) Authorization (member)
-auth('Member');
-
-if (is_post()) {
-    // (2) Get shopping cart (reject if empty)
-    $cart = get_cart();
-    if (!$cart) redirect('cart.php');
-
-    $payment_method_id = req('payment_method_id');
-    $amount_cents = req('amount');
-    $order_total = req('order_total');
-
-    if (!$payment_method_id) {
-        temp('error', 'Payment method is required');
-        redirect('payment.php');
-    }
-
-    // Set your Stripe secret key
-    \Stripe\Stripe::setApiKey(getenv('STRIPE_SECRET_KEY'));
-
-    try {
-        // ------------------------------------------
-        // DB transaction
-        // ------------------------------------------
-        $_db->beginTransaction();
-
-        // (A) Create Stripe Payment Intent
-        $paymentIntent = \Stripe\PaymentIntent::create([
-            'amount' => $amount_cents,
-            'currency' => 'myr',
-            'payment_method' => $payment_method_id,
-            'confirm' => true,
-            'automatic_payment_methods' => [
-                'enabled' => true,
-                'allow_redirects' => 'never',
-            ],
-            'return_url' => base('order/success.php'),
-        ]);
-
-        // Check if payment was successful
-        if ($paymentIntent->status !== 'succeeded') {
-            throw new Exception('Payment failed: ' . $paymentIntent->status);
-        }
-
-        // (B) Insert order
-        $stm = $_db->prepare('
-            INSERT INTO `order` (userID, order_date, status, total_amount)
-            VALUES (?, NOW(), "Pending", ?)
-        ');
-        $stm->execute([$_user->id, $order_total]);
-        $orderID = $_db->lastInsertId();
-
-        // (C) Insert order items and update stock
-        $stm = $_db->prepare('
-            INSERT INTO order_item (orderID, productID, quantity, price)
-            VALUES (?, ?, ?, (SELECT price FROM product WHERE productID = ?))
-        ');
-        
-        foreach ($cart as $productID => $quantity) {
-            $price_stm = $_db->prepare('SELECT price FROM product WHERE productID = ?');
-            $price_stm->execute([$productID]);
-            $price = $price_stm->fetchColumn();
-            
-            $stm->execute([$orderID, $productID, $quantity, $productID]);
-            
-            // Update product stock
-            $update_stock = $_db->prepare('UPDATE product SET stock = stock - ? WHERE productID = ?');
-            $update_stock->execute([$quantity, $productID]);
-        }
-
-        // (D) Insert payment record with Stripe details
-        $stm = $_db->prepare('
-            INSERT INTO payment (orderID, payment_method, payment_amount, payment_status, 
-                                stripe_payment_intent_id, stripe_client_secret, payment_date)
-            VALUES (?, "Credit Card", ?, "Completed", ?, ?, NOW())
-        ');
-        $stm->execute([
-            $orderID, 
-            $order_total, 
-            $paymentIntent->id,
-            $paymentIntent->client_secret
-        ]);
-
-        // (E) Update order status to Paid
-        $stm = $_db->prepare('UPDATE `order` SET status = "Paid" WHERE orderID = ?');
-        $stm->execute([$orderID]);
-
-        // (F) Commit transaction
-        $_db->commit();
-
-        // (G) Clear shopping cart
-        set_cart();
-
-        // (H) Redirect to success page
-        temp('success', 'Payment completed successfully!');
-        redirect("success.php?id=$orderID");
-
-    } catch (\Stripe\Exception\CardException $e) {
-        $_db->rollBack();
-        temp('error', 'Card error: ' . $e->getError()->message);
-        redirect('payment.php');
-    } catch (\Stripe\Exception\RateLimitException $e) {
-        $_db->rollBack();
-        temp('error', 'Too many requests. Please try again later.');
-        redirect('payment.php');
-    } catch (\Stripe\Exception\InvalidRequestException $e) {
-        $_db->rollBack();
-        temp('error', 'Invalid request: ' . $e->getError()->message);
-        redirect('payment.php');
-    } catch (\Stripe\Exception\AuthenticationException $e) {
-        $_db->rollBack();
-        temp('error', 'Authentication error. Please contact support.');
-        redirect('payment.php');
-    } catch (\Stripe\Exception\ApiConnectionException $e) {
-        $_db->rollBack();
-        temp('error', 'Network error. Please try again.');
-        redirect('payment.php');
-    } catch (\Stripe\Exception\ApiErrorException $e) {
-        $_db->rollBack();
-        temp('error', 'Stripe API error: ' . $e->getError()->message);
-        redirect('payment.php');
-    } catch (Exception $e) {
-        $_db->rollBack();
-        temp('error', 'Payment failed: ' . $e->getMessage());
-        redirect('payment.php');
-    }
+// Clear any unexpected output
+$output = ob_get_clean();
+if (!empty($output)) {
+    error_log("Unexpected output: " . $output);
 }
 
-redirect('cart.php');
+// ----------------------------------------------------------------------------
+
+error_log("=== PROCESS-PAYMENT STARTED (NEW VERSION) ===");
+error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
+error_log("POST data: " . print_r($_POST, true));
+
+// (1) Authorization check
+if (!isset($_user) || $_user->role !== 'Member') {
+    error_log("Unauthorized access");
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    exit;
+}
+
+// (2) Check if POST request
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    error_log("Not a POST request");
+    echo json_encode(['success' => false, 'error' => 'Invalid request method']);
+    exit;
+}
+
+// (3) Get shopping cart
+$cart = get_cart();
+if (!$cart) {
+    error_log("Cart is empty");
+    echo json_encode(['success' => false, 'error' => 'Cart is empty']);
+    exit;
+}
+
+// (4) Get POST parameters
+$payment_intent_id = $_POST['payment_intent_id'] ?? '';
+$order_total = $_POST['order_total'] ?? 0;
+
+error_log("Payment Intent ID: " . $payment_intent_id);
+error_log("Order Total: " . $order_total);
+
+if (empty($payment_intent_id)) {
+    error_log("No payment intent ID provided");
+    echo json_encode(['success' => false, 'error' => 'Payment intent ID is required']);
+    exit;
+}
+
+// Set Stripe API key
+try {
+    \Stripe\Stripe::setApiKey(getenv('STRIPE_SECRET_KEY'));
+    error_log("Stripe API key set successfully");
+} catch (Exception $e) {
+    error_log("Stripe API key error: " . $e->getMessage());
+    echo json_encode(['success' => false, 'error' => 'Payment configuration error']);
+    exit;
+}
+
+try {
+    // Start DB transaction
+    error_log("Starting database transaction");
+    $_db->beginTransaction();
+
+    // (A) Verify the PaymentIntent from Stripe
+    error_log("Retrieving PaymentIntent from Stripe...");
+    $paymentIntent = \Stripe\PaymentIntent::retrieve($payment_intent_id);
+    
+    error_log("Payment Intent status: " . $paymentIntent->status);
+    error_log("Payment Intent amount: " . $paymentIntent->amount);
+
+    // Check if payment was successful
+    if ($paymentIntent->status !== 'succeeded') {
+        throw new Exception('Payment has not succeeded. Status: ' . $paymentIntent->status);
+    }
+
+    // Check if this payment has already been processed
+    $check_stm = $_db->prepare('SELECT orderID FROM payment WHERE stripe_payment_intent_id = ?');
+    $check_stm->execute([$payment_intent_id]);
+    $existing = $check_stm->fetch();
+    
+    if ($existing) {
+        error_log("Payment already processed. Order ID: " . $existing->orderID);
+        // Return the existing order ID instead of error
+        echo json_encode([
+            'success' => true,
+            'orderID' => $existing->orderID,
+            'message' => 'Order already processed'
+        ]);
+        $_db->commit();
+        exit;
+    }
+
+    // (B) Insert order
+    error_log("Inserting order into database...");
+    $stm = $_db->prepare('
+        INSERT INTO `order` (userID, OrderDate, status, TotalAmount)
+        VALUES (?, NOW(), "Paid", ?)
+    ');
+    $stm->execute([$_user->id, $order_total]);
+    $orderID = $_db->lastInsertId();
+    error_log("Order created with ID: " . $orderID);
+
+    // (C) Insert order items and update stock
+    $item_stm = $_db->prepare('
+        INSERT INTO order_item (orderID, productID, quantity, price)
+        VALUES (?, ?, ?, ?)
+    ');
+    
+    foreach ($cart as $productID => $quantity) {
+        // Get product details
+        $product_stm = $_db->prepare('SELECT price, stock FROM product WHERE productID = ?');
+        $product_stm->execute([$productID]);
+        $product = $product_stm->fetch();
+        
+        if (!$product) {
+            throw new Exception("Product $productID not found");
+        }
+        
+        if ($product->stock < $quantity) {
+            throw new Exception("Insufficient stock for product $productID");
+        }
+        
+        // Insert order item
+        $item_stm->execute([$orderID, $productID, $quantity, $product->price]);
+        
+        // Update product stock
+        $update_stock = $_db->prepare('UPDATE product SET stock = stock - ? WHERE productID = ?');
+        $update_stock->execute([$quantity, $productID]);
+        
+        error_log("Added product $productID, quantity $quantity, price {$product->price}");
+    }
+
+    // (D) Insert payment record
+    error_log("Inserting payment record...");
+    $payment_stm = $_db->prepare('
+        INSERT INTO payment (orderID, amount, stripe_payment_intent_id, stripe_client_secret, 
+                            status, method, currency, payment_date)
+        VALUES (?, ?, ?, ?, "Completed", "card", "MYR", NOW())
+    ');
+    $payment_stm->execute([
+        $orderID, 
+        $order_total, 
+        $paymentIntent->id,
+        $paymentIntent->client_secret
+    ]);
+
+    // (E) Commit transaction
+    $_db->commit();
+    error_log("Database transaction committed successfully");
+
+    // (F) Clear shopping cart
+    set_cart();
+    error_log("Shopping cart cleared");
+
+    // (G) Return success response
+    error_log("Payment processing completed. Order ID: " . $orderID);
+    echo json_encode([
+        'success' => true,
+        'orderID' => $orderID,
+        'message' => 'Payment completed successfully!'
+    ]);
+    exit;
+
+} catch (\Stripe\Exception\CardException $e) {
+    error_log("Stripe CardException: " . $e->getMessage());
+    $_db->rollBack();
+    echo json_encode(['success' => false, 'error' => 'Card error: ' . $e->getError()->message]);
+    exit;
+    
+} catch (\Stripe\Exception\InvalidRequestException $e) {
+    error_log("Stripe InvalidRequestException: " . $e->getMessage());
+    $_db->rollBack();
+    echo json_encode(['success' => false, 'error' => 'Invalid request: ' . $e->getError()->message]);
+    exit;
+    
+} catch (\Stripe\Exception\ApiErrorException $e) {
+    error_log("Stripe ApiErrorException: " . $e->getMessage());
+    $_db->rollBack();
+    echo json_encode(['success' => false, 'error' => 'Payment service error: ' . $e->getError()->message]);
+    exit;
+    
+} catch (PDOException $e) {
+    error_log("Database error: " . $e->getMessage());
+    $_db->rollBack();
+    echo json_encode(['success' => false, 'error' => 'Database error occurred']);
+    exit;
+    
+} catch (Exception $e) {
+    error_log("General Exception: " . $e->getMessage());
+    $_db->rollBack();
+    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    exit;
+}
+?>

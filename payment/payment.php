@@ -8,19 +8,47 @@ auth('Member');
 
 // (2) Get shopping cart (reject if empty)
 $cart = get_cart();
-if (!$cart) redirect('cart.php');
+if (!$cart) redirect('../order/cart.php');
 
 // Calculate total amount
-$total_amount = 0;
+$TotalAmount = 0;
 foreach ($cart as $productID => $quantity) {
     $stm = $_db->prepare('SELECT price FROM product WHERE productID = ?');
     $stm->execute([$productID]);
     $price = $stm->fetchColumn();
-    $total_amount += $price * $quantity;
+    $TotalAmount += $price * $quantity;
 }
 
 // Convert to cents for Stripe (Stripe uses smallest currency unit)
-$amount_cents = $total_amount * 100;
+$amount_cents = $TotalAmount * 100;
+
+// ----------------------------------------------------------------------------
+// Create PaymentIntent on the backend FIRST
+// ----------------------------------------------------------------------------
+require_once '../vendor/autoload.php';
+
+try {
+    \Stripe\Stripe::setApiKey(getenv('STRIPE_SECRET_KEY'));
+    
+    // Create PaymentIntent
+    $paymentIntent = \Stripe\PaymentIntent::create([
+        'amount' => $amount_cents,
+        'currency' => 'myr',
+        'automatic_payment_methods' => [
+            'enabled' => true,
+        ],
+        'metadata' => [
+            'user_id' => $_user->id,
+            'order_total' => $TotalAmount
+        ]
+    ]);
+    
+    $clientSecret = $paymentIntent->client_secret;
+} catch (Exception $e) {
+    error_log("Failed to create PaymentIntent: " . $e->getMessage());
+    temp('error', 'Failed to initialize payment. Please try again.');
+    redirect('../order/cart.php');
+}
 
 // ----------------------------------------------------------------------------
 
@@ -34,13 +62,10 @@ include '../navbar.php';
         
         <div class="order-summary">
             <h3>Order Summary</h3>
-            <p><strong>Total Amount:</strong> RM <?= number_format($total_amount, 2) ?></p>
+            <p><strong>Total Amount:</strong> RM <?= number_format($TotalAmount, 2) ?></p>
         </div>
 
-        <form id="payment-form" method="post" action="process-payment.php">
-            <?= html_hidden('amount', "value='$amount_cents'") ?>
-            <?= html_hidden('order_total', "value='$total_amount'") ?>
-            
+        <form id="payment-form">
             <div class="form-group">
                 <label for="card-element">Credit or debit card</label>
                 <div id="card-element" class="form-control">
@@ -50,9 +75,9 @@ include '../navbar.php';
             </div>
 
             <div class="payment-actions">
-                <button type="button" class="btn btn-secondary" onclick="history.back()">Back to Cart</button>
+                <a href="../order/cart.php" class="btn btn-secondary">Back to Cart</a>
                 <button type="submit" class="btn btn-primary" id="submit-button">
-                    Pay RM <?= number_format($total_amount, 2) ?>
+                    Pay RM <?= number_format($TotalAmount, 2) ?>
                 </button>
             </div>
         </form>
@@ -65,6 +90,9 @@ include '../navbar.php';
 // Initialize Stripe with your publishable key
 const stripe = Stripe('<?= getenv('STRIPE_PUBLISHABLE_KEY') ?>');
 const elements = stripe.elements();
+
+// Client secret from backend
+const clientSecret = '<?= $clientSecret ?>';
 
 // Create card element
 const cardElement = elements.create('card', {
@@ -89,28 +117,62 @@ const cardErrors = document.getElementById('card-errors');
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
     
+    console.log('Form submission started...');
+    
     submitButton.disabled = true;
     submitButton.textContent = 'Processing...';
+    cardErrors.textContent = '';
 
-    // Create payment method
-    const { paymentMethod, error } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: cardElement,
-    });
+    try {
+        // Confirm payment with card element
+        const { paymentIntent, error } = await stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+                card: cardElement,
+            }
+        });
 
-    if (error) {
-        cardErrors.textContent = error.message;
+        console.log('Stripe confirmCardPayment result:', { paymentIntent, error });
+
+        if (error) {
+            console.log('Stripe error:', error);
+            cardErrors.textContent = error.message;
+            submitButton.disabled = false;
+            submitButton.textContent = 'Pay RM <?= number_format($TotalAmount, 2) ?>';
+        } else if (paymentIntent.status === 'succeeded') {
+            console.log('Payment succeeded! PaymentIntent ID:', paymentIntent.id);
+            
+            // Send to backend to create order
+            const formData = new FormData();
+            formData.append('payment_intent_id', paymentIntent.id);
+            formData.append('amount', '<?= $amount_cents ?>');
+            formData.append('order_total', '<?= $TotalAmount ?>');
+            
+            const response = await fetch('process-payment.php', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            console.log('Backend response:', result);
+            
+            if (result.success) {
+                // Redirect to success page
+                window.location.href = 'success.php?id=' + result.orderID;
+            } else {
+                cardErrors.textContent = result.error || 'Failed to process order. Please contact support.';
+                submitButton.disabled = false;
+                submitButton.textContent = 'Pay RM <?= number_format($TotalAmount, 2) ?>';
+            }
+        } else {
+            cardErrors.textContent = 'Payment status: ' + paymentIntent.status;
+            submitButton.disabled = false;
+            submitButton.textContent = 'Pay RM <?= number_format($TotalAmount, 2) ?>';
+        }
+    } catch (err) {
+        console.error('Unexpected error:', err);
+        cardErrors.textContent = 'An unexpected error occurred. Please try again.';
         submitButton.disabled = false;
-        submitButton.textContent = `Pay RM <?= number_format($total_amount, 2) ?>`;
-    } else {
-        // Add payment method ID to form and submit
-        const hiddenInput = document.createElement('input');
-        hiddenInput.setAttribute('type', 'hidden');
-        hiddenInput.setAttribute('name', 'payment_method_id');
-        hiddenInput.setAttribute('value', paymentMethod.id);
-        form.appendChild(hiddenInput);
-        
-        form.submit();
+        submitButton.textContent = 'Pay RM <?= number_format($TotalAmount, 2) ?>';
     }
 });
 
@@ -160,7 +222,27 @@ cardElement.on('change', ({ error }) => {
     gap: 10px;
     justify-content: flex-end;
 }
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
 </style>
 
 <?php
 include '../footer.php';
+?>

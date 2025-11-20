@@ -26,8 +26,8 @@ include '../navbar.php';
         
         <div class="order-details">
             <p><strong>Order ID:</strong> #<?= $order->orderID ?></p>
-            <p><strong>Amount Paid:</strong> RM <?= number_format($order->total_amount, 2) ?></p>
-            <p><strong>Payment Date:</strong> <?= date('F j, Y g:i A', strtotime($order->order_date)) ?></p>
+            <p><strong>Amount Paid:</strong> RM <?= number_format($order->TotalAmount, 2) ?></p>
+            <p><strong>Payment Date:</strong> <?= date('F j, Y g:i A', strtotime($order->OrderDate)) ?></p>
             <?php if ($order->stripe_payment_intent_id): ?>
                 <p><strong>Transaction ID:</strong> <?= $order->stripe_payment_intent_id ?></p>
             <?php endif; ?>
@@ -35,8 +35,7 @@ include '../navbar.php';
 
         <div class="success-actions">
             <a href="../product/list.php" class="btn btn-outline">Continue Shopping</a>
-            <a href="detail.php?id=<?= $order->orderID ?>" class="btn btn-primary">View Order Details</a>
-        </div>
+            <a href="../order/detail.php?orderID=<?= $order->orderID ?>" class="btn btn-primary">View Order Details</a>        </div>
     </div>
 </div>
 

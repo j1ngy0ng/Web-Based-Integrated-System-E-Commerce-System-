@@ -212,6 +212,14 @@ function initCartHandlers() {
             select.focus();
         }
     });
+
+    $(document).on('click', '.product-image img[data-get]', function(e) {
+        e.preventDefault();
+        const url = $(this).data('get');
+        if (url) {
+            window.location.href = url;
+        }
+    });
     
     initImageModal();
 }

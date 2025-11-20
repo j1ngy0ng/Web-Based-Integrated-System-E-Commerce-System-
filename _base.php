@@ -24,19 +24,28 @@ function is_post() {
 // Obtain GET parameter
 function get($key, $value = null) {
     $value = $_GET[$key] ?? $value;
-    return is_array($value) ? array_map('trim', $value) : trim($value);
+    if (is_array($value)) {
+        return array_map('trim', $value);
+    }
+    return $value !== null ? trim($value) : null;
 }
 
 // Obtain POST parameter
 function post($key, $value = null) {
     $value = $_POST[$key] ?? $value;
-    return is_array($value) ? array_map('trim', $value) : trim($value);
+    if (is_array($value)) {
+        return array_map('trim', $value);
+    }
+    return $value !== null ? trim($value) : null;
 }
 
 // Obtain REQUEST (GET and POST) parameter
 function req($key, $value = null) {
     $value = $_REQUEST[$key] ?? $value;
-    return is_array($value) ? array_map('trim', $value) : trim($value);
+    if (is_array($value)) {
+        return array_map('trim', $value);
+    }
+    return $value !== null ? trim($value) : null;
 }
 
 // Redirect to URL
@@ -559,12 +568,11 @@ function set_cart($cart = []) {
 }
 
 // ============================================================================
-// Stripe payment
+// Stripe configuration
 // ============================================================================
 
-// Payment
-putenv('STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here');
-putenv('STRIPE_SECRET_KEY=sk_test_your_secret_key_here');
+putenv('STRIPE_PUBLISHABLE_KEY=pk_test_51SVROKJ2qvgPlT6ge6aVlR5dpsVRnjZe1kXW385p4CYFq0GW3jmUYdoHmXwLwR0mbvAGrYJuHAgDoAOaRWLOMz8X005MK2GHNz');
+putenv('STRIPE_SECRET_KEY=sk_test_51SVROKJ2qvgPlT6gqClelz0ywQkuujGvF4JW5BuZgRL4yUOZCTzzQZlMLDP7tpohSwlth389xxtk0ohn8PKjydyo00vYsvz3AK');
 
 // ============================================================================
 // Database Setups and Functions

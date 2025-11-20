@@ -21,7 +21,7 @@ if (is_post()) {
     try {
         // (B) Insert order, keep order id
         $stm = $_db->prepare('
-            INSERT INTO `order` (userID, order_date, status, total_amount)
+            INSERT INTO `order` (userID, OrderDate, status, TotalAmount)
             VALUES (?, NOW(), "Pending", 0)
         ');
         $stm->execute([$_user->id]);
@@ -33,7 +33,7 @@ if (is_post()) {
             VALUES (?, ?, ?, (SELECT price FROM product WHERE productID = ?))
         ');
         
-        $total_amount = 0;
+        $TotalAmount = 0;
         foreach ($cart as $productID => $quantity) {
             // Get product price
             $price_stm = $_db->prepare('SELECT price FROM product WHERE productID = ?');
@@ -45,7 +45,7 @@ if (is_post()) {
             
             // Calculate subtotal
             $subtotal = $price * $quantity;
-            $total_amount += $subtotal;
+            $TotalAmount += $subtotal;
             
             // Update product stock
             $update_stock = $_db->prepare('UPDATE product SET stock = stock - ? WHERE productID = ?');
@@ -53,15 +53,15 @@ if (is_post()) {
         }
 
         // (D) Update order total amount
-        $stm = $_db->prepare('UPDATE `order` SET total_amount = ? WHERE orderID = ?');
-        $stm->execute([$total_amount, $orderID]);
+        $stm = $_db->prepare('UPDATE `order` SET TotalAmount = ? WHERE orderID = ?');
+        $stm->execute([$TotalAmount, $orderID]);
 
         // (E) Insert payment record
         $stm = $_db->prepare('
             INSERT INTO payment (orderID, payment_method, payment_amount, payment_status, payment_date)
             VALUES (?, "Credit Card", ?, "Completed", NOW())
         ');
-        $stm->execute([$orderID, $total_amount]);
+        $stm->execute([$orderID, $TotalAmount]);
 
         // (F) Update order status to Completed
         $stm = $_db->prepare('UPDATE `order` SET status = "Completed" WHERE orderID = ?');
