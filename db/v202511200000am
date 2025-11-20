@@ -37,3 +37,4 @@ VALUES
 (LAST_INSERT_ID(), 'thermometer_main.jpg', 1),
 (LAST_INSERT_ID(), 'thermometer_back.jpg', 0),
 (LAST_INSERT_ID(), 'thermometer_packaging.jpg', 0);
+

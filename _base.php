@@ -559,6 +559,14 @@ function set_cart($cart = []) {
 }
 
 // ============================================================================
+// Stripe payment
+// ============================================================================
+
+// Payment
+putenv('STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key_here');
+putenv('STRIPE_SECRET_KEY=sk_test_your_secret_key_here');
+
+// ============================================================================
 // Database Setups and Functions
 // ============================================================================
 

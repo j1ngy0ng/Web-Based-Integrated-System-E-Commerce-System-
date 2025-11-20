@@ -99,7 +99,7 @@ $total = 0;
         <div class="cart-actions">
             <button class="btn btn-secondary" data-post="?btn=clear">Clear Cart</button>
             <?php if ($_user?->role == 'Member'): ?>
-                <button class="btn btn-primary" data-post="checkout.php">Proceed to Checkout</button>
+                <button class="btn btn-primary" data-get="payment.php">Proceed to Checkout</button>
             <?php else: ?>
                 <a href="/login.php" class="btn btn-outline">Login to Checkout</a>
             <?php endif; ?>
