@@ -431,29 +431,131 @@ function get_additional_photos($productID) {
 // Shopping Cart
 // ============================================================================
 
-// Get shopping cart
+function get_user_cart($userID) {
+    global $_db;
+    
+    $stm = $_db->prepare('SELECT cartID FROM cart WHERE userID = ? ORDER BY created_at DESC LIMIT 1');
+    $stm->execute([$userID]);
+    $cartID = $stm->fetchColumn();
+    
+    // If no cart exists, create one
+    if (!$cartID) {
+        $stm = $_db->prepare('INSERT INTO cart (userID) VALUES (?)');
+        $stm->execute([$userID]);
+        $cartID = $_db->lastInsertId();
+    }
+    
+    return $cartID;
+}
+
 function get_cart() {
-    return $_SESSION['cart'] ?? [];
+    global $_user, $_db;
+    
+    if (!$_user) {
+        return []; // Return empty array if no user logged in
+    }
+    
+    $cartID = get_user_cart($_user->id);
+    
+    $stm = $_db->prepare('
+        SELECT ci.productID, ci.quantity 
+        FROM cart_item ci 
+        WHERE ci.cartID = ?
+    ');
+    $stm->execute([$cartID]);
+    
+    $cart = [];
+    while ($row = $stm->fetch()) {
+        $cart[$row->productID] = $row->quantity;
+    }
+    
+    return $cart;
 }
 
-// Set shopping cart
-function set_cart($cart = []) {
-    $_SESSION['cart'] = $cart;
-}
-
-// Update shopping cart
 function update_cart($id, $unit) {
-    $cart = get_cart();
-
+    global $_user, $_db;
+    
+    if (!$_user) {
+        return;
+    }
+    
+    $cartID = get_user_cart($_user->id);
+    
     if ($unit >= 1 && $unit <= 10 && is_exists($id, 'product', 'productID')) {
-        $cart[$id] = $unit;
-        ksort($cart);
+        $stm = $_db->prepare('
+            SELECT cart_item_id FROM cart_item 
+            WHERE cartID = ? AND productID = ?
+        ');
+        $stm->execute([$cartID, $id]);
+        $exists = $stm->fetchColumn();
+        
+        if ($exists) {
+            // Update
+            $stm = $_db->prepare('
+                UPDATE cart_item SET quantity = ? 
+                WHERE cartID = ? AND productID = ?
+            ');
+            $stm->execute([$unit, $cartID, $id]);
+        } else {
+            // Insert
+            $stm = $_db->prepare('
+                INSERT INTO cart_item (cartID, productID, quantity) 
+                VALUES (?, ?, ?)
+            ');
+            $stm->execute([$cartID, $id, $unit]);
+        }
+    } else {
+        // Remove
+        $stm = $_db->prepare('
+            DELETE FROM cart_item 
+            WHERE cartID = ? AND productID = ?
+        ');
+        $stm->execute([$cartID, $id]);
     }
-    else {
-        unset($cart[$id]);
-    }
+    
+    $stm = $_db->prepare('UPDATE cart SET updated_at = NOW() WHERE cartID = ?');
+    $stm->execute([$cartID]);
+}
 
-    set_cart($cart);
+function clear_cart() {
+    global $_user, $_db;
+    
+    if (!$_user) {
+        return;
+    }
+    
+    $cartID = get_user_cart($_user->id);
+    
+    $stm = $_db->prepare('DELETE FROM cart_item WHERE cartID = ?');
+    $stm->execute([$cartID]);
+}
+
+function set_cart($cart = []) {
+    global $_user, $_db;
+    
+    if (!$_user) {
+        return;
+    }
+    
+    $cartID = get_user_cart($_user->id);
+    
+    // Clear
+    $stm = $_db->prepare('DELETE FROM cart_item WHERE cartID = ?');
+    $stm->execute([$cartID]);
+    
+    // Add
+    foreach ($cart as $id => $unit) {
+        if ($unit >= 1 && $unit <= 10 && is_exists($id, 'product', 'productID')) {
+            $stm = $_db->prepare('
+                INSERT INTO cart_item (cartID, productID, quantity) 
+                VALUES (?, ?, ?)
+            ');
+            $stm->execute([$cartID, $id, $unit]);
+        }
+    }
+    
+    $stm = $_db->prepare('UPDATE cart SET updated_at = NOW() WHERE cartID = ?');
+    $stm->execute([$cartID]);
 }
 
 // ============================================================================

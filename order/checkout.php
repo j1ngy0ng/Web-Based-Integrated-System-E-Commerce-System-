@@ -5,6 +5,7 @@ include '../_base.php';
 
 // (1) Authorization (member)
 // TODO
+auth('Member');
 
 if (is_post()) {
     // (2) Get shopping cart (reject if empty)

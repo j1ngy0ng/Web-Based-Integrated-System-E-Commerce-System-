@@ -6,7 +6,7 @@ include '../_base.php';
 if (is_post()) {
     $btn = req('btn');
     if ($btn == 'clear') {
-        set_cart();
+        clear_cart();
         redirect('?');
     }
 
