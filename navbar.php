@@ -43,7 +43,7 @@
 	<?php if ($_user?->role == 'Member'): ?>
 		<!-- Search and Cart Section -->
 		<section class="search-cart-section large-device-padding medium-device-padding small-device-padding">
-			<a class="navbar-brand" href="index.html">
+			<a class="navbar-brand" href="/landing_<?=strtolower($_user->role)?>.php">
 				<img id="logo" src="/images/logo.png" alt="Logo">
 			</a>
 

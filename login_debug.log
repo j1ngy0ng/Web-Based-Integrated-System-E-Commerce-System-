@@ -1,0 +1,63 @@
+[2025-11-20 15:57:45] === LOGIN PAGE LOADED ===
+[2025-11-20 15:57:45] Request method: GET
+[2025-11-20 15:57:45] Email received: empty
+[2025-11-20 15:57:45] Remember received: NO
+[2025-11-20 15:57:45] Page loaded via GET method
+[2025-11-20 15:57:45] === LOGIN PROCESS COMPLETED ===
+[2025-11-20 15:57:48] === LOGIN PAGE LOADED ===
+[2025-11-20 15:57:48] Request method: GET
+[2025-11-20 15:57:48] Email received: empty
+[2025-11-20 15:57:48] Remember received: NO
+[2025-11-20 15:57:48] Page loaded via GET method
+[2025-11-20 15:57:48] === LOGIN PROCESS COMPLETED ===
+[2025-11-20 15:57:57] === LOGIN PAGE LOADED ===
+[2025-11-20 15:57:57] Request method: POST
+[2025-11-20 15:57:57] Email received: ngjingyong168@gmail.com
+[2025-11-20 15:57:57] Remember received: YES
+[2025-11-20 15:57:57] Form submitted via POST method
+[2025-11-20 15:57:57] No validation errors, checking database
+[2025-11-20 15:57:57] User found in database: ngjingyong168@gmail.com
+[2025-11-20 15:57:57] User ID: 5
+[2025-11-20 15:57:57] Phone verified: 1
+[2025-11-20 15:57:57] Is active: 1
+[2025-11-20 15:57:57] Password verification: FAILED
+[2025-11-20 15:57:57] Updated failed attempts to: 1
+[2025-11-20 15:57:57] === LOGIN PROCESS COMPLETED ===
+[2025-11-20 15:58:02] === LOGIN PAGE LOADED ===
+[2025-11-20 15:58:02] Request method: POST
+[2025-11-20 15:58:02] Email received: 2@gmail.com
+[2025-11-20 15:58:02] Remember received: YES
+[2025-11-20 15:58:02] Form submitted via POST method
+[2025-11-20 15:58:02] No validation errors, checking database
+[2025-11-20 15:58:02] User found in database: 2@gmail.com
+[2025-11-20 15:58:02] User ID: 2
+[2025-11-20 15:58:02] Phone verified: 1
+[2025-11-20 15:58:02] Is active: 1
+[2025-11-20 15:58:02] Password verification: SUCCESS
+[2025-11-20 15:58:02] Phone verification: SUCCESS
+[2025-11-20 15:58:02] Reset failed attempts for user: 2
+[2025-11-20 16:02:56] === LOGIN PAGE LOADED ===
+[2025-11-20 16:02:56] Request method: GET
+[2025-11-20 16:02:56] Email received: empty
+[2025-11-20 16:02:56] Remember received: NO
+[2025-11-20 16:02:56] Page loaded via GET method
+[2025-11-20 16:02:56] === LOGIN PROCESS COMPLETED ===
+[2025-11-20 16:02:57] === LOGIN PAGE LOADED ===
+[2025-11-20 16:02:57] Request method: GET
+[2025-11-20 16:02:57] Email received: empty
+[2025-11-20 16:02:57] Remember received: NO
+[2025-11-20 16:02:57] Page loaded via GET method
+[2025-11-20 16:02:57] === LOGIN PROCESS COMPLETED ===
+[2025-11-20 16:03:02] === LOGIN PAGE LOADED ===
+[2025-11-20 16:03:02] Request method: POST
+[2025-11-20 16:03:02] Email received: 2@gmail.com
+[2025-11-20 16:03:02] Remember received: YES
+[2025-11-20 16:03:02] Form submitted via POST method
+[2025-11-20 16:03:02] No validation errors, checking database
+[2025-11-20 16:03:02] User found in database: 2@gmail.com
+[2025-11-20 16:03:02] User ID: 2
+[2025-11-20 16:03:02] Phone verified: 1
+[2025-11-20 16:03:02] Is active: 1
+[2025-11-20 16:03:02] Password verification: SUCCESS
+[2025-11-20 16:03:02] Phone verification: SUCCESS
+[2025-11-20 16:03:02] Reset failed attempts for user: 2
