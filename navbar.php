@@ -15,14 +15,14 @@
 
 		<ul class="navbar-nav large-device-padding medium-device-padding small-device-padding" id="nav-menu">
 			<?php if ($_user?->role == 'Member'): ?>
-				<li class="nav-item"><a class="nav-link" href="../product/detail.php">Product</a></li>
+				<li class="nav-item"><a class="nav-link" href="../product/list.php">Product</a></li>
 				<li class="nav-item"><a class="nav-link" href="/order/history.php">Track Order</a></li>
 				<li class="nav-item"><a class="nav-link" href="contact.php">Contact Us</a></li>
 			<?php endif ?>
 
 			<?php if ($_user?->role == 'Admin'): ?>
 				<li class="nav-item"><a class="nav-link" href="/category/category.php">Manage Category</a></li>
-				<li class="nav-item"><a class="nav-link" href="manageProducts.php">Manage Products</a></li>
+				<li class="nav-item"><a class="nav-link" href="/product/maintenance.php">Manage Products</a></li>
 				<li class="nav-item"><a class="nav-link" href="/order/maintenance.php">Manage Orders</a></li>
 				<li class="nav-item"><a class="nav-link" href="manageAccount.php">Manage Account</a></li>
 			<?php endif ?>
