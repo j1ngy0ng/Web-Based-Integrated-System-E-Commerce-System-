@@ -7,7 +7,7 @@ if (is_post()) {
     $password = req('password');
     $confirm  = req('confirm');
     $name     = req('name');
-    $phone    = req('phone'); // NEW: phone number
+    $phone    = req('phone'); // phone number
     $f        = get_file('photo');
 
     // --- Validation ---
@@ -37,14 +37,33 @@ if (is_post()) {
         ');
         $stm->execute([$email, $password, $name, $photo, $phone]);
 
-        temp('info', 'Registration successful. Please verify your phone.');
-        redirect('/login.php');
+        // Get the newly inserted user ID
+        $user_id = $_db->lastInsertId();
+
+        // --- Generate phone verification token ---
+        $token = random_int(100000, 999999);
+        $expires = date('Y-m-d H:i:s', time() + 600); // 10 minutes
+
+        $stm = $_db->prepare("
+            INSERT INTO phone_verifications (user_id, phone_number, token, expires_at) 
+            VALUES (?, ?, ?, ?)
+        ");
+        $stm->execute([$user_id, $phone, $token, $expires]);
+
+        // Set session for pre-verification
+        $_SESSION['pre_verify_user_id'] = $user_id;
+
+        // Optional: display token in temp message for demo purposes
+        temp('info', "Registration successful. Verification code sent: $token");
+
+        // Redirect to phone verification page
+        redirect('/user/verify_phone.php');
+        exit();
     }
 }
 ?>
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Register</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -60,7 +79,6 @@ if (is_post()) {
         label.upload img { display:block; border:1px solid #333; width:200px; height:200px; object-fit:cover; cursor:pointer; }
     </style>
 </head>
-
 <body>
 <div class="box">
     <h2 style="text-align:center;">Register</h2>
