@@ -86,13 +86,6 @@ tr:hover {
 
 <h2 style="text-align:center; margin-top:30px;">Order List</h2>
 
-<div style="width:90%; margin: 20px auto; text-align:right;">
-    <a href="orderDetail.php"
-       style="display:inline-block; padding:10px 20px; background:#28a745; color:white; border-radius:6px; text-decoration:none; font-weight:600;">
-       + Add Order
-    </a>
-</div>
-
 <table>
     <thead>
         <tr>
