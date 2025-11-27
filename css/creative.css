@@ -196,7 +196,7 @@ body {
 }
 
 .product:hover {
-    transform: translateY(-8px);
+    transform: translateY(-5px);
     box-shadow: 0 12px 30px rgba(0, 105, 137, 0.15);
 }
 
@@ -770,6 +770,197 @@ body {
     font-size: 1.5em;
     margin-bottom: 10px;
     color: #2d3748;
+}
+
+/* Category Filter Header Styles */
+.category-filter-section {
+    background-color: #006989;
+    padding: 30px;
+    margin-bottom: 30px;
+    color: white;
+    overflow: hidden;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 30px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.filter-header:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.filter-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.filter-title h2 {
+    margin: 0;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.toggle-arrow {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.category-filter-section.expanded .toggle-arrow {
+    transform: rotate(180deg);
+}
+
+.clear-filter-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.clear-filter-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.filter-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+}
+
+.category-filter-section.expanded .filter-content {
+    max-height: 400px; /* Adjust based on your content */
+}
+
+.category-filter-container {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 0 30px 20px 30px;
+}
+
+/* Custom scrollbar for category filter */
+.category-filter-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.category-filter-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.category-filter-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.category-filter-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.category-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.category-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 10px 5px;
+    text-align: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    border: 2px solid transparent;
+}
+
+.category-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.category-card.active {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+}
+
+.category-link {
+    text-decoration: none;
+    color: white;
+    display: block;
+}
+
+.category-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+}
+
+.category-name {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.product-count {
+    display: block;
+    font-size: 0.8rem;
+    opacity: 0.8;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-top: 5px;
+}
+
+.active-filter-indicator {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 15px 20px;
+    border-radius: 10px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    border-left: 4px solid #ffd700;
+}
+
+.filtered-count {
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
+
+/* No Products State */
+.no-products {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+    border-radius: 15px;
+    margin: 30px 0;
+}
+
+.no-products-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.no-products h3 {
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.no-products p {
+    color: #868e96;
+    margin-bottom: 20px;
 }
 
 /* Form Elements */

@@ -10,7 +10,31 @@ if (is_post()) {
     redirect();
 }
 
-$arr = $_db->query('SELECT * FROM product ORDER BY productID DESC');
+// Get categories for filter
+$categoryStm = $_db->query('SELECT * FROM ProductCategory ORDER BY categoryName');
+$categories = $categoryStm->fetchAll();
+
+// Get current category filter
+$currentCategory = req('category') ?? '';
+
+// Build query with optional category filter
+$whereClause = '';
+$params = [];
+
+if ($currentCategory) {
+    $whereClause = 'WHERE p.categoryID = ?';
+    $params[] = $currentCategory;
+}
+
+$stm = $_db->prepare("
+    SELECT p.*, c.categoryName 
+    FROM product p 
+    LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID 
+    $whereClause 
+    ORDER BY p.productID DESC
+");
+$stm->execute($params);
+$arr = $stm->fetchAll();
 
 // ----------------------------------------------------------------------------
 
@@ -19,6 +43,83 @@ include '../navbar.php';
 ?>
 
 <div class="container">
+    <div class="category-filter-section">
+        <div class="filter-header" id="filterToggle">
+            <div class="filter-title">
+                <h2>Filter by Category</h2>
+                <span class="toggle-arrow">▼</span>
+            </div>
+            <?php if ($currentCategory): ?>
+                <a href="list.php" class="clear-filter-btn">
+                    Clear Filter
+                </a>
+            <?php endif; ?>
+        </div>
+        
+        <div class="filter-content" id="filterContent">
+            <div class="category-filter-container">
+                <div class="category-filter-grid">
+                    <div class="category-card <?= !$currentCategory ? 'active' : '' ?>">
+                        <a href="list.php" class="category-link">
+                            <div class="category-icon">📦</div>
+                            <span class="category-name">All Products</span>
+                            <span class="product-count"><?= count($arr) ?></span>
+                        </a>
+                    </div>
+                    
+                    <?php foreach ($categories as $cat): ?>
+                        <?php
+                        // Count products in this category
+                        $countStm = $_db->prepare('SELECT COUNT(*) FROM product WHERE categoryID = ?');
+                        $countStm->execute([$cat->categoryID]);
+                        $productCount = $countStm->fetchColumn();
+                        ?>
+                        <div class="category-card <?= $currentCategory == $cat->categoryID ? 'active' : '' ?>">
+                            <a href="list.php?category=<?= $cat->categoryID ?>" class="category-link">
+                                <div class="category-icon">
+                                    <?php 
+                                    // Simple icon mapping based on category name
+                                    $icons = [
+                                        'Skincare' => '✨',
+                                        'Hair Care' => '💇',
+                                        'Body Care' => '🧴',
+                                        'Health Supplements' => '💊',
+                                        'Medical Devices' => '🏥',
+                                        'Personal Hygiene' => '🧼',
+                                        'Fragrances' => '🌸',
+                                        'Makeup' => '💄',
+                                        'Men\'s Grooming' => '🧔',
+                                        'Wellness Essentials' => '🌿'
+                                    ];
+                                    echo $icons[$cat->categoryName] ?? '📁';
+                                    ?>
+                                </div>
+                                <span class="category-name"><?= htmlspecialchars($cat->categoryName) ?></span>
+                                <span class="product-count"><?= $productCount ?></span>
+                            </a>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            
+            <?php if ($currentCategory): ?>
+                <?php 
+                $currentCatName = '';
+                foreach ($categories as $cat) {
+                    if ($cat->categoryID == $currentCategory) {
+                        $currentCatName = $cat->categoryName;
+                        break;
+                    }
+                }
+                ?>
+                <div class="active-filter-indicator">
+                    📍 Currently viewing: <strong><?= htmlspecialchars($currentCatName) ?></strong>
+                    <span class="filtered-count">(<?= count($arr) ?> product<?= count($arr) !== 1 ? 's' : '' ?>)</span>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
     <div id="products">
         <?php foreach ($arr as $p): ?>
             <?php
