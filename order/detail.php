@@ -114,17 +114,6 @@ table.table td.right {
 }
 
 /* Popup image hover */
-.popup {
-    display: none;
-}
-
-tr:hover .popup {
-    display: grid !important;
-    grid-template-columns: repeat(5, auto);
-    gap: 5px;
-    margin-top: 5px;
-}
-
 .popup img {
     width: 60px;
     height: 60px;
@@ -220,7 +209,9 @@ button.back-btn:hover {
         <td class="right"><?= number_format($item->product_price * $item->quantity, 2) ?></td>
         <td>
             <?php if ($item->photoURL): ?>
-                <img src="/products/<?= $item->photoURL ?>" class="popup">
+                <div class="popup">
+                    <img src="/products/<?= $item->photoURL ?>">
+                </div>
             <?php endif; ?>
         </td>
     </tr>

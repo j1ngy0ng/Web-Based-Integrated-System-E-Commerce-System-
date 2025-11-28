@@ -624,3 +624,253 @@
 [2025-11-24 19:35:58] Remember received: NO
 [2025-11-24 19:35:58] Page loaded via GET method
 [2025-11-24 19:35:58] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 11:27:31] === LOGIN PAGE LOADED ===
+[2025-11-27 11:27:31] Request method: GET
+[2025-11-27 11:27:31] Email received: empty
+[2025-11-27 11:27:31] Remember received: NO
+[2025-11-27 11:27:31] Page loaded via GET method
+[2025-11-27 11:27:31] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 11:27:32] === LOGIN PAGE LOADED ===
+[2025-11-27 11:27:32] Request method: GET
+[2025-11-27 11:27:32] Email received: empty
+[2025-11-27 11:27:32] Remember received: NO
+[2025-11-27 11:27:32] Page loaded via GET method
+[2025-11-27 11:27:32] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 11:27:33] === LOGIN PAGE LOADED ===
+[2025-11-27 11:27:33] Request method: GET
+[2025-11-27 11:27:33] Email received: empty
+[2025-11-27 11:27:33] Remember received: NO
+[2025-11-27 11:27:33] Page loaded via GET method
+[2025-11-27 11:27:33] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 11:27:33] === LOGIN PAGE LOADED ===
+[2025-11-27 11:27:33] Request method: GET
+[2025-11-27 11:27:33] Email received: empty
+[2025-11-27 11:27:33] Remember received: NO
+[2025-11-27 11:27:33] Page loaded via GET method
+[2025-11-27 11:27:33] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 11:27:46] === LOGIN PAGE LOADED ===
+[2025-11-27 11:27:46] Request method: POST
+[2025-11-27 11:27:46] Email received: mailleejx@gmail.com
+[2025-11-27 11:27:46] Remember received: NO
+[2025-11-27 11:27:46] Form submitted via POST method
+[2025-11-27 11:27:46] No validation errors, checking database
+[2025-11-27 11:27:46] User found in database: mailleejx@gmail.com
+[2025-11-27 11:27:46] User ID: 3
+[2025-11-27 11:27:46] Phone verified: 0
+[2025-11-27 11:27:46] Is active: 1
+[2025-11-27 11:27:46] Password verification: SUCCESS
+[2025-11-27 11:27:46] Login failed: phone not verified
+[2025-11-27 11:28:47] === LOGIN PAGE LOADED ===
+[2025-11-27 11:28:47] Request method: GET
+[2025-11-27 11:28:47] Email received: empty
+[2025-11-27 11:28:47] Remember received: NO
+[2025-11-27 11:28:47] Page loaded via GET method
+[2025-11-27 11:28:47] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 11:32:23] === LOGIN PAGE LOADED ===
+[2025-11-27 11:32:23] Request method: GET
+[2025-11-27 11:32:23] Email received: empty
+[2025-11-27 11:32:23] Remember received: NO
+[2025-11-27 11:32:23] Page loaded via GET method
+[2025-11-27 11:32:23] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 11:32:27] === LOGIN PAGE LOADED ===
+[2025-11-27 11:32:27] Request method: POST
+[2025-11-27 11:32:27] Email received: leejx-wm23@student.tarc.edu.my
+[2025-11-27 11:32:27] Remember received: NO
+[2025-11-27 11:32:27] Form submitted via POST method
+[2025-11-27 11:32:27] No validation errors, checking database
+[2025-11-27 11:32:27] User found in database: leejx-wm23@student.tarc.edu.my
+[2025-11-27 11:32:27] User ID: 4
+[2025-11-27 11:32:27] Phone verified: 1
+[2025-11-27 11:32:27] Is active: 1
+[2025-11-27 11:32:27] Password verification: SUCCESS
+[2025-11-27 11:32:27] Phone verification: SUCCESS
+[2025-11-27 11:32:27] Reset failed attempts for user: 4
+[2025-11-27 11:34:02] === LOGIN PAGE LOADED ===
+[2025-11-27 11:34:02] Request method: GET
+[2025-11-27 11:34:02] Email received: empty
+[2025-11-27 11:34:02] Remember received: NO
+[2025-11-27 11:34:02] Page loaded via GET method
+[2025-11-27 11:34:02] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 11:34:26] === LOGIN PAGE LOADED ===
+[2025-11-27 11:34:26] Request method: POST
+[2025-11-27 11:34:26] Email received: 1@gmail.com
+[2025-11-27 11:34:26] Remember received: NO
+[2025-11-27 11:34:26] Form submitted via POST method
+[2025-11-27 11:34:26] No validation errors, checking database
+[2025-11-27 11:34:26] User found in database: 1@gmail.com
+[2025-11-27 11:34:26] User ID: 1
+[2025-11-27 11:34:26] Phone verified: 0
+[2025-11-27 11:34:26] Is active: 1
+[2025-11-27 11:34:26] Password verification: SUCCESS
+[2025-11-27 11:34:26] Login failed: phone not verified
+[2025-11-27 11:37:15] === LOGIN PAGE LOADED ===
+[2025-11-27 11:37:15] Request method: POST
+[2025-11-27 11:37:15] Email received: 1@gmail.com
+[2025-11-27 11:37:15] Remember received: NO
+[2025-11-27 11:37:15] Form submitted via POST method
+[2025-11-27 11:37:15] No validation errors, checking database
+[2025-11-27 11:37:15] User found in database: 1@gmail.com
+[2025-11-27 11:37:15] User ID: 1
+[2025-11-27 11:37:15] Phone verified: 1
+[2025-11-27 11:37:15] Is active: 1
+[2025-11-27 11:37:15] Password verification: SUCCESS
+[2025-11-27 11:37:15] Phone verification: SUCCESS
+[2025-11-27 11:37:15] Reset failed attempts for user: 1
+[2025-11-27 11:37:17] === LOGIN PAGE LOADED ===
+[2025-11-27 11:37:17] Request method: GET
+[2025-11-27 11:37:17] Email received: empty
+[2025-11-27 11:37:17] Remember received: NO
+[2025-11-27 11:37:17] Page loaded via GET method
+[2025-11-27 11:37:17] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 11:37:23] === LOGIN PAGE LOADED ===
+[2025-11-27 11:37:23] Request method: POST
+[2025-11-27 11:37:23] Email received: 1@gmail.com
+[2025-11-27 11:37:23] Remember received: NO
+[2025-11-27 11:37:23] Form submitted via POST method
+[2025-11-27 11:37:23] No validation errors, checking database
+[2025-11-27 11:37:23] User found in database: 1@gmail.com
+[2025-11-27 11:37:23] User ID: 1
+[2025-11-27 11:37:23] Phone verified: 1
+[2025-11-27 11:37:23] Is active: 1
+[2025-11-27 11:37:23] Password verification: SUCCESS
+[2025-11-27 11:37:23] Phone verification: SUCCESS
+[2025-11-27 11:37:23] Reset failed attempts for user: 1
+[2025-11-27 11:38:28] === LOGIN PAGE LOADED ===
+[2025-11-27 11:38:28] Request method: GET
+[2025-11-27 11:38:28] Email received: empty
+[2025-11-27 11:38:28] Remember received: NO
+[2025-11-27 11:38:28] Page loaded via GET method
+[2025-11-27 11:38:28] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 11:38:41] === LOGIN PAGE LOADED ===
+[2025-11-27 11:38:41] Request method: POST
+[2025-11-27 11:38:41] Email received: mailleejx@gmail.com
+[2025-11-27 11:38:41] Remember received: NO
+[2025-11-27 11:38:41] Form submitted via POST method
+[2025-11-27 11:38:41] No validation errors, checking database
+[2025-11-27 11:38:41] User found in database: mailleejx@gmail.com
+[2025-11-27 11:38:41] User ID: 3
+[2025-11-27 11:38:41] Phone verified: 1
+[2025-11-27 11:38:41] Is active: 1
+[2025-11-27 11:38:41] Password verification: SUCCESS
+[2025-11-27 11:38:41] Phone verification: SUCCESS
+[2025-11-27 11:38:41] Reset failed attempts for user: 3
+[2025-11-27 11:39:45] === LOGIN PAGE LOADED ===
+[2025-11-27 11:39:45] Request method: GET
+[2025-11-27 11:39:45] Email received: empty
+[2025-11-27 11:39:45] Remember received: NO
+[2025-11-27 11:39:45] Page loaded via GET method
+[2025-11-27 11:39:45] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 11:39:50] === LOGIN PAGE LOADED ===
+[2025-11-27 11:39:50] Request method: POST
+[2025-11-27 11:39:50] Email received: leejx-wm23@student.tarc.edu.my
+[2025-11-27 11:39:50] Remember received: NO
+[2025-11-27 11:39:50] Form submitted via POST method
+[2025-11-27 11:39:50] No validation errors, checking database
+[2025-11-27 11:39:50] User found in database: leejx-wm23@student.tarc.edu.my
+[2025-11-27 11:39:50] User ID: 4
+[2025-11-27 11:39:50] Phone verified: 1
+[2025-11-27 11:39:50] Is active: 1
+[2025-11-27 11:39:50] Password verification: FAILED
+[2025-11-27 11:39:50] Updated failed attempts to: 1
+[2025-11-27 11:39:50] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 11:39:55] === LOGIN PAGE LOADED ===
+[2025-11-27 11:39:55] Request method: POST
+[2025-11-27 11:39:55] Email received: leejx-wm23@student.tarc.edu.my
+[2025-11-27 11:39:55] Remember received: NO
+[2025-11-27 11:39:55] Form submitted via POST method
+[2025-11-27 11:39:55] No validation errors, checking database
+[2025-11-27 11:39:55] User found in database: leejx-wm23@student.tarc.edu.my
+[2025-11-27 11:39:55] User ID: 4
+[2025-11-27 11:39:55] Phone verified: 1
+[2025-11-27 11:39:55] Is active: 1
+[2025-11-27 11:39:55] Password verification: SUCCESS
+[2025-11-27 11:39:55] Phone verification: SUCCESS
+[2025-11-27 11:39:55] Reset failed attempts for user: 4
+[2025-11-27 23:04:46] === LOGIN PAGE LOADED ===
+[2025-11-27 23:04:46] Request method: GET
+[2025-11-27 23:04:46] Email received: empty
+[2025-11-27 23:04:46] Remember received: NO
+[2025-11-27 23:04:46] Page loaded via GET method
+[2025-11-27 23:04:46] === LOGIN PROCESS COMPLETED ===
+[2025-11-27 23:04:58] === LOGIN PAGE LOADED ===
+[2025-11-27 23:04:58] Request method: POST
+[2025-11-27 23:04:58] Email received: leejx-wm23@student.tarc.edu.my
+[2025-11-27 23:04:58] Remember received: NO
+[2025-11-27 23:04:58] Form submitted via POST method
+[2025-11-27 23:04:58] No validation errors, checking database
+[2025-11-27 23:04:58] User found in database: leejx-wm23@student.tarc.edu.my
+[2025-11-27 23:04:58] User ID: 4
+[2025-11-27 23:04:58] Phone verified: 1
+[2025-11-27 23:04:58] Is active: 1
+[2025-11-27 23:04:58] Password verification: SUCCESS
+[2025-11-27 23:04:58] Phone verification: SUCCESS
+[2025-11-27 23:04:58] Reset failed attempts for user: 4
+[2025-11-28 17:13:51] === LOGIN PAGE LOADED ===
+[2025-11-28 17:13:51] Request method: GET
+[2025-11-28 17:13:51] Email received: empty
+[2025-11-28 17:13:51] Remember received: NO
+[2025-11-28 17:13:51] Page loaded via GET method
+[2025-11-28 17:13:51] === LOGIN PROCESS COMPLETED ===
+[2025-11-28 17:13:59] === LOGIN PAGE LOADED ===
+[2025-11-28 17:13:59] Request method: POST
+[2025-11-28 17:13:59] Email received: leejx-wm23@student.tarc.edu.my
+[2025-11-28 17:13:59] Remember received: NO
+[2025-11-28 17:13:59] Form submitted via POST method
+[2025-11-28 17:13:59] No validation errors, checking database
+[2025-11-28 17:13:59] User found in database: leejx-wm23@student.tarc.edu.my
+[2025-11-28 17:13:59] User ID: 4
+[2025-11-28 17:13:59] Phone verified: 1
+[2025-11-28 17:13:59] Is active: 1
+[2025-11-28 17:13:59] Password verification: SUCCESS
+[2025-11-28 17:13:59] Phone verification: SUCCESS
+[2025-11-28 17:13:59] Reset failed attempts for user: 4
+[2025-11-28 20:26:43] === LOGIN PAGE LOADED ===
+[2025-11-28 20:26:43] Request method: GET
+[2025-11-28 20:26:43] Email received: empty
+[2025-11-28 20:26:43] Remember received: NO
+[2025-11-28 20:26:43] Page loaded via GET method
+[2025-11-28 20:26:43] === LOGIN PROCESS COMPLETED ===
+[2025-11-28 20:26:47] === LOGIN PAGE LOADED ===
+[2025-11-28 20:26:47] Request method: POST
+[2025-11-28 20:26:47] Email received: leejx-wm23@student.tarc.edu.my
+[2025-11-28 20:26:47] Remember received: NO
+[2025-11-28 20:26:47] Form submitted via POST method
+[2025-11-28 20:26:47] No validation errors, checking database
+[2025-11-28 20:34:20] === LOGIN PAGE LOADED ===
+[2025-11-28 20:34:20] Request method: GET
+[2025-11-28 20:34:20] Email received: empty
+[2025-11-28 20:34:20] Remember received: NO
+[2025-11-28 20:34:20] Page loaded via GET method
+[2025-11-28 20:34:20] === LOGIN PROCESS COMPLETED ===
+[2025-11-28 20:34:25] === LOGIN PAGE LOADED ===
+[2025-11-28 20:34:25] Request method: POST
+[2025-11-28 20:34:25] Email received: leejx-wm23@student.tarc.edu.my
+[2025-11-28 20:34:25] Remember received: NO
+[2025-11-28 20:34:25] Form submitted via POST method
+[2025-11-28 20:34:25] No validation errors, checking database
+[2025-11-28 20:34:25] User found in database: leejx-wm23@student.tarc.edu.my
+[2025-11-28 20:34:25] User ID: 4
+[2025-11-28 20:34:25] Phone verified: 1
+[2025-11-28 20:34:25] Is active: 1
+[2025-11-28 20:34:25] Password verification: SUCCESS
+[2025-11-28 20:34:25] Phone verification: SUCCESS
+[2025-11-28 20:34:25] Reset failed attempts for user: 4
+[2025-11-28 21:52:23] === LOGIN PAGE LOADED ===
+[2025-11-28 21:52:23] Request method: GET
+[2025-11-28 21:52:23] Email received: empty
+[2025-11-28 21:52:23] Remember received: NO
+[2025-11-28 21:52:23] Page loaded via GET method
+[2025-11-28 21:52:23] === LOGIN PROCESS COMPLETED ===
+[2025-11-28 21:52:33] === LOGIN PAGE LOADED ===
+[2025-11-28 21:52:33] Request method: POST
+[2025-11-28 21:52:33] Email received: 1@gmail.com
+[2025-11-28 21:52:33] Remember received: NO
+[2025-11-28 21:52:33] Form submitted via POST method
+[2025-11-28 21:52:33] No validation errors, checking database
+[2025-11-28 21:52:33] User found in database: 1@gmail.com
+[2025-11-28 21:52:33] User ID: 1
+[2025-11-28 21:52:33] Phone verified: 1
+[2025-11-28 21:52:33] Is active: 1
+[2025-11-28 21:52:33] Password verification: SUCCESS
+[2025-11-28 21:52:33] Phone verification: SUCCESS
+[2025-11-28 21:52:33] Reset failed attempts for user: 1
