@@ -24,7 +24,7 @@
 				<li class="nav-item"><a class="nav-link" href="/category/category.php">Manage Category</a></li>
 				<li class="nav-item"><a class="nav-link" href="/product/maintenance.php">Manage Products</a></li>
 				<li class="nav-item"><a class="nav-link" href="/order/maintenance.php">Manage Orders</a></li>
-				<li class="nav-item"><a class="nav-link" href="manageAccount.php">Manage Account</a></li>
+				<li class="nav-item"><a class="nav-link" href="/member/memberList.php">Manage Account</a></li>
 			<?php endif ?>
 
 			<li class="nav-item"><a class="nav-link"  href="/user/profile.php">Profile</a></li>
