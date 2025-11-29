@@ -183,7 +183,7 @@ tr:hover {
 
             <td>
                 <?php if ($row->photo): ?>
-                    <img src="../uploads/<?= htmlspecialchars($row->photo) ?>"
+                    <img src="../photos/<?= htmlspecialchars($row->photo) ?>"
                          style="width:50px; height:50px; border-radius:50%;">
                 <?php else: ?>
                     No photo

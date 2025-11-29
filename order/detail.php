@@ -33,6 +33,12 @@ $stm = $_db->prepare('
 $stm->execute([$orderID]);
 $items = $stm->fetchAll();
 
+// --------------------------------------------------------------------
+// Fetch refund info (if any)
+$stm = $_db->prepare('SELECT * FROM refund WHERE orderID = ?');
+$stm->execute([$orderID]);
+$refund = $stm->fetch();
+
 $_title = 'Order | Detail';
 include '../navbar.php';
 ?>
@@ -149,6 +155,22 @@ button.back-btn:hover {
         width: 95%;
     }
 }
+
+/* Cancel button styling */
+button.cancel-btn {
+    background:#dc3545;
+    color:white;
+    padding:10px 20px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:600;
+    margin-top:15px;
+    transition: background 0.3s;
+}
+button.cancel-btn:hover {
+    background:#a71d2a;
+}
 </style>
 
 <h2 style="text-align:center; margin-top:20px;">Order Detail</h2>
@@ -173,6 +195,19 @@ button.back-btn:hover {
         <div><?= htmlspecialchars($order->status) ?></div>
     <?php endif; ?>
 
+    <?php if ($refund): 
+        $color = match($refund->status) {
+            'Pending' => 'orange',
+            'Completed' => 'green',
+            'Failed' => 'red',
+        };
+    ?>
+        <label>Refund Status</label>
+        <div style="color:<?= $color ?>; font-weight:bold;">
+            <?= htmlspecialchars($refund->status) ?><?php if ($refund->reason) echo " ({$refund->reason})"; ?>
+        </div>
+    <?php endif; ?>
+
     <label>Shipping Address</label>
     <?php if ($role === 'Admin'): ?>
         <textarea name="ShippingAddress" rows="3"><?= htmlspecialchars($order->ShippingAddress) ?></textarea>
@@ -185,6 +220,15 @@ button.back-btn:hover {
 
     <?php if ($role === 'Admin'): ?>
         <button type="submit">Save Changes</button>
+    <?php endif; ?>
+
+    <?php if ($role === 'Member' && in_array($order->status, ['Pending','Paid']) && !$refund): ?>
+        <form method="post" action="cancel_order.php" style="margin-top:15px;">
+            <input type="hidden" name="orderID" value="<?= $order->orderID ?>">
+            <button type="submit" style="background:#dc3545; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer;">
+                Cancel Order
+            </button>
+        </form>
     <?php endif; ?>
 </form>
 

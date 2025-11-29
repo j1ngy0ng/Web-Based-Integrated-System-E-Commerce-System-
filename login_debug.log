@@ -662,3 +662,574 @@
 [2025-11-27 12:10:10] Password verification: SUCCESS
 [2025-11-27 12:10:10] Phone verification: SUCCESS
 [2025-11-27 12:10:10] Reset failed attempts for user: 1
+[2025-11-29 08:07:39] === LOGIN PAGE LOADED ===
+[2025-11-29 08:07:39] Request method: GET
+[2025-11-29 08:07:39] Email received: empty
+[2025-11-29 08:07:39] Remember received: NO
+[2025-11-29 08:07:39] Page loaded via GET method
+[2025-11-29 08:07:39] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 08:07:54] === LOGIN PAGE LOADED ===
+[2025-11-29 08:07:54] Request method: POST
+[2025-11-29 08:07:54] Email received: 2@gmail.com
+[2025-11-29 08:07:54] Remember received: NO
+[2025-11-29 08:07:54] Form submitted via POST method
+[2025-11-29 08:07:54] No validation errors, checking database
+[2025-11-29 08:07:54] User found in database: 2@gmail.com
+[2025-11-29 08:07:54] User ID: 2
+[2025-11-29 08:07:54] Phone verified: 1
+[2025-11-29 08:07:54] Is active: 1
+[2025-11-29 08:07:54] Password verification: SUCCESS
+[2025-11-29 08:07:54] Phone verification: SUCCESS
+[2025-11-29 08:07:54] Reset failed attempts for user: 2
+[2025-11-29 08:38:23] === LOGIN PAGE LOADED ===
+[2025-11-29 08:38:23] Request method: GET
+[2025-11-29 08:38:23] Email received: empty
+[2025-11-29 08:38:23] Remember received: NO
+[2025-11-29 08:38:23] Page loaded via GET method
+[2025-11-29 08:38:23] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 08:38:26] === LOGIN PAGE LOADED ===
+[2025-11-29 08:38:26] Request method: GET
+[2025-11-29 08:38:26] Email received: empty
+[2025-11-29 08:38:26] Remember received: NO
+[2025-11-29 08:38:26] Page loaded via GET method
+[2025-11-29 08:38:26] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 08:45:26] === LOGIN PAGE LOADED ===
+[2025-11-29 08:45:26] Request method: GET
+[2025-11-29 08:45:26] Email received: empty
+[2025-11-29 08:45:26] Remember received: NO
+[2025-11-29 08:45:26] Page loaded via GET method
+[2025-11-29 08:45:26] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 08:45:30] === LOGIN PAGE LOADED ===
+[2025-11-29 08:45:30] Request method: POST
+[2025-11-29 08:45:30] Email received: 2@gmail.com
+[2025-11-29 08:45:30] Remember received: NO
+[2025-11-29 08:45:30] Form submitted via POST method
+[2025-11-29 08:45:30] No validation errors, checking database
+[2025-11-29 08:45:30] User found in database: 2@gmail.com
+[2025-11-29 08:45:30] User ID: 2
+[2025-11-29 08:45:30] Phone verified: 1
+[2025-11-29 08:45:30] Is active: 1
+[2025-11-29 08:45:30] Password verification: SUCCESS
+[2025-11-29 08:45:30] Phone verification: SUCCESS
+[2025-11-29 08:45:30] Reset failed attempts for user: 2
+[2025-11-29 08:50:01] === LOGIN PAGE LOADED ===
+[2025-11-29 08:50:01] Request method: GET
+[2025-11-29 08:50:01] Email received: empty
+[2025-11-29 08:50:01] Remember received: NO
+[2025-11-29 08:50:01] Page loaded via GET method
+[2025-11-29 08:50:01] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 08:50:06] === LOGIN PAGE LOADED ===
+[2025-11-29 08:50:06] Request method: POST
+[2025-11-29 08:50:06] Email received: 2@gmail.com
+[2025-11-29 08:50:06] Remember received: NO
+[2025-11-29 08:50:06] Form submitted via POST method
+[2025-11-29 08:50:06] No validation errors, checking database
+[2025-11-29 08:50:06] User found in database: 2@gmail.com
+[2025-11-29 08:50:06] User ID: 2
+[2025-11-29 08:50:06] Phone verified: 1
+[2025-11-29 08:50:06] Is active: 1
+[2025-11-29 08:50:06] Password verification: SUCCESS
+[2025-11-29 08:50:06] Phone verification: SUCCESS
+[2025-11-29 08:50:06] Reset failed attempts for user: 2
+[2025-11-29 08:57:33] === LOGIN PAGE LOADED ===
+[2025-11-29 08:57:33] Request method: GET
+[2025-11-29 08:57:33] Email received: empty
+[2025-11-29 08:57:33] Remember received: NO
+[2025-11-29 08:57:33] Page loaded via GET method
+[2025-11-29 08:57:33] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 08:57:39] === LOGIN PAGE LOADED ===
+[2025-11-29 08:57:39] Request method: POST
+[2025-11-29 08:57:39] Email received: 1@gmail.com
+[2025-11-29 08:57:40] Remember received: NO
+[2025-11-29 08:57:40] Form submitted via POST method
+[2025-11-29 08:57:40] No validation errors, checking database
+[2025-11-29 08:57:40] User found in database: 1@gmail.com
+[2025-11-29 08:57:40] User ID: 1
+[2025-11-29 08:57:40] Phone verified: 1
+[2025-11-29 08:57:40] Is active: 1
+[2025-11-29 08:57:40] Password verification: SUCCESS
+[2025-11-29 08:57:40] Phone verification: SUCCESS
+[2025-11-29 08:57:40] Reset failed attempts for user: 1
+[2025-11-29 08:58:46] === LOGIN PAGE LOADED ===
+[2025-11-29 08:58:46] Request method: GET
+[2025-11-29 08:58:46] Email received: empty
+[2025-11-29 08:58:46] Remember received: NO
+[2025-11-29 08:58:46] Page loaded via GET method
+[2025-11-29 08:58:46] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 08:58:54] === LOGIN PAGE LOADED ===
+[2025-11-29 08:58:54] Request method: POST
+[2025-11-29 08:58:54] Email received: 2@gmail.com
+[2025-11-29 08:58:54] Remember received: NO
+[2025-11-29 08:58:54] Form submitted via POST method
+[2025-11-29 08:58:54] No validation errors, checking database
+[2025-11-29 08:58:54] User found in database: 2@gmail.com
+[2025-11-29 08:58:54] User ID: 2
+[2025-11-29 08:58:54] Phone verified: 1
+[2025-11-29 08:58:54] Is active: 0
+[2025-11-29 08:58:54] Account blocked - not active
+[2025-11-29 08:58:54] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 08:59:01] === LOGIN PAGE LOADED ===
+[2025-11-29 08:59:01] Request method: POST
+[2025-11-29 08:59:01] Email received: 1@gmail.com
+[2025-11-29 08:59:01] Remember received: NO
+[2025-11-29 08:59:01] Form submitted via POST method
+[2025-11-29 08:59:01] No validation errors, checking database
+[2025-11-29 08:59:01] User found in database: 1@gmail.com
+[2025-11-29 08:59:01] User ID: 1
+[2025-11-29 08:59:01] Phone verified: 1
+[2025-11-29 08:59:01] Is active: 1
+[2025-11-29 08:59:01] Password verification: SUCCESS
+[2025-11-29 08:59:01] Phone verification: SUCCESS
+[2025-11-29 08:59:01] Reset failed attempts for user: 1
+[2025-11-29 09:00:18] === LOGIN PAGE LOADED ===
+[2025-11-29 09:00:18] Request method: GET
+[2025-11-29 09:00:18] Email received: empty
+[2025-11-29 09:00:18] Remember received: NO
+[2025-11-29 09:00:18] Page loaded via GET method
+[2025-11-29 09:00:18] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 09:21:41] === LOGIN PAGE LOADED ===
+[2025-11-29 09:21:41] Request method: GET
+[2025-11-29 09:21:41] Email received: empty
+[2025-11-29 09:21:41] Remember received: NO
+[2025-11-29 09:21:41] Page loaded via GET method
+[2025-11-29 09:21:41] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 09:22:15] === LOGIN PAGE LOADED ===
+[2025-11-29 09:22:15] Request method: POST
+[2025-11-29 09:22:15] Email received: 2@gmail.com
+[2025-11-29 09:22:15] Remember received: NO
+[2025-11-29 09:22:15] Form submitted via POST method
+[2025-11-29 09:22:15] No validation errors, checking database
+[2025-11-29 09:22:15] User found in database: 2@gmail.com
+[2025-11-29 09:22:15] User ID: 2
+[2025-11-29 09:22:15] Phone verified: 1
+[2025-11-29 09:22:15] Is active: 1
+[2025-11-29 09:22:15] Password verification: SUCCESS
+[2025-11-29 09:22:15] Phone verification: SUCCESS
+[2025-11-29 09:22:15] Reset failed attempts for user: 2
+[2025-11-29 09:30:53] === LOGIN PAGE LOADED ===
+[2025-11-29 09:30:53] Request method: GET
+[2025-11-29 09:30:53] Email received: empty
+[2025-11-29 09:30:53] Remember received: NO
+[2025-11-29 09:30:53] Page loaded via GET method
+[2025-11-29 09:30:53] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 09:30:57] === LOGIN PAGE LOADED ===
+[2025-11-29 09:30:57] Request method: POST
+[2025-11-29 09:30:57] Email received: 1@gmail.com
+[2025-11-29 09:30:57] Remember received: NO
+[2025-11-29 09:30:57] Form submitted via POST method
+[2025-11-29 09:30:57] No validation errors, checking database
+[2025-11-29 09:30:57] User found in database: 1@gmail.com
+[2025-11-29 09:30:57] User ID: 1
+[2025-11-29 09:30:57] Phone verified: 1
+[2025-11-29 09:30:57] Is active: 1
+[2025-11-29 09:30:57] Password verification: SUCCESS
+[2025-11-29 09:30:57] Phone verification: SUCCESS
+[2025-11-29 09:30:57] Reset failed attempts for user: 1
+[2025-11-29 09:31:13] === LOGIN PAGE LOADED ===
+[2025-11-29 09:31:13] Request method: GET
+[2025-11-29 09:31:13] Email received: empty
+[2025-11-29 09:31:13] Remember received: NO
+[2025-11-29 09:31:13] Page loaded via GET method
+[2025-11-29 09:31:13] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 09:31:19] === LOGIN PAGE LOADED ===
+[2025-11-29 09:31:19] Request method: POST
+[2025-11-29 09:31:19] Email received: 1@gmail.com
+[2025-11-29 09:31:19] Remember received: NO
+[2025-11-29 09:31:19] Form submitted via POST method
+[2025-11-29 09:31:19] No validation errors, checking database
+[2025-11-29 09:31:19] User found in database: 1@gmail.com
+[2025-11-29 09:31:19] User ID: 1
+[2025-11-29 09:31:19] Phone verified: 1
+[2025-11-29 09:31:19] Is active: 1
+[2025-11-29 09:31:19] Password verification: SUCCESS
+[2025-11-29 09:31:19] Phone verification: SUCCESS
+[2025-11-29 09:31:19] Reset failed attempts for user: 1
+[2025-11-29 09:34:56] === LOGIN PAGE LOADED ===
+[2025-11-29 09:34:56] Request method: GET
+[2025-11-29 09:34:56] Email received: empty
+[2025-11-29 09:34:56] Remember received: NO
+[2025-11-29 09:34:56] Page loaded via GET method
+[2025-11-29 09:34:56] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 09:35:00] === LOGIN PAGE LOADED ===
+[2025-11-29 09:35:00] Request method: POST
+[2025-11-29 09:35:00] Email received: 2@gmail.com
+[2025-11-29 09:35:00] Remember received: NO
+[2025-11-29 09:35:00] Form submitted via POST method
+[2025-11-29 09:35:00] No validation errors, checking database
+[2025-11-29 09:35:00] User found in database: 2@gmail.com
+[2025-11-29 09:35:00] User ID: 2
+[2025-11-29 09:35:00] Phone verified: 1
+[2025-11-29 09:35:00] Is active: 1
+[2025-11-29 09:35:00] Password verification: SUCCESS
+[2025-11-29 09:35:00] Phone verification: SUCCESS
+[2025-11-29 09:35:00] Reset failed attempts for user: 2
+[2025-11-29 09:35:28] === LOGIN PAGE LOADED ===
+[2025-11-29 09:35:28] Request method: GET
+[2025-11-29 09:35:28] Email received: empty
+[2025-11-29 09:35:28] Remember received: NO
+[2025-11-29 09:35:28] Page loaded via GET method
+[2025-11-29 09:35:28] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 09:35:33] === LOGIN PAGE LOADED ===
+[2025-11-29 09:35:33] Request method: POST
+[2025-11-29 09:35:33] Email received: 1@gmail.com
+[2025-11-29 09:35:33] Remember received: NO
+[2025-11-29 09:35:33] Form submitted via POST method
+[2025-11-29 09:35:33] No validation errors, checking database
+[2025-11-29 09:35:33] User found in database: 1@gmail.com
+[2025-11-29 09:35:33] User ID: 1
+[2025-11-29 09:35:33] Phone verified: 1
+[2025-11-29 09:35:33] Is active: 1
+[2025-11-29 09:35:33] Password verification: SUCCESS
+[2025-11-29 09:35:33] Phone verification: SUCCESS
+[2025-11-29 09:35:33] Reset failed attempts for user: 1
+[2025-11-29 09:42:29] === LOGIN PAGE LOADED ===
+[2025-11-29 09:42:29] Request method: GET
+[2025-11-29 09:42:29] Email received: empty
+[2025-11-29 09:42:29] Remember received: NO
+[2025-11-29 09:42:29] Page loaded via GET method
+[2025-11-29 09:42:29] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 09:42:33] === LOGIN PAGE LOADED ===
+[2025-11-29 09:42:33] Request method: POST
+[2025-11-29 09:42:33] Email received: 2@gmail.com
+[2025-11-29 09:42:33] Remember received: NO
+[2025-11-29 09:42:33] Form submitted via POST method
+[2025-11-29 09:42:33] No validation errors, checking database
+[2025-11-29 09:42:33] User found in database: 2@gmail.com
+[2025-11-29 09:42:33] User ID: 2
+[2025-11-29 09:42:33] Phone verified: 1
+[2025-11-29 09:42:33] Is active: 1
+[2025-11-29 09:42:33] Password verification: SUCCESS
+[2025-11-29 09:42:33] Phone verification: SUCCESS
+[2025-11-29 09:42:33] Reset failed attempts for user: 2
+[2025-11-29 09:42:42] === LOGIN PAGE LOADED ===
+[2025-11-29 09:42:42] Request method: GET
+[2025-11-29 09:42:42] Email received: empty
+[2025-11-29 09:42:42] Remember received: NO
+[2025-11-29 09:42:42] Page loaded via GET method
+[2025-11-29 09:42:42] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 09:42:48] === LOGIN PAGE LOADED ===
+[2025-11-29 09:42:48] Request method: POST
+[2025-11-29 09:42:48] Email received: 1@gmail.com
+[2025-11-29 09:42:48] Remember received: NO
+[2025-11-29 09:42:48] Form submitted via POST method
+[2025-11-29 09:42:48] No validation errors, checking database
+[2025-11-29 09:42:48] User found in database: 1@gmail.com
+[2025-11-29 09:42:48] User ID: 1
+[2025-11-29 09:42:48] Phone verified: 1
+[2025-11-29 09:42:48] Is active: 1
+[2025-11-29 09:42:48] Password verification: SUCCESS
+[2025-11-29 09:42:48] Phone verification: SUCCESS
+[2025-11-29 09:42:48] Reset failed attempts for user: 1
+[2025-11-29 09:48:35] === LOGIN PAGE LOADED ===
+[2025-11-29 09:48:35] Request method: GET
+[2025-11-29 09:48:35] Email received: empty
+[2025-11-29 09:48:35] Remember received: NO
+[2025-11-29 09:48:35] Page loaded via GET method
+[2025-11-29 09:48:35] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 09:54:35] === LOGIN PAGE LOADED ===
+[2025-11-29 09:54:35] Request method: GET
+[2025-11-29 09:54:35] Email received: empty
+[2025-11-29 09:54:35] Remember received: NO
+[2025-11-29 09:54:35] Page loaded via GET method
+[2025-11-29 09:54:35] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 10:02:55] === LOGIN PAGE LOADED ===
+[2025-11-29 10:02:55] Request method: POST
+[2025-11-29 10:02:55] Email received: 2@gmail.com
+[2025-11-29 10:02:55] Remember received: NO
+[2025-11-29 10:02:55] Form submitted via POST method
+[2025-11-29 10:02:55] No validation errors, checking database
+[2025-11-29 10:02:55] User found in database: 2@gmail.com
+[2025-11-29 10:02:55] User ID: 2
+[2025-11-29 10:02:55] Phone verified: 1
+[2025-11-29 10:02:55] Is active: 1
+[2025-11-29 10:02:55] Password verification: SUCCESS
+[2025-11-29 10:02:55] Phone verification: SUCCESS
+[2025-11-29 10:02:55] Reset failed attempts for user: 2
+[2025-11-29 10:04:50] === LOGIN PAGE LOADED ===
+[2025-11-29 10:04:50] Request method: POST
+[2025-11-29 10:04:50] Email received: 1@gmail.com
+[2025-11-29 10:04:50] Remember received: NO
+[2025-11-29 10:04:50] Form submitted via POST method
+[2025-11-29 10:04:50] No validation errors, checking database
+[2025-11-29 10:04:50] User found in database: 1@gmail.com
+[2025-11-29 10:04:50] User ID: 1
+[2025-11-29 10:04:50] Phone verified: 1
+[2025-11-29 10:04:50] Is active: 1
+[2025-11-29 10:04:50] Password verification: SUCCESS
+[2025-11-29 10:04:50] Phone verification: SUCCESS
+[2025-11-29 10:04:50] Reset failed attempts for user: 1
+[2025-11-29 10:13:24] === LOGIN PAGE LOADED ===
+[2025-11-29 10:13:24] Request method: GET
+[2025-11-29 10:13:24] Email received: empty
+[2025-11-29 10:13:24] Remember received: NO
+[2025-11-29 10:13:24] Page loaded via GET method
+[2025-11-29 10:13:24] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 10:13:30] === LOGIN PAGE LOADED ===
+[2025-11-29 10:13:30] Request method: POST
+[2025-11-29 10:13:30] Email received: 2@gmail.com
+[2025-11-29 10:13:30] Remember received: NO
+[2025-11-29 10:13:30] Form submitted via POST method
+[2025-11-29 10:13:30] No validation errors, checking database
+[2025-11-29 10:13:30] User found in database: 2@gmail.com
+[2025-11-29 10:13:30] User ID: 2
+[2025-11-29 10:13:30] Phone verified: 1
+[2025-11-29 10:13:30] Is active: 1
+[2025-11-29 10:13:30] Password verification: SUCCESS
+[2025-11-29 10:13:30] Phone verification: SUCCESS
+[2025-11-29 10:13:30] Reset failed attempts for user: 2
+[2025-11-29 11:46:40] === LOGIN PAGE LOADED ===
+[2025-11-29 11:46:40] Request method: GET
+[2025-11-29 11:46:40] Email received: empty
+[2025-11-29 11:46:40] Remember received: NO
+[2025-11-29 11:46:40] Page loaded via GET method
+[2025-11-29 11:46:40] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 11:46:44] === LOGIN PAGE LOADED ===
+[2025-11-29 11:46:44] Request method: POST
+[2025-11-29 11:46:44] Email received: 1@gmail.com
+[2025-11-29 11:46:44] Remember received: NO
+[2025-11-29 11:46:44] Form submitted via POST method
+[2025-11-29 11:46:44] No validation errors, checking database
+[2025-11-29 11:46:44] User found in database: 1@gmail.com
+[2025-11-29 11:46:44] User ID: 1
+[2025-11-29 11:46:44] Phone verified: 1
+[2025-11-29 11:46:44] Is active: 1
+[2025-11-29 11:46:44] Password verification: SUCCESS
+[2025-11-29 11:46:44] Phone verification: SUCCESS
+[2025-11-29 11:46:44] Reset failed attempts for user: 1
+[2025-11-29 13:15:31] === LOGIN PAGE LOADED ===
+[2025-11-29 13:15:31] Request method: GET
+[2025-11-29 13:15:31] Email received: empty
+[2025-11-29 13:15:31] Remember received: NO
+[2025-11-29 13:15:31] Page loaded via GET method
+[2025-11-29 13:15:31] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 13:15:35] === LOGIN PAGE LOADED ===
+[2025-11-29 13:15:35] Request method: POST
+[2025-11-29 13:15:35] Email received: 1@gmail.com
+[2025-11-29 13:15:35] Remember received: NO
+[2025-11-29 13:15:35] Form submitted via POST method
+[2025-11-29 13:15:35] No validation errors, checking database
+[2025-11-29 13:15:35] User found in database: 1@gmail.com
+[2025-11-29 13:15:35] User ID: 1
+[2025-11-29 13:15:35] Phone verified: 1
+[2025-11-29 13:15:35] Is active: 1
+[2025-11-29 13:15:35] Password verification: SUCCESS
+[2025-11-29 13:15:35] Phone verification: SUCCESS
+[2025-11-29 13:15:35] Reset failed attempts for user: 1
+[2025-11-29 13:22:29] === LOGIN PAGE LOADED ===
+[2025-11-29 13:22:29] Request method: GET
+[2025-11-29 13:22:29] Email received: empty
+[2025-11-29 13:22:29] Remember received: NO
+[2025-11-29 13:22:29] Page loaded via GET method
+[2025-11-29 13:22:29] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 13:22:33] === LOGIN PAGE LOADED ===
+[2025-11-29 13:22:33] Request method: POST
+[2025-11-29 13:22:33] Email received: 2@gmail.com
+[2025-11-29 13:22:33] Remember received: NO
+[2025-11-29 13:22:33] Form submitted via POST method
+[2025-11-29 13:22:33] No validation errors, checking database
+[2025-11-29 13:22:33] User found in database: 2@gmail.com
+[2025-11-29 13:22:33] User ID: 2
+[2025-11-29 13:22:33] Phone verified: 1
+[2025-11-29 13:22:33] Is active: 1
+[2025-11-29 13:22:33] Password verification: SUCCESS
+[2025-11-29 13:22:33] Phone verification: SUCCESS
+[2025-11-29 13:22:33] Reset failed attempts for user: 2
+[2025-11-29 13:22:45] === LOGIN PAGE LOADED ===
+[2025-11-29 13:22:45] Request method: GET
+[2025-11-29 13:22:45] Email received: empty
+[2025-11-29 13:22:45] Remember received: NO
+[2025-11-29 13:22:45] Page loaded via GET method
+[2025-11-29 13:22:45] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 13:24:41] === LOGIN PAGE LOADED ===
+[2025-11-29 13:24:41] Request method: POST
+[2025-11-29 13:24:41] Email received: 1@gmail.com
+[2025-11-29 13:24:41] Remember received: NO
+[2025-11-29 13:24:41] Form submitted via POST method
+[2025-11-29 13:24:41] No validation errors, checking database
+[2025-11-29 13:24:41] User found in database: 1@gmail.com
+[2025-11-29 13:24:41] User ID: 1
+[2025-11-29 13:24:41] Phone verified: 1
+[2025-11-29 13:24:41] Is active: 1
+[2025-11-29 13:24:41] Password verification: SUCCESS
+[2025-11-29 13:24:41] Phone verification: SUCCESS
+[2025-11-29 13:24:41] Reset failed attempts for user: 1
+[2025-11-29 13:42:22] === LOGIN PAGE LOADED ===
+[2025-11-29 13:42:22] Request method: GET
+[2025-11-29 13:42:22] Email received: empty
+[2025-11-29 13:42:22] Remember received: NO
+[2025-11-29 13:42:22] Page loaded via GET method
+[2025-11-29 13:42:22] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 13:42:28] === LOGIN PAGE LOADED ===
+[2025-11-29 13:42:28] Request method: POST
+[2025-11-29 13:42:28] Email received: 1@gmail.com
+[2025-11-29 13:42:28] Remember received: NO
+[2025-11-29 13:42:28] Form submitted via POST method
+[2025-11-29 13:42:28] No validation errors, checking database
+[2025-11-29 13:42:28] User found in database: 1@gmail.com
+[2025-11-29 13:42:28] User ID: 1
+[2025-11-29 13:42:28] Phone verified: 1
+[2025-11-29 13:42:28] Is active: 1
+[2025-11-29 13:42:28] Password verification: SUCCESS
+[2025-11-29 13:42:28] Phone verification: SUCCESS
+[2025-11-29 13:42:28] Reset failed attempts for user: 1
+[2025-11-29 13:42:30] === LOGIN PAGE LOADED ===
+[2025-11-29 13:42:30] Request method: GET
+[2025-11-29 13:42:30] Email received: empty
+[2025-11-29 13:42:30] Remember received: NO
+[2025-11-29 13:42:30] Page loaded via GET method
+[2025-11-29 13:42:30] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 13:42:42] === LOGIN PAGE LOADED ===
+[2025-11-29 13:42:42] Request method: POST
+[2025-11-29 13:42:42] Email received: 2@gmail.com
+[2025-11-29 13:42:42] Remember received: NO
+[2025-11-29 13:42:42] Form submitted via POST method
+[2025-11-29 13:42:42] No validation errors, checking database
+[2025-11-29 13:42:42] User found in database: 2@gmail.com
+[2025-11-29 13:42:42] User ID: 2
+[2025-11-29 13:42:42] Phone verified: 1
+[2025-11-29 13:42:42] Is active: 1
+[2025-11-29 13:42:42] Password verification: SUCCESS
+[2025-11-29 13:42:42] Phone verification: SUCCESS
+[2025-11-29 13:42:42] Reset failed attempts for user: 2
+[2025-11-29 13:43:09] === LOGIN PAGE LOADED ===
+[2025-11-29 13:43:09] Request method: GET
+[2025-11-29 13:43:09] Email received: empty
+[2025-11-29 13:43:09] Remember received: NO
+[2025-11-29 13:43:09] Page loaded via GET method
+[2025-11-29 13:43:09] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 13:43:13] === LOGIN PAGE LOADED ===
+[2025-11-29 13:43:13] Request method: POST
+[2025-11-29 13:43:13] Email received: 1@gmail.com
+[2025-11-29 13:43:13] Remember received: NO
+[2025-11-29 13:43:13] Form submitted via POST method
+[2025-11-29 13:43:13] No validation errors, checking database
+[2025-11-29 13:43:13] User found in database: 1@gmail.com
+[2025-11-29 13:43:13] User ID: 1
+[2025-11-29 13:43:13] Phone verified: 1
+[2025-11-29 13:43:13] Is active: 1
+[2025-11-29 13:43:13] Password verification: SUCCESS
+[2025-11-29 13:43:13] Phone verification: SUCCESS
+[2025-11-29 13:43:13] Reset failed attempts for user: 1
+[2025-11-29 13:44:35] === LOGIN PAGE LOADED ===
+[2025-11-29 13:44:35] Request method: GET
+[2025-11-29 13:44:35] Email received: empty
+[2025-11-29 13:44:35] Remember received: NO
+[2025-11-29 13:44:35] Page loaded via GET method
+[2025-11-29 13:44:35] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 13:44:39] === LOGIN PAGE LOADED ===
+[2025-11-29 13:44:39] Request method: POST
+[2025-11-29 13:44:39] Email received: 2@gmail.com
+[2025-11-29 13:44:39] Remember received: NO
+[2025-11-29 13:44:39] Form submitted via POST method
+[2025-11-29 13:44:39] No validation errors, checking database
+[2025-11-29 13:44:39] User found in database: 2@gmail.com
+[2025-11-29 13:44:39] User ID: 2
+[2025-11-29 13:44:39] Phone verified: 1
+[2025-11-29 13:44:39] Is active: 1
+[2025-11-29 13:44:39] Password verification: SUCCESS
+[2025-11-29 13:44:39] Phone verification: SUCCESS
+[2025-11-29 13:44:39] Reset failed attempts for user: 2
+[2025-11-29 13:46:32] === LOGIN PAGE LOADED ===
+[2025-11-29 13:46:32] Request method: GET
+[2025-11-29 13:46:32] Email received: empty
+[2025-11-29 13:46:32] Remember received: NO
+[2025-11-29 13:46:32] Page loaded via GET method
+[2025-11-29 13:46:32] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 13:46:38] === LOGIN PAGE LOADED ===
+[2025-11-29 13:46:38] Request method: POST
+[2025-11-29 13:46:38] Email received: 1@gmail.com
+[2025-11-29 13:46:38] Remember received: NO
+[2025-11-29 13:46:38] Form submitted via POST method
+[2025-11-29 13:46:38] No validation errors, checking database
+[2025-11-29 13:46:38] User found in database: 1@gmail.com
+[2025-11-29 13:46:38] User ID: 1
+[2025-11-29 13:46:38] Phone verified: 1
+[2025-11-29 13:46:38] Is active: 1
+[2025-11-29 13:46:38] Password verification: SUCCESS
+[2025-11-29 13:46:38] Phone verification: SUCCESS
+[2025-11-29 13:46:38] Reset failed attempts for user: 1
+[2025-11-29 14:02:44] === LOGIN PAGE LOADED ===
+[2025-11-29 14:02:44] Request method: GET
+[2025-11-29 14:02:44] Email received: empty
+[2025-11-29 14:02:44] Remember received: NO
+[2025-11-29 14:02:44] Page loaded via GET method
+[2025-11-29 14:02:44] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 14:02:48] === LOGIN PAGE LOADED ===
+[2025-11-29 14:02:48] Request method: POST
+[2025-11-29 14:02:48] Email received: 2@gmail.com
+[2025-11-29 14:02:48] Remember received: NO
+[2025-11-29 14:02:48] Form submitted via POST method
+[2025-11-29 14:02:48] No validation errors, checking database
+[2025-11-29 14:02:48] User found in database: 2@gmail.com
+[2025-11-29 14:02:48] User ID: 2
+[2025-11-29 14:02:48] Phone verified: 1
+[2025-11-29 14:02:48] Is active: 1
+[2025-11-29 14:02:48] Password verification: SUCCESS
+[2025-11-29 14:02:48] Phone verification: SUCCESS
+[2025-11-29 14:02:48] Reset failed attempts for user: 2
+[2025-11-29 14:05:15] === LOGIN PAGE LOADED ===
+[2025-11-29 14:05:15] Request method: GET
+[2025-11-29 14:05:15] Email received: empty
+[2025-11-29 14:05:15] Remember received: NO
+[2025-11-29 14:05:15] Page loaded via GET method
+[2025-11-29 14:05:15] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 14:05:23] === LOGIN PAGE LOADED ===
+[2025-11-29 14:05:23] Request method: POST
+[2025-11-29 14:05:23] Email received: 1@gmail.com
+[2025-11-29 14:05:23] Remember received: NO
+[2025-11-29 14:05:23] Form submitted via POST method
+[2025-11-29 14:05:23] No validation errors, checking database
+[2025-11-29 14:05:23] User found in database: 1@gmail.com
+[2025-11-29 14:05:23] User ID: 1
+[2025-11-29 14:05:23] Phone verified: 1
+[2025-11-29 14:05:23] Is active: 1
+[2025-11-29 14:05:23] Password verification: SUCCESS
+[2025-11-29 14:05:23] Phone verification: SUCCESS
+[2025-11-29 14:05:23] Reset failed attempts for user: 1
+[2025-11-29 14:06:48] === LOGIN PAGE LOADED ===
+[2025-11-29 14:06:48] Request method: GET
+[2025-11-29 14:06:48] Email received: empty
+[2025-11-29 14:06:48] Remember received: NO
+[2025-11-29 14:06:48] Page loaded via GET method
+[2025-11-29 14:06:48] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 14:06:52] === LOGIN PAGE LOADED ===
+[2025-11-29 14:06:52] Request method: POST
+[2025-11-29 14:06:52] Email received: 2@gmail.com
+[2025-11-29 14:06:52] Remember received: NO
+[2025-11-29 14:06:52] Form submitted via POST method
+[2025-11-29 14:06:52] No validation errors, checking database
+[2025-11-29 14:06:52] User found in database: 2@gmail.com
+[2025-11-29 14:06:52] User ID: 2
+[2025-11-29 14:06:52] Phone verified: 1
+[2025-11-29 14:06:52] Is active: 1
+[2025-11-29 14:06:52] Password verification: SUCCESS
+[2025-11-29 14:06:52] Phone verification: SUCCESS
+[2025-11-29 14:06:52] Reset failed attempts for user: 2
+[2025-11-29 14:08:12] === LOGIN PAGE LOADED ===
+[2025-11-29 14:08:12] Request method: GET
+[2025-11-29 14:08:12] Email received: empty
+[2025-11-29 14:08:12] Remember received: NO
+[2025-11-29 14:08:12] Page loaded via GET method
+[2025-11-29 14:08:12] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 14:08:14] === LOGIN PAGE LOADED ===
+[2025-11-29 14:08:14] Request method: POST
+[2025-11-29 14:08:14] Email received: 1
+[2025-11-29 14:08:14] Remember received: NO
+[2025-11-29 14:08:14] Form submitted via POST method
+[2025-11-29 14:08:14] Email validation failed: invalid format
+[2025-11-29 14:08:14] Password validation failed: empty
+[2025-11-29 14:08:14] Validation errors present: 2
+[2025-11-29 14:08:14] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 14:08:22] === LOGIN PAGE LOADED ===
+[2025-11-29 14:08:22] Request method: POST
+[2025-11-29 14:08:22] Email received: 1@gmail.com
+[2025-11-29 14:08:22] Remember received: NO
+[2025-11-29 14:08:22] Form submitted via POST method
+[2025-11-29 14:08:22] No validation errors, checking database
+[2025-11-29 14:08:22] User found in database: 1@gmail.com
+[2025-11-29 14:08:22] User ID: 1
+[2025-11-29 14:08:22] Phone verified: 1
+[2025-11-29 14:08:22] Is active: 1
+[2025-11-29 14:08:22] Password verification: SUCCESS
+[2025-11-29 14:08:22] Phone verification: SUCCESS
+[2025-11-29 14:08:22] Reset failed attempts for user: 1

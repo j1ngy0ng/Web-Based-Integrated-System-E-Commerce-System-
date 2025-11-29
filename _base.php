@@ -313,6 +313,10 @@ function table_headers($fields, $sort, $dir, $href = '') {
 // Error Handlings
 // ============================================================================
 
+function alert($message) {
+    $_SESSION['alert'] = $message;
+}
+
 // Global error array
 $_err = [];
 
