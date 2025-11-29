@@ -69,7 +69,7 @@ if (is_post()) {
     if (isset($_FILES['photo']) && $_FILES['photo']['tmp_name']) {
         $ext = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
         $photoName = uniqid() . '.' . $ext;
-        move_uploaded_file($_FILES['photo']['tmp_name'], "../uploads/$photoName");
+        move_uploaded_file($_FILES['photo']['tmp_name'], "../photos/$photoName");
     } else {
         $photoName = $member->photo ?? '';
     }
@@ -202,7 +202,7 @@ form button[type="reset"] { background-color:#6c757d; }
     <input type="file" name="photo" accept="image/*">
     <?php if($member->photo): ?>
         <div style="margin-top:10px;">
-            <img src="../uploads/<?= htmlspecialchars($member->photo) ?>" alt="Photo" style="width:80px;height:80px;border-radius:50%;">
+            <img src="../photos/<?= htmlspecialchars($member->photo) ?>" alt="Photo" style="width:80px;height:80px;border-radius:50%;">
         </div>
     <?php endif; ?>
 
