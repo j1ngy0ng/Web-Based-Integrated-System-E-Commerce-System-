@@ -418,7 +418,7 @@ $total = 0;
         </div>
         
         <div class="cart-actions">
-            <button class="btn btn-secondary" data-post="?btn=clear" onclick="return confirm('Clear entire cart?')">
+            <button class="btn btn-secondary" data-post="?btn=clear">
                 🗑️ Clear Cart
             </button>
             <a href="../product/list.php" class="btn btn-outline">
@@ -434,9 +434,7 @@ $total = 0;
         </div>
     <?php else: ?>
         <div class="empty-cart">
-            <div class="empty-cart-icon">🛒</div>
             <h3>Your cart is empty</h3>
-            <p>Browse our products and add some items to your cart!</p>
             <a href="../product/list.php" class="btn btn-primary">🛍️ Start Shopping</a>
         </div>
     <?php endif; ?>
@@ -467,6 +465,8 @@ $total = 0;
             const message = $(this).text().includes('Clear Cart') ? 'Clear entire cart?' : 'Proceed with action?';
             if (!confirm(message)) {
                 e.preventDefault();
+                e.stopPropagation();
+                return false;
             }
         });
 

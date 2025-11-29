@@ -3,9 +3,9 @@ include '_base.php';
 
 // Get hero/banner images (you'll need to create a banners table or use static images)
 $banners = [
-    ['image' => '/images/banner1.jpg', 'title' => 'Summer Sale', 'subtitle' => 'Up to 50% Off', 'link' => '/product/list.php'],
-    ['image' => '/images/banner2.jpg', 'title' => 'New Arrivals', 'subtitle' => 'Check Out Latest Products', 'link' => '/product/list.php'],
-    ['image' => '/images/banner3.jpg', 'title' => 'Special Deals', 'subtitle' => 'Limited Time Offers', 'link' => '/product/list.php']
+    ['image' => '/photos/ad1.jpg', 'title' => 'Summer Sale', 'subtitle' => 'Up to 50% Off', 'link' => '/product/list.php'],
+    ['image' => '/photos/ad2.jpg', 'title' => 'New Arrivals', 'subtitle' => 'Check Out Latest Products', 'link' => '/product/list.php'],
+    ['image' => '/photos/ad3.jpg', 'title' => 'Special Deals', 'subtitle' => 'Limited Time Offers', 'link' => '/product/list.php']
 ];
 
 // Get top selling products (by quantity sold)
@@ -179,17 +179,25 @@ include 'navbar.php';
 }
 
 /* Section Styles */
+.container {
+    margin: 0 200px;
+}
+
 .section {
     margin: 60px 0;
 }
 
 .section-header {
-    display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
+    padding-right: 45px;
     padding-bottom: 15px;
     border-bottom: 2px solid #006989;
+}
+
+#section-flex {
+    display: flex;
 }
 
 .section-header h2 {
@@ -272,6 +280,8 @@ include 'navbar.php';
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 600;
+    width: 10%;
+    
 }
 
 .product-ranking {
@@ -390,11 +400,11 @@ include 'navbar.php';
 }
 
 .slider-nav.prev-slide {
-    left: -20px;
+    left: -1px;
 }
 
 .slider-nav.next-slide {
-    right: -20px;
+    right: -1px;
 }
 
 /* Categories Section */
@@ -489,23 +499,6 @@ include 'navbar.php';
 </div>
 
 <div class="container">
-    <!-- Categories Section -->
-    <div class="section">
-        <div class="section-header">
-            <h2>🏷️ Shop by Category</h2>
-        </div>
-        <div class="categories-grid">
-            <a href="/product/list.php" class="category-card">
-                <h3>All Products</h3>
-            </a>
-            <?php foreach ($categories as $cat): ?>
-                <a href="/product/list.php?category=<?= $cat->categoryID ?>" class="category-card">
-                    <h3><?= $cat->categoryName ?></h3>
-                </a>
-            <?php endforeach; ?>
-        </div>
-    </div>
-
     <!-- Top Selling Products -->
     <div class="section">
         <div class="section-header">
@@ -552,12 +545,12 @@ include 'navbar.php';
 
     <!-- New Arrivals Slider -->
     <div class="section">
-        <div class="section-header">
+        <div class="section-header" id="section-flex">
             <h2>✨ New Arrivals</h2>
             <a href="/product/list.php" style="color: #006989; text-decoration: none;">View All →</a>
         </div>
         <div class="product-slider-container">
-            <button class="slider-nav prev-slide" onclick="slideProducts('newArrivals', -1)">‹</button>
+            <button class="slider-nav prev-slide" onclick="slideProducts('newArrivals', -1)">❮</button>
             <div class="product-slider" id="newArrivals">
                 <?php foreach ($newArrivals as $p): ?>
                     <?php
@@ -585,13 +578,13 @@ include 'navbar.php';
                     </div>
                 <?php endforeach; ?>
             </div>
-            <button class="slider-nav next-slide" onclick="slideProducts('newArrivals', 1)">›</button>
+            <button class="slider-nav next-slide" onclick="slideProducts('newArrivals', 1)">❯</button>
         </div>
     </div>
 
     <!-- Featured Products Slider -->
     <div class="section">
-        <div class="section-header">
+        <div class="section-header" id="section-flex">
             <h2>🔥 Featured Products</h2>
             <a href="/product/list.php" style="color: #006989; text-decoration: none;">View All →</a>
         </div>
@@ -673,19 +666,43 @@ function slideProducts(sliderId, direction) {
 function filterTopSelling(category) {
     const products = document.querySelectorAll('#topSellingGrid .product-card');
     const buttons = document.querySelectorAll('.section-controls .filter-btn');
+    const grid = document.getElementById('topSellingGrid');
     
     // Update active button
     buttons.forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
+
+    let hasVisibleProducts = false;
     
     // Filter products
     products.forEach(product => {
         if (category === 'all' || product.dataset.category === category) {
             product.style.display = 'block';
+            hasVisibleProducts = true;
         } else {
             product.style.display = 'none';
         }
     });
+
+    // Remove any existing "no results" message
+    const existingMessage = grid.querySelector('.no-results-message');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // Show "no results" message if no products in category
+    if (!hasVisibleProducts && category !== 'all') {
+        const categoryName = event.target.textContent;
+        const message = document.createElement('div');
+        message.className = 'no-results-message';
+        message.innerHTML = `
+            <div style="padding: 40px 20px; color: #661;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">😔</div>
+                <h3 style="margin-bottom: 10px; color: #555;">No Products Found...</h3>
+            </div>
+        `;
+        grid.appendChild(message);
+    }
 }
 </script>
 

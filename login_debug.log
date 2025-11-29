@@ -1271,3 +1271,22 @@
 [2025-11-29 22:55:40] Password verification: SUCCESS
 [2025-11-29 22:55:40] Phone verification: SUCCESS
 [2025-11-29 22:55:40] Reset failed attempts for user: 3
+[2025-11-29 23:06:23] === LOGIN PAGE LOADED ===
+[2025-11-29 23:06:23] Request method: GET
+[2025-11-29 23:06:23] Email received: empty
+[2025-11-29 23:06:23] Remember received: NO
+[2025-11-29 23:06:23] Page loaded via GET method
+[2025-11-29 23:06:23] === LOGIN PROCESS COMPLETED ===
+[2025-11-29 23:06:31] === LOGIN PAGE LOADED ===
+[2025-11-29 23:06:31] Request method: POST
+[2025-11-29 23:06:31] Email received: mailleejx@gmail.com
+[2025-11-29 23:06:31] Remember received: NO
+[2025-11-29 23:06:31] Form submitted via POST method
+[2025-11-29 23:06:31] No validation errors, checking database
+[2025-11-29 23:06:31] User found in database: mailleejx@gmail.com
+[2025-11-29 23:06:31] User ID: 3
+[2025-11-29 23:06:31] Phone verified: 1
+[2025-11-29 23:06:31] Is active: 1
+[2025-11-29 23:06:31] Password verification: SUCCESS
+[2025-11-29 23:06:31] Phone verification: SUCCESS
+[2025-11-29 23:06:31] Reset failed attempts for user: 3
