@@ -6,7 +6,14 @@ include '../_base.php';
 if (is_post()) {
     $id   = req('id');
     $unit = req('unit');
-    update_cart($id, $unit);
+    
+    // Handle delete cart action
+    $action = req('action');
+    if ($action === 'delete') {
+        update_cart($id, 0); // Set to 0 to remove from cart
+    } else {
+        update_cart($id, $unit);
+    }
     redirect();
 }
 
@@ -21,7 +28,13 @@ $additional_photos = get_additional_photos($id);
 
 $cart = get_cart();
 $unit = $cart[$id] ?? 0;
-$max_units = min($p->stock, 10);
+
+// Determine max units based on stock (limit to 2 if stock is 2 or less)
+if ($p->stock <= 2) {
+    $max_units = $p->stock;
+} else {
+    $max_units = min($p->stock, 10);
+}
 
 // ----------------------------------------------------------------------------
 
@@ -70,7 +83,15 @@ include '../navbar.php';
             <div class="price-section">
                 <div class="current-price">RM <?= number_format($p->price, 2) ?></div>
                 <div class="stock-status <?= $p->stock > 0 ? 'in-stock' : 'out-of-stock' ?>">
-                    <?= $p->stock > 0 ? $p->stock . ' in stock' : 'Out of Stock' ?>
+                    <?php if ($p->stock > 0): ?>
+                        <?php if ($p->stock <= 10): ?>
+                            <span style="color: #f39c12; font-weight: 600;"> ⚠️ Low Stock: Only <?= $p->stock ?> left</span>
+                        <?php else: ?>
+                            In Stock
+                        <?php endif; ?>
+                    <?php else: ?>
+                        Out of Stock
+                    <?php endif; ?>
                 </div>
             </div>
             
@@ -78,21 +99,32 @@ include '../navbar.php';
                 <h3>Add to Cart</h3>
                 <form method="post" class="quantity-selector" id="cartForm">
                     <?= html_hidden('id') ?>
+                    <?= html_hidden('action', '') ?>
+                    
+                    <?php
+                    // Generate stock options based on available stock
+                    $stock_options = ['' => 'Select quantity'];
+                    
+                    // Only generate options if stock is available
+                    if ($p->stock > 0) {
+                        for ($i = 1; $i <= $max_units; $i++) {
+                            $stock_options[$i] = $i . ' unit' . ($i > 1 ? 's' : '');
+                        }
+                    } else {
+                        $stock_options = ['' => 'Out of Stock'];
+                    }
+                    ?>
+                    
                     <div class="select-group">
-                        <select name="unit" id="unit" <?= $p->stock == 0 ? 'disabled' : '' ?>>
-                            <option value="">Select quantity</option>
-                            <?php for ($i = 1; $i <= $max_units; $i++): ?>
-                                <option value="<?= $i ?>" <?= $unit == $i ? 'selected' : '' ?>>
-                                    <?= $i ?> unit<?= $i > 1 ? 's' : '' ?>
-                                </option>
-                            <?php endfor; ?>
-                        </select>
+                        <?= html_select('unit', $stock_options, '', $unit, $p->stock) ?>
                     </div>
                     
                     <div class="cart-buttons">
-                        <button type="button" class="btn btn-secondary" id="clearBtn" <?= $p->stock == 0 ? 'disabled' : '' ?>>
-                            Clear
-                        </button>
+                        <?php if ($unit > 0): ?>
+                            <button type="button" class="btn btn-danger" id="deleteBtn">
+                                Delete from Cart
+                            </button>
+                        <?php endif; ?>
                     </div>
                     
                     <?php if ($unit): ?>
@@ -124,13 +156,22 @@ include '../navbar.php';
 <script>
     $('select').on('change', function(e) {
         if (this.value !== '') {
+            $('#action').val('');
             e.target.form.submit();
         }
     });
 
     $(document).on('click', '#clearBtn', function() {
         $('#unit').val('');
+        $('#action').val('');
         $('#cartForm').submit();
+    });
+    
+    $(document).on('click', '#deleteBtn', function() {
+        if (confirm('Are you sure you want to remove this item from your cart?')) {
+            $('#action').val('delete');
+            $('#cartForm').submit();
+        }
     });
 
     $(document).ready(function() {
@@ -138,5 +179,41 @@ include '../navbar.php';
     });
 </script>
 
+<style>
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+
+.cart-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-outline {
+    background-color: #006989;
+    width: 10%;
+    border-radius: 30px;
+    color: white;
+    border: none;
+    padding: 20px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    justify-content: center;
+}
+</style>
+
 <?php
 include '../footer.php';
+?>
