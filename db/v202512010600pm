@@ -1,0 +1,8 @@
+CREATE TABLE favorite (
+    userID INT NOT NULL,
+    productID INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (userID, productID),
+    FOREIGN KEY (userID) REFERENCES user(id),
+    FOREIGN KEY (productID) REFERENCES product(productID)
+);

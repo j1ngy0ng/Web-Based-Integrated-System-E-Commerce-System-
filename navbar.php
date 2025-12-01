@@ -276,6 +276,26 @@
     .clear-search-btn:hover {
         background-color: #c82333;
     }
+
+	/* --- 4. HEADER ACTIONS (Cart & Heart) --- */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Space between Heart and Cart */
+            margin-left: 20px;
+        }
+
+        .action-link {
+            text-decoration: none;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .action-link:hover {
+            transform: scale(1.1); /* Subtle zoom on hover */
+        }
 	</style>
 </head>
 
@@ -520,10 +540,14 @@
 						</div>
 					<?php endif; ?>
 					<!-- CART -->
-					<div class="header-cart">
-						<a href="/order/cart.php" class="cart-link">
-							<i class="fa fa-shopping-cart" aria-hidden="true" style="font-size: 1.8lh; color:black;"></i>
-						</a>
+					<div class="header-actions">
+					<a href="/product/favorites.php" class="action-link" title="My Favorites">
+                            <i class="fa fa-heart" aria-hidden="true" style="font-size: 1.8lh; color: #dc3545;"></i>
+                        </a>
+						
+						<a href="/order/cart.php" class="action-link" title="Shopping Cart">
+                            <i class="fa fa-shopping-cart" aria-hidden="true" style="font-size: 1.8lh; color: #000;"></i>
+                        </a>
 					</div>
 				</form>
 			</div>
