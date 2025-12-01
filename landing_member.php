@@ -147,12 +147,11 @@ include 'navbar.php';
     font-size: 0.75rem;
     font-weight: 700;
     color: white;
+    background-color: #006989;
     text-transform: uppercase;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     pointer-events: none;
 }
-.bg-green { background-color: #006989; } /* New */
-.bg-red   { background-color: #006989; } /* Hot */
 
 /* 3. Top Right Heart */
 .fav-btn-floating {
@@ -280,7 +279,7 @@ include 'navbar.php';
                     $isFav = in_array($p->productID, $user_favorites);
                     
                     // Show NEW Badge
-                    $badgeHTML = '<div class="badge-top-left bg-green">New</div>';
+                    $badgeHTML = '<div class="badge-top-left">New</div>';
                     ?>
                     <div class="product-slide">
                         <div class="product-card">
@@ -333,7 +332,7 @@ include 'navbar.php';
                     $isFav = in_array($p->productID, $user_favorites);
                     
                     $badgeHTML = '';
-                    if ($p->stock <= 5 && $p->stock > 0) $badgeHTML = '<div class="badge-top-left bg-red">Hot</div>';
+                    if ($p->stock <= 5 && $p->stock > 0) $badgeHTML = '<div class="badge-top-left">Featured</div>';
                     ?>
                     <div class="product-slide">
                         <div class="product-card">
