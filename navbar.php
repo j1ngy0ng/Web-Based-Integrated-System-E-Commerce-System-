@@ -296,6 +296,13 @@
 			<?php endif ?>
 
 			<?php if ($_user?->role == 'Admin'): ?>
+				<!-- LOGO -->
+				<a class="navbar-brand" href="/landing_<?= strtolower($_user->role) ?>.php">
+					<img id="logo" src="/images/logo.png" alt="Logo">
+				</a>
+			<?php endif ?>
+			<!-- <ul class="navbar-nav large-device-padding medium-device-padding small-device-padding" id="nav-menu"> -->
+			<?php if ($_user?->role == 'Admin'): ?>
 				<li class="nav-item"><a class="nav-link" href="/category/category.php">Manage Category</a></li>
 				<li class="nav-item"><a class="nav-link" href="/product/maintenance.php">Manage Products</a></li>
 				<li class="nav-item"><a class="nav-link" href="/order/maintenance.php">Manage Orders</a></li>

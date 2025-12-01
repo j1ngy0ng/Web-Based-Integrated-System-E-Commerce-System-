@@ -1290,3 +1290,129 @@
 [2025-11-29 23:06:31] Password verification: SUCCESS
 [2025-11-29 23:06:31] Phone verification: SUCCESS
 [2025-11-29 23:06:31] Reset failed attempts for user: 3
+[2025-12-01 11:16:00] === LOGIN PAGE LOADED ===
+[2025-12-01 11:16:00] Request method: GET
+[2025-12-01 11:16:00] Email received: empty
+[2025-12-01 11:16:00] Remember received: NO
+[2025-12-01 11:16:00] Page loaded via GET method
+[2025-12-01 11:16:00] === LOGIN PROCESS COMPLETED ===
+[2025-12-01 11:16:25] === LOGIN PAGE LOADED ===
+[2025-12-01 11:16:25] Request method: GET
+[2025-12-01 11:16:25] Email received: empty
+[2025-12-01 11:16:25] Remember received: NO
+[2025-12-01 11:16:25] Page loaded via GET method
+[2025-12-01 11:16:25] === LOGIN PROCESS COMPLETED ===
+[2025-12-01 11:16:37] === LOGIN PAGE LOADED ===
+[2025-12-01 11:16:37] Request method: GET
+[2025-12-01 11:16:37] Email received: empty
+[2025-12-01 11:16:37] Remember received: NO
+[2025-12-01 11:16:37] Page loaded via GET method
+[2025-12-01 11:16:37] === LOGIN PROCESS COMPLETED ===
+[2025-12-01 11:16:45] === LOGIN PAGE LOADED ===
+[2025-12-01 11:16:45] Request method: POST
+[2025-12-01 11:16:45] Email received: shannellwong@gmail.com
+[2025-12-01 11:16:45] Remember received: NO
+[2025-12-01 11:16:45] Form submitted via POST method
+[2025-12-01 11:16:45] No validation errors, checking database
+[2025-12-01 11:16:45] User found in database: shannellwong@gmail.com
+[2025-12-01 11:16:45] User ID: 3
+[2025-12-01 11:16:45] Phone verified: 1
+[2025-12-01 11:16:45] Is active: 1
+[2025-12-01 11:16:45] Password verification: SUCCESS
+[2025-12-01 11:16:45] Phone verification: SUCCESS
+[2025-12-01 11:16:45] Reset failed attempts for user: 3
+[2025-12-01 11:17:21] === LOGIN PAGE LOADED ===
+[2025-12-01 11:17:21] Request method: GET
+[2025-12-01 11:17:21] Email received: empty
+[2025-12-01 11:17:21] Remember received: NO
+[2025-12-01 11:17:21] Page loaded via GET method
+[2025-12-01 11:17:21] === LOGIN PROCESS COMPLETED ===
+[2025-12-01 11:17:27] === LOGIN PAGE LOADED ===
+[2025-12-01 11:17:27] Request method: POST
+[2025-12-01 11:17:27] Email received: 1@gmail.com
+[2025-12-01 11:17:27] Remember received: NO
+[2025-12-01 11:17:27] Form submitted via POST method
+[2025-12-01 11:17:27] No validation errors, checking database
+[2025-12-01 11:17:27] User found in database: 1@gmail.com
+[2025-12-01 11:17:27] User ID: 1
+[2025-12-01 11:17:27] Phone verified: 1
+[2025-12-01 11:17:27] Is active: 1
+[2025-12-01 11:17:27] Password verification: SUCCESS
+[2025-12-01 11:17:27] Phone verification: SUCCESS
+[2025-12-01 11:17:27] Reset failed attempts for user: 1
+[2025-12-01 11:19:06] === LOGIN PAGE LOADED ===
+[2025-12-01 11:19:06] Request method: GET
+[2025-12-01 11:19:06] Email received: empty
+[2025-12-01 11:19:06] Remember received: NO
+[2025-12-01 11:19:06] Page loaded via GET method
+[2025-12-01 11:19:06] === LOGIN PROCESS COMPLETED ===
+[2025-12-01 11:19:11] === LOGIN PAGE LOADED ===
+[2025-12-01 11:19:11] Request method: POST
+[2025-12-01 11:19:11] Email received: shannellwong@gmail.com
+[2025-12-01 11:19:11] Remember received: NO
+[2025-12-01 11:19:11] Form submitted via POST method
+[2025-12-01 11:19:11] No validation errors, checking database
+[2025-12-01 11:19:11] User found in database: shannellwong@gmail.com
+[2025-12-01 11:19:11] User ID: 3
+[2025-12-01 11:19:11] Phone verified: 1
+[2025-12-01 11:19:11] Is active: 1
+[2025-12-01 11:19:11] Password verification: SUCCESS
+[2025-12-01 11:19:11] Phone verification: SUCCESS
+[2025-12-01 11:19:11] Reset failed attempts for user: 3
+[2025-12-01 11:20:19] === LOGIN PAGE LOADED ===
+[2025-12-01 11:20:19] Request method: GET
+[2025-12-01 11:20:19] Email received: empty
+[2025-12-01 11:20:19] Remember received: NO
+[2025-12-01 11:20:19] Page loaded via GET method
+[2025-12-01 11:20:19] === LOGIN PROCESS COMPLETED ===
+[2025-12-01 11:20:23] === LOGIN PAGE LOADED ===
+[2025-12-01 11:20:23] Request method: POST
+[2025-12-01 11:20:23] Email received: 1@gmail.com
+[2025-12-01 11:20:23] Remember received: NO
+[2025-12-01 11:20:23] Form submitted via POST method
+[2025-12-01 11:20:23] No validation errors, checking database
+[2025-12-01 11:20:23] User found in database: 1@gmail.com
+[2025-12-01 11:20:23] User ID: 1
+[2025-12-01 11:20:23] Phone verified: 1
+[2025-12-01 11:20:23] Is active: 1
+[2025-12-01 11:20:23] Password verification: SUCCESS
+[2025-12-01 11:20:23] Phone verification: SUCCESS
+[2025-12-01 11:20:23] Reset failed attempts for user: 1
+[2025-12-01 11:21:46] === LOGIN PAGE LOADED ===
+[2025-12-01 11:21:46] Request method: GET
+[2025-12-01 11:21:46] Email received: empty
+[2025-12-01 11:21:46] Remember received: NO
+[2025-12-01 11:21:46] Page loaded via GET method
+[2025-12-01 11:21:46] === LOGIN PROCESS COMPLETED ===
+[2025-12-01 11:21:50] === LOGIN PAGE LOADED ===
+[2025-12-01 11:21:50] Request method: POST
+[2025-12-01 11:21:50] Email received: shannellwong@gmail.com
+[2025-12-01 11:21:50] Remember received: NO
+[2025-12-01 11:21:50] Form submitted via POST method
+[2025-12-01 11:21:50] No validation errors, checking database
+[2025-12-01 11:21:50] User found in database: shannellwong@gmail.com
+[2025-12-01 11:21:50] User ID: 3
+[2025-12-01 11:21:50] Phone verified: 1
+[2025-12-01 11:21:50] Is active: 1
+[2025-12-01 11:21:50] Password verification: SUCCESS
+[2025-12-01 11:21:50] Phone verification: SUCCESS
+[2025-12-01 11:21:50] Reset failed attempts for user: 3
+[2025-12-01 11:22:35] === LOGIN PAGE LOADED ===
+[2025-12-01 11:22:35] Request method: GET
+[2025-12-01 11:22:35] Email received: empty
+[2025-12-01 11:22:35] Remember received: NO
+[2025-12-01 11:22:35] Page loaded via GET method
+[2025-12-01 11:22:35] === LOGIN PROCESS COMPLETED ===
+[2025-12-01 11:22:48] === LOGIN PAGE LOADED ===
+[2025-12-01 11:22:48] Request method: POST
+[2025-12-01 11:22:48] Email received: 1@gmail.com
+[2025-12-01 11:22:48] Remember received: NO
+[2025-12-01 11:22:48] Form submitted via POST method
+[2025-12-01 11:22:48] No validation errors, checking database
+[2025-12-01 11:22:48] User found in database: 1@gmail.com
+[2025-12-01 11:22:48] User ID: 1
+[2025-12-01 11:22:48] Phone verified: 1
+[2025-12-01 11:22:48] Is active: 1
+[2025-12-01 11:22:48] Password verification: SUCCESS
+[2025-12-01 11:22:48] Phone verification: SUCCESS
+[2025-12-01 11:22:48] Reset failed attempts for user: 1
