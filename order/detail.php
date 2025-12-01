@@ -39,12 +39,19 @@ $stm = $_db->prepare('SELECT * FROM refund WHERE orderID = ?');
 $stm->execute([$orderID]);
 $refund = $stm->fetch();
 
+// Refund color safe lookup
+$refundColors = [
+    'Pending' => 'orange',
+    'Completed' => 'green',
+    'Failed' => 'red',
+];
+$refundColor = $refund ? ($refundColors[$refund->status] ?? 'black') : '';
+
 $_title = 'Order | Detail';
 include '../navbar.php';
 ?>
 
 <style>
-/* Form styling */
 form.form {
     width: 90%;
     margin: 20px auto;
@@ -53,13 +60,11 @@ form.form {
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
-
 form.form label {
     display: block;
     font-weight: 600;
     margin-top: 10px;
 }
-
 form.form div, form.form select, form.form textarea {
     margin-top: 5px;
     padding: 8px 10px;
@@ -68,58 +73,44 @@ form.form div, form.form select, form.form textarea {
     width: 100%;
     box-sizing: border-box;
 }
-
-form.form select, form.form textarea {
-    font-size: 1rem;
-}
-
 form.form button {
     margin-top: 15px;
     padding: 10px 20px;
     background: #007bff;
-    color: #fff;
+    color: white;
     font-weight: 600;
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    transition: background 0.3s;
 }
-
 form.form button:hover {
     background: #0056b3;
 }
 
-/* Table styling */
 table.table {
     width: 90%;
-    margin: 20px auto 40px auto;
+    margin: 20px auto 40px;
     border-collapse: collapse;
-    background: #fff;
+    background: white;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     border-radius: 8px;
     overflow: hidden;
 }
-
 table.table th, table.table td {
     padding: 12px 15px;
     border-bottom: 1px solid #eee;
-    text-align: left;
 }
-
 table.table th {
     background: #f4f6f9;
     font-weight: 700;
 }
-
 table.table tr:hover {
     background: #fafafa;
 }
-
 table.table td.right {
     text-align: right;
 }
 
-/* Popup image hover */
 .popup img {
     width: 60px;
     height: 60px;
@@ -128,7 +119,6 @@ table.table td.right {
     border-radius: 5px;
 }
 
-/* Back button */
 button.back-btn {
     margin: 0 5%;
     padding: 10px 20px;
@@ -138,14 +128,24 @@ button.back-btn {
     font-weight: 600;
     border: none;
     cursor: pointer;
-    transition: background 0.3s;
 }
-
 button.back-btn:hover {
     background: #1e7e34;
 }
 
-/* Responsive */
+.cancel-btn {
+    background: #dc3545;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.cancel-btn:hover {
+    background: #a71d2a;
+}
+
 @media screen and (max-width: 768px) {
     .popup img {
         width: 40px;
@@ -155,26 +155,11 @@ button.back-btn:hover {
         width: 95%;
     }
 }
-
-/* Cancel button styling */
-button.cancel-btn {
-    background:#dc3545;
-    color:white;
-    padding:10px 20px;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    font-weight:600;
-    margin-top:15px;
-    transition: background 0.3s;
-}
-button.cancel-btn:hover {
-    background:#a71d2a;
-}
 </style>
 
 <h2 style="text-align:center; margin-top:20px;">Order Detail</h2>
 
+<!-- MAIN FORM (Admin editing only) -->
 <form class="form" method="post" action="saveOrder.php">
     <input type="hidden" name="orderID" value="<?= $order->orderID ?>">
 
@@ -188,23 +173,18 @@ button.cancel-btn:hover {
     <?php if ($role === 'Admin'): ?>
         <select name="status">
             <?php foreach (['Pending','Paid','Shipped','Completed','Cancelled'] as $s): ?>
-                <option value="<?= $s ?>" <?= $order->status==$s?'selected':'' ?>><?= $s ?></option>
+                <option value="<?= $s ?>" <?= $order->status == $s ? 'selected' : '' ?>><?= $s ?></option>
             <?php endforeach; ?>
         </select>
     <?php else: ?>
         <div><?= htmlspecialchars($order->status) ?></div>
     <?php endif; ?>
 
-    <?php if ($refund): 
-        $color = match($refund->status) {
-            'Pending' => 'orange',
-            'Completed' => 'green',
-            'Failed' => 'red',
-        };
-    ?>
+    <?php if ($refund): ?>
         <label>Refund Status</label>
-        <div style="color:<?= $color ?>; font-weight:bold;">
-            <?= htmlspecialchars($refund->status) ?><?php if ($refund->reason) echo " ({$refund->reason})"; ?>
+        <div style="color:<?= $refundColor ?>; font-weight:bold;">
+            <?= htmlspecialchars($refund->status) ?>
+            <?php if ($refund->reason) echo " ({$refund->reason})"; ?>
         </div>
     <?php endif; ?>
 
@@ -221,16 +201,15 @@ button.cancel-btn:hover {
     <?php if ($role === 'Admin'): ?>
         <button type="submit">Save Changes</button>
     <?php endif; ?>
-
-    <?php if ($role === 'Member' && in_array($order->status, ['Pending','Paid']) && !$refund): ?>
-        <form method="post" action="cancel_order.php" style="margin-top:15px;">
-            <input type="hidden" name="orderID" value="<?= $order->orderID ?>">
-            <button type="submit" style="background:#dc3545; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer;">
-                Cancel Order
-            </button>
-        </form>
-    <?php endif; ?>
 </form>
+
+<!-- SEPARATED CANCEL ORDER FORM (NO LONGER NESTED) -->
+<?php if ($role === 'Member' && in_array($order->status, ['Pending','Paid']) && !$refund): ?>
+<form method="post" action="cancel_order.php" style="width:90%; margin:10px auto;">
+    <input type="hidden" name="orderID" value="<?= $order->orderID ?>">
+    <button type="submit" class="cancel-btn">Cancel Order</button>
+</form>
+<?php endif; ?>
 
 <p style="width:90%; margin:10px auto; font-weight:600;"><?= count($items) ?> item(s)</p>
 
@@ -263,14 +242,20 @@ button.cancel-btn:hover {
 
     <tr>
         <th colspan="3"></th>
-        <th class="right"><?= array_sum(array_map(fn($i)=>$i->quantity,$items)) ?></th>
-        <th class="right"><?= number_format($order->TotalAmount,2) ?></th>
+        <th class="right"><?= array_sum(array_map(fn($i) => $i->quantity, $items)) ?></th>
+        <th class="right"><?= number_format($order->TotalAmount, 2) ?></th>
         <th></th>
     </tr>
 </table>
 
 <p>
-    <button class="back-btn" data-get="<?= $role==='Admin'?'maintenance.php':'history.php' ?>">Back</button>
+    <button class="back-btn" data-get="<?= $role === 'Admin' ? 'maintenance.php' : 'history.php' ?>">Back</button>
 </p>
+
+<script>
+document.querySelector('.back-btn').onclick = function() {
+    window.location.href = this.getAttribute('data-get');
+};
+</script>
 
 <?php include '../footer.php'; ?>
