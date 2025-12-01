@@ -44,18 +44,18 @@ if (is_post()) {
 // 2. FETCH DATA
 // ----------------------------------------------------------------------------
 
-// Get categories for filter
 $categoryStm = $_db->query('SELECT * FROM ProductCategory ORDER BY categoryName');
 $categories = $categoryStm->fetchAll();
 
-// Get current category filter
+$minPrice = req('min_price') ?? 0;
+$maxPrice = req('max_price') ?? 1000;
+
 $currentCategory = req('category') ?? '';
 $searchQuery = req('search') ?? '';
 
 $allProductsStm = $_db->query('SELECT COUNT(*) FROM product');
 $allProductsCount = $allProductsStm->fetchColumn();
 
-// Build query
 $params = [];
 $conditions = [];
 
@@ -67,6 +67,12 @@ if ($searchQuery) {
 if ($currentCategory) {
     $conditions[] = 'p.categoryID = ?';
     $params[] = $currentCategory;
+}
+
+if ($minPrice > 0 || $maxPrice < 1000) {
+    $conditions[] = 'p.price BETWEEN ? AND ?';
+    $params[] = $minPrice;
+    $params[] = $maxPrice;
 }
 
 $whereClause = '';
@@ -268,6 +274,8 @@ include '../navbar.php';
                     We couldn't find any products in the <strong>"<?= htmlspecialchars($currentCategoryName) ?>"</strong> category.
                 <?php elseif ($searchQuery): ?>
                     No products found for "<strong><?= htmlspecialchars($searchQuery) ?></strong>".
+                <?php elseif ($minPrice > 0 || $maxPrice < 1000): ?>
+                    No products found in the price range <strong>RM<?= $minPrice ?> - RM<?= $maxPrice ?></strong>.
                 <?php else: ?>
                     There are currently no products available.
                 <?php endif; ?>

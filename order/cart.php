@@ -30,6 +30,12 @@ $stm = $_db->prepare("SELECT * FROM vouchers WHERE expiry_date >= CURDATE() ORDE
 $stm->execute();
 $available_vouchers = $stm->fetchAll();
 
+if ($_user) {
+    $stm = $_db->prepare("SELECT * FROM shipping_addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC");
+    $stm->execute([$_user->id]);
+    $saved_addresses = $stm->fetchAll();
+}
+
 // ----------------------------------------------------------------------------
 // 2. HANDLE POST REQUESTS
 // ----------------------------------------------------------------------------
@@ -40,6 +46,8 @@ if (is_post()) {
     if ($btn == 'clear') {
         clear_cart();
         unset($_SESSION['voucher']);
+        unset($_SESSION['selected_address']);
+        unset($_SESSION['show_new_address_form']);
         redirect('?');
     }
     if ($btn == 'delete') {
@@ -71,6 +79,61 @@ if (is_post()) {
     if ($btn == 'remove_voucher') {
         unset($_SESSION['voucher']);
         temp('info', 'Voucher removed.');
+        redirect();
+    }
+
+    if ($btn == 'save_address') {
+        $recipient = req('recipient_name');
+        $phone = req('phone_number');
+        $addr1 = req('address_line1');
+        $addr2 = req('address_line2');
+        $city = req('city');
+        $state = req('state');
+        $postal = req('postal_code');
+        $lat = req('latitude');
+        $lng = req('longitude');
+        $set_default = req('set_default') ? 1 : 0;
+
+        // If set as default, unset other defaults
+        if ($set_default) {
+            $stm = $_db->prepare("UPDATE shipping_addresses SET is_default = 0 WHERE user_id = ?");
+            $stm->execute([$_user->id]);
+        }
+
+        $stm = $_db->prepare("
+            INSERT INTO shipping_addresses 
+            (user_id, recipient_name, phone_number, address_line1, address_line2, city, state, postal_code, latitude, longitude, is_default)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stm->execute([$_user->id, $recipient, $phone, $addr1, $addr2, $city, $state, $postal, $lat, $lng, $set_default]);
+        
+        $_SESSION['selected_address'] = $_db->lastInsertId();
+            temp('info', 'Address saved successfully!');
+            redirect();
+    }
+
+    if ($btn == 'select_address') {
+        $address_id = req('address_id');
+        $_SESSION['selected_address'] = $address_id;
+        temp('info', 'Delivery address selected.');
+        redirect();
+    }
+
+    if ($btn == 'delete_address') {
+        $address_id = req('address_id');
+        $stm = $_db->prepare("DELETE FROM shipping_addresses WHERE address_id = ? AND user_id = ?");
+        $stm->execute([$address_id, $_user->id]);
+        
+        if ($_SESSION['selected_address'] == $address_id) {
+            unset($_SESSION['selected_address']);
+        }
+        temp('info', 'Address deleted.');
+        redirect();
+    }
+
+    if ($btn == 'use_new_address') {
+        unset($_SESSION['selected_address']);
+        $_SESSION['show_new_address_form'] = true;
         redirect();
     }
 
@@ -161,7 +224,7 @@ include '../navbar.php';
     background: linear-gradient(135deg, #006989, #0088aa); 
     color: white; 
     border: none; 
-    padding: 0 25px; 
+    padding: 15px 25px; 
     border-radius: 10px; 
     cursor: pointer; 
     font-weight: 600; 
@@ -250,6 +313,147 @@ include '../navbar.php';
     font-size: 1.1em; line-height: 1; transition: 0.2s; 
 }
 .remove-voucher:hover { background: #e53e3e; color: white; }
+
+/* Address Box */
+.address-box { 
+    flex: 1; 
+    min-width: 300px; 
+    border-right: 1px solid #e2e8f0; 
+    padding-right: 30px; 
+}
+
+.address-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    max-height: 300px; 
+    overflow-y: auto; 
+    margin-bottom: 15px; 
+}
+
+.address-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    padding: 15px;
+    border-radius: 12px;
+    transition: all 0.2s;
+    position: relative;
+    cursor: pointer;
+}
+
+.address-card:hover { 
+    border-color: #006989; 
+    box-shadow: 0 4px 12px rgba(0, 105, 137, 0.08); 
+}
+
+.address-card.selected { 
+    border-color: #006989; 
+    background: #f0f9fc; 
+}
+
+.address-card input[type="radio"] {
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #006989;
+}
+
+.address-info { 
+    flex: 1; 
+    cursor: pointer; 
+}
+
+.address-info strong { 
+    color: #2d3748; 
+    font-size: 1.05em; 
+    display: inline-block; 
+    margin-bottom: 5px; 
+}
+
+.address-info p { 
+    margin: 2px 0; 
+    color: #4a5568; 
+    font-size: 0.9em; 
+    line-height: 1.4;
+}
+
+.default-badge {
+    background: #006989;
+    color: white;
+    font-size: 0.7em;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-left: 8px;
+    font-weight: 600;
+}
+
+.delete-address-btn {
+    background: transparent;
+    border: none;
+    color: #e53e3e;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 5px;
+    transition: 0.2s;
+}
+
+.delete-address-btn:hover { 
+    transform: scale(1.2); 
+}
+
+.btn-use-new {
+    width: 100%;
+    background: transparent;
+    border: 2px dashed #006989;
+    color: #006989;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.btn-use-new:hover {
+    background: #f0f9fc;
+    border-style: solid;
+}
+
+.new-address-form {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.address-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    font-size: 0.95em;
+    transition: 0.2s;
+    box-sizing: border-box;
+}
+
+.address-input:focus {
+    border-color: #006989;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 105, 137, 0.1);
+}
+
+@media (max-width: 768px) {
+    .address-box { 
+        border-right: none; 
+        padding-right: 0; 
+        border-bottom: 1px solid #e2e8f0; 
+        padding-bottom: 20px; 
+        margin-bottom: 20px; 
+    }
+}
 
 /* Totals Area */
 .totals-box { flex: 1; min-width: 250px; text-align: right; }
@@ -392,6 +596,69 @@ include '../navbar.php';
                     <?php endif; ?>
                 </div>
 
+                <!-- Address Selection Box -->
+                <div class="address-box">
+                    <span class="voucher-header">Delivery Address</span>
+                    
+                    <?php if ($saved_addresses): ?>
+                        <div class="address-list">
+                            <?php foreach ($saved_addresses as $addr): ?>
+                            <form method="post" class="address-card <?= ($_SESSION['selected_address'] ?? null) == $addr->address_id ? 'selected' : '' ?>">
+                                <input type="radio" name="address_id" value="<?= $addr->address_id ?>" 
+                                    id="addr_<?= $addr->address_id ?>" 
+                                    <?= ($_SESSION['selected_address'] ?? $addr->is_default) == $addr->address_id ? 'checked' : '' ?>
+                                    onchange="this.form.submit()">
+                                <input type="hidden" name="btn" value="select_address">
+                                <label for="addr_<?= $addr->address_id ?>" class="address-info">
+                                    <strong><?= htmlspecialchars($addr->recipient_name) ?></strong>
+                                    <?php if ($addr->is_default): ?><span class="default-badge">Default</span><?php endif; ?>
+                                    <p><?= htmlspecialchars($addr->phone_number) ?></p>
+                                    <p><?= htmlspecialchars($addr->address_line1) ?><?= $addr->address_line2 ? ', ' . htmlspecialchars($addr->address_line2) : '' ?></p>
+                                    <p><?= htmlspecialchars($addr->postal_code) ?> <?= htmlspecialchars($addr->city) ?>, <?= htmlspecialchars($addr->state) ?></p>
+                                </label>
+                                <button type="submit" name="btn" value="delete_address" class="delete-address-btn" 
+                                        onclick="event.stopPropagation(); return confirm('Delete this address?');">
+                                    🗑️
+                                </button>
+                            </form>
+                            <?php endforeach; ?>
+                        </div>
+                        
+                        <button class="btn-use-new" onclick="toggleNewAddressForm(); return false;">+ Add New Address</button>
+                    <?php endif; ?>
+
+                    <!-- New Address Form -->
+                    <div class="new-address-form" style="<?= !$saved_addresses || isset($_SESSION['show_new_address_form']) ? 'display:block;' : 'display:none;' ?>">
+                        <form method="post" id="address-form">
+                            <input type="hidden" name="btn" value="save_address">
+                            <input type="hidden" name="latitude" id="latitude">
+                            <input type="hidden" name="longitude" id="longitude">
+                            
+                            <input type="text" id="address-search" class="address-input" placeholder="🔍 Search address or enter manually..." autocomplete="off">
+                            <div id="map" style="display:none; height: 250px; border-radius: 12px; margin: 15px 0; border: 2px solid #e2e8f0;"></div>
+                            
+                            <input type="text" name="recipient_name" placeholder="Recipient Name *" class="address-input" required>
+                            <input type="text" name="phone_number" placeholder="Phone Number *" class="address-input" required>
+                            <input type="text" name="address_line1" id="address_line1" placeholder="Address Line 1 *" class="address-input" required>
+                            <input type="text" name="address_line2" id="address_line2" placeholder="Address Line 2 (Optional)" class="address-input">
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <input type="text" name="city" id="city" placeholder="City *" class="address-input" required>
+                                <input type="text" name="state" id="state" placeholder="State *" class="address-input" required>
+                            </div>
+                            
+                            <input type="text" name="postal_code" id="postal_code" placeholder="Postal Code *" class="address-input" required>
+                            
+                            <label style="display: flex; align-items: center; gap: 8px; margin: 10px 0; color: #4a5568;">
+                                <input type="checkbox" name="set_default" value="1">
+                                Set as default address
+                            </label>
+                            
+                            <button type="submit" class="btn-apply" style="width: 100%; margin-top: 10px;">💾 Save Address</button>
+                        </form>
+                    </div>
+                </div>
+
                 <div class="totals-box">
                     <div class="totals-row">
                         <span>Subtotal:</span>
@@ -415,7 +682,11 @@ include '../navbar.php';
             <button class="btn btn-secondary" data-post="?btn=clear">🗑️ Clear Cart</button>
             <a href="../product/list.php" class="btn btn-outline">← Continue Shopping</a>
             <?php if ($_user?->role == 'Member'): ?>
-                <button class="btn btn-primary" data-get="../payment/payment.php">🛍️ Proceed to Checkout</button>
+                <?php if (isset($_SESSION['selected_address']) || !empty($saved_addresses)): ?>
+                    <button class="btn btn-primary" data-get="../payment/payment.php">🛒 Proceed to Checkout</button>
+                <?php else: ?>
+                    <button class="btn btn-primary" onclick="alert('Please select or add a delivery address first.'); return false;">🛒 Proceed to Checkout</button>
+                <?php endif; ?>
             <?php else: ?>
                 <a href="/login.php" class="btn btn-outline">🔐 Login to Checkout</a>
             <?php endif; ?>
@@ -428,6 +699,7 @@ include '../navbar.php';
     <?php endif; ?>
 </div>
 
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initAutocomplete" async defer></script>
 <script>
     $(document).ready(function() {
         $('select[name="unit"]').on('change', function(e) {
@@ -458,6 +730,98 @@ include '../navbar.php';
         $('.cart-count').text(itemCount);
     }
     updateCartCount();
+
+    // Google Maps Integration
+    let map, marker, autocomplete;
+
+    function initAutocomplete() {
+        const input = document.getElementById('address-search');
+        if (!input) {
+            // If input doesn't exist yet, wait a bit and retry
+            setTimeout(initAutocomplete, 100);
+            return;
+        }
+
+        autocomplete = new google.maps.places.Autocomplete(input, {
+            componentRestrictions: { country: 'my' },
+            fields: ['address_components', 'geometry', 'formatted_address']
+        });
+
+        autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            
+            if (!place.geometry) {
+                alert('No details available for this address');
+                return;
+            }
+
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+
+            $('#latitude').val(lat);
+            $('#longitude').val(lng);
+
+            // Extract address components
+            let street = '', city = '', state = '', postal = '';
+            
+            for (let component of place.address_components) {
+                const types = component.types;
+                
+                if (types.includes('street_number') || types.includes('route')) {
+                    street += component.long_name + ' ';
+                }
+                if (types.includes('locality') || types.includes('sublocality')) {
+                    city = component.long_name;
+                }
+                if (types.includes('administrative_area_level_1')) {
+                    state = component.long_name;
+                }
+                if (types.includes('postal_code')) {
+                    postal = component.long_name;
+                }
+            }
+
+            $('#address_line1').val(street.trim());
+            $('#city').val(city);
+            $('#state').val(state);
+            $('#postal_code').val(postal);
+
+            initMap(lat, lng);
+        });
+    }
+
+    function initMap(lat, lng) {
+        const mapDiv = document.getElementById('map');
+        mapDiv.style.display = 'block';
+
+        const location = { lat: lat, lng: lng };
+
+        map = new google.maps.Map(mapDiv, {
+            center: location,
+            zoom: 15,
+            disableDefaultUI: false,
+            zoomControl: true
+        });
+
+        if (marker) marker.setMap(null);
+
+        marker = new google.maps.Marker({
+            position: location,
+            map: map,
+            draggable: true,
+            animation: google.maps.Animation.DROP
+        });
+
+        marker.addListener('dragend', function() {
+            const pos = marker.getPosition();
+            $('#latitude').val(pos.lat());
+            $('#longitude').val(pos.lng());
+        });
+    }
+
+    function toggleNewAddressForm() {
+        $('.new-address-form').slideToggle(300);
+    }
 </script>
 
 <?php
