@@ -279,15 +279,104 @@
 	</style>
 </head>
 
+<style>
+    /* --- COMPACT ADMIN NAVBAR --- */
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        /* Reduced padding to give more room for text */
+        padding: 10px 20px; 
+        background-color: #fff;
+        box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        width: 100%;
+        box-sizing: border-box; /* Ensures padding doesn't overflow width */
+    }
+
+    .navbar-brand img {
+        height: 40px; 
+        width: auto;
+        display: block;
+    }
+
+    #nav-menu {
+        display: flex;
+        align-items: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        /* Reduced gap to fit all items */
+        gap: 15px; 
+    }
+
+    .nav-item {
+        margin: 0;
+        flex-shrink: 0; /* Prevents items from squishing */
+    }
+
+    .nav-link {
+        text-decoration: none;
+        color: #4a5568;
+        font-weight: 600; /* Made slightly bolder for readability */
+        /* Smaller font size to fit long text */
+        font-size: 0.90rem; 
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        padding: 5px 0; /* Increases hit area without taking width */
+    }
+
+    .nav-link:hover {
+        color: #006989;
+        transform: translateY(-1px);
+    }
+
+    #logout {
+        background-color: #000;
+        color: #fff !important;
+        /* Compact button padding */
+        padding: 6px 18px; 
+        border-radius: 50px;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        font-size: 0.85rem;
+    }
+
+    #logout:hover {
+        background-color: #333;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    }
+
+    /* --- RESPONSIVE FIX --- */
+    /* If screen is smaller than 1400px (Laptop), switch to vertical mode 
+       to prevent "out of fit" / overflowing issues */
+    @media (max-width: 1400px) {
+        .navbar {
+            flex-direction: column;
+            gap: 15px;
+            padding: 15px;
+        }
+        
+        #nav-menu {
+            flex-wrap: wrap; /* Allows items to wrap if needed */
+            justify-content: center;
+            gap: 12px 20px; /* Row gap 12px, Column gap 20px */
+            width: 100%;
+        }
+
+        .nav-link {
+            font-size: 0.85rem; /* Can be slightly larger in this mode */
+        }
+    }
+</style>
+
 <body>
 	<nav class="navbar" id="mainNav">
-		<?php if ($_user?->role == 'Member'): ?>
-			<!-- LOGO -->
+		<!-- LOGO -->
 			<a class="navbar-brand" href="/landing_<?= strtolower($_user->role) ?>.php">
 				<img id="logo" src="/images/logo.png" alt="Logo">
 			</a>
-		<?php endif ?>
-		<ul class="navbar-nav large-device-padding medium-device-padding small-device-padding" id="nav-menu">
+		<ul id="nav-menu">
 			<?php if ($_user?->role == 'Member'): ?>
 				<li class="nav-item"><a class="nav-link" href="/product/list.php">Product</a></li>
 				<li class="nav-item"><a class="nav-link" href="/order/history.php">Track Order</a></li>
@@ -296,15 +385,9 @@
 			<?php endif ?>
 
 			<?php if ($_user?->role == 'Admin'): ?>
-				<!-- LOGO -->
-				<a class="navbar-brand" href="/landing_<?= strtolower($_user->role) ?>.php">
-					<img id="logo" src="/images/logo.png" alt="Logo">
-				</a>
-			<?php endif ?>
-			<!-- <ul class="navbar-nav large-device-padding medium-device-padding small-device-padding" id="nav-menu"> -->
-			<?php if ($_user?->role == 'Admin'): ?>
 				<li class="nav-item"><a class="nav-link" href="/category/category.php">Manage Category</a></li>
 				<li class="nav-item"><a class="nav-link" href="/product/maintenance.php">Manage Products</a></li>
+				<li class="nav-item"><a class="nav-link" href="/product/voucher.php">Vouchers</a></li>
 				<li class="nav-item"><a class="nav-link" href="/order/maintenance.php">Manage Orders</a></li>
 				<li class="nav-item"><a class="nav-link" href="/refund/refund_list.php">Manage Refunds</a></li>
 				<li class="nav-item"><a class="nav-link" href="/chat/admin/chat_list.php">Manage Chat</a></li>
@@ -316,12 +399,7 @@
 			<li class="nav-item">
 				<a class="nav-link" id="logout" href="/logout.php">Logout</a>
 			</li>
-
-
-
 		</ul>
-
-
 	</nav>
 	
 	<?php
