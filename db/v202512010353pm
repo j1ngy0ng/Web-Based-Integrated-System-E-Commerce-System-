@@ -1,0 +1,16 @@
+CREATE TABLE vouchers (
+    voucher_code VARCHAR(20) PRIMARY KEY,
+    discount_type ENUM('fixed', 'percent') NOT NULL, -- 'fixed' (e.g. RM10) or 'percent' (e.g. 10%)
+    discount_value DECIMAL(10,2) NOT NULL,
+    min_spend DECIMAL(10,2) DEFAULT 0.00,
+    expiry_date DATE NOT NULL
+);
+
+-- Insert dummy data
+INSERT INTO vouchers (voucher_code, discount_type, discount_value, min_spend, expiry_date) VALUES 
+('SAVE10', 'percent', 10.00, 0.00, '2030-12-31'),
+('MIN50', 'fixed', 50.00, 200.00, '2030-12-31');
+
+ALTER TABLE `order` 
+ADD COLUMN voucher_code VARCHAR(20) NULL AFTER TotalAmount,
+ADD COLUMN discount_amount DECIMAL(10,2) DEFAULT 0.00 AFTER voucher_code;
