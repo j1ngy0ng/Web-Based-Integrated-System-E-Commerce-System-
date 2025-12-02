@@ -15,6 +15,6 @@ CREATE TABLE shipping_addresses (
     FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 );
 
-ALTER TABLE orders 
+ALTER TABLE `order`
 ADD COLUMN address_id INT AFTER ShippingAddress,
 ADD FOREIGN KEY (address_id) REFERENCES shipping_addresses(address_id) ON DELETE SET NULL;

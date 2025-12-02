@@ -1983,3 +1983,27 @@
 [2025-12-01 23:29:21] User found: mailleejx@gmail.com (ID: 3)
 [2025-12-01 23:29:21] Password verification SUCCESS
 [2025-12-01 23:29:21] Email and phone verified. Logging in
+[2025-12-02 09:17:43] === LOGIN PAGE LOADED ===
+[2025-12-02 09:17:43] Request method: GET
+[2025-12-02 09:17:43] Email received: empty
+[2025-12-02 09:17:43] Remember received: NO
+[2025-12-02 09:20:36] === LOGIN PAGE LOADED ===
+[2025-12-02 09:20:36] Request method: POST
+[2025-12-02 09:20:36] Email received: 2@gmail.com
+[2025-12-02 09:20:36] Remember received: NO
+[2025-12-02 09:20:36] Form submitted via POST
+[2025-12-02 09:20:36] User found: 2@gmail.com (ID: 2)
+[2025-12-02 09:20:36] Password verification SUCCESS
+[2025-12-02 09:20:36] Email and phone verified. Logging in
+[2025-12-02 09:23:26] === LOGIN PAGE LOADED ===
+[2025-12-02 09:23:26] Request method: GET
+[2025-12-02 09:23:26] Email received: empty
+[2025-12-02 09:23:26] Remember received: NO
+[2025-12-02 09:23:31] === LOGIN PAGE LOADED ===
+[2025-12-02 09:23:31] Request method: POST
+[2025-12-02 09:23:31] Email received: 1@gmail.com
+[2025-12-02 09:23:31] Remember received: NO
+[2025-12-02 09:23:31] Form submitted via POST
+[2025-12-02 09:23:31] User found: 1@gmail.com (ID: 1)
+[2025-12-02 09:23:31] Password verification SUCCESS
+[2025-12-02 09:23:31] Email and phone verified. Logging in
