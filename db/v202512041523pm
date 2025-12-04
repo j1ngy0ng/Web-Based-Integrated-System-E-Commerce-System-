@@ -1,0 +1,15 @@
+DROP TABLE IF EXISTS productRating;
+
+CREATE TABLE productRating (
+    ratingID INT AUTO_INCREMENT PRIMARY KEY,
+    order_item_id INT NOT NULL,
+    rating INT CHECK (rating BETWEEN 1 AND 5),
+    comment TEXT,
+    rating_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (order_item_id) REFERENCES order_item(order_item_id)
+        ON DELETE CASCADE,
+
+    -- One rating per order item
+    CONSTRAINT unique_rating_per_orderitem UNIQUE (order_item_id)
+);

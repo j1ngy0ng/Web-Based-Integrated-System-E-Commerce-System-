@@ -2007,3 +2007,279 @@
 [2025-12-02 09:23:31] User found: 1@gmail.com (ID: 1)
 [2025-12-02 09:23:31] Password verification SUCCESS
 [2025-12-02 09:23:31] Email and phone verified. Logging in
+[2025-12-02 09:30:53] === LOGIN PAGE LOADED ===
+[2025-12-02 09:30:53] Request method: GET
+[2025-12-02 09:30:53] Email received: empty
+[2025-12-02 09:30:53] Remember received: NO
+[2025-12-02 09:31:13] === LOGIN PAGE LOADED ===
+[2025-12-02 09:31:13] Request method: GET
+[2025-12-02 09:31:13] Email received: empty
+[2025-12-02 09:31:13] Remember received: NO
+[2025-12-02 09:32:57] === LOGIN PAGE LOADED ===
+[2025-12-02 09:32:57] Request method: GET
+[2025-12-02 09:32:57] Email received: empty
+[2025-12-02 09:32:57] Remember received: NO
+[2025-12-02 09:33:30] === LOGIN PAGE LOADED ===
+[2025-12-02 09:33:30] Request method: POST
+[2025-12-02 09:33:30] Email received: 1@gmail.com
+[2025-12-02 09:33:30] Remember received: NO
+[2025-12-02 09:33:30] Form submitted via POST
+[2025-12-02 09:33:30] User found: 1@gmail.com (ID: 1)
+[2025-12-02 09:33:30] Password verification SUCCESS
+[2025-12-02 09:33:30] Email and phone verified. Logging in
+[2025-12-02 09:35:03] === LOGIN PAGE LOADED ===
+[2025-12-02 09:35:03] Request method: GET
+[2025-12-02 09:35:03] Email received: empty
+[2025-12-02 09:35:03] Remember received: NO
+[2025-12-02 09:37:56] === LOGIN PAGE LOADED ===
+[2025-12-02 09:37:56] Request method: GET
+[2025-12-02 09:37:56] Email received: empty
+[2025-12-02 09:37:56] Remember received: NO
+[2025-12-02 09:39:46] === LOGIN PAGE LOADED ===
+[2025-12-02 09:39:46] Request method: POST
+[2025-12-02 09:39:46] Email received: 2@gmail.com
+[2025-12-02 09:39:46] Remember received: NO
+[2025-12-02 09:39:46] Form submitted via POST
+[2025-12-02 09:39:46] User found: 2@gmail.com (ID: 2)
+[2025-12-02 09:39:46] Password verification SUCCESS
+[2025-12-02 09:39:46] Email and phone verified. Logging in
+[2025-12-02 09:40:47] === LOGIN PAGE LOADED ===
+[2025-12-02 09:40:47] Request method: GET
+[2025-12-02 09:40:47] Email received: empty
+[2025-12-02 09:40:47] Remember received: NO
+[2025-12-02 09:40:51] === LOGIN PAGE LOADED ===
+[2025-12-02 09:40:51] Request method: POST
+[2025-12-02 09:40:51] Email received: 1@gmail.com
+[2025-12-02 09:40:51] Remember received: NO
+[2025-12-02 09:40:51] Form submitted via POST
+[2025-12-02 09:40:51] User found: 1@gmail.com (ID: 1)
+[2025-12-02 09:40:51] Password verification SUCCESS
+[2025-12-02 09:40:51] Email and phone verified. Logging in
+[2025-12-02 09:42:19] === LOGIN PAGE LOADED ===
+[2025-12-02 09:42:19] Request method: GET
+[2025-12-02 09:42:19] Email received: empty
+[2025-12-02 09:42:19] Remember received: NO
+[2025-12-02 09:42:23] === LOGIN PAGE LOADED ===
+[2025-12-02 09:42:23] Request method: POST
+[2025-12-02 09:42:23] Email received: 2@gmail.com
+[2025-12-02 09:42:23] Remember received: NO
+[2025-12-02 09:42:23] Form submitted via POST
+[2025-12-02 09:42:23] User found: 2@gmail.com (ID: 2)
+[2025-12-02 09:42:23] Password verification SUCCESS
+[2025-12-02 09:42:23] Email and phone verified. Logging in
+[2025-12-02 09:42:58] === LOGIN PAGE LOADED ===
+[2025-12-02 09:42:58] Request method: GET
+[2025-12-02 09:42:58] Email received: empty
+[2025-12-02 09:42:58] Remember received: NO
+[2025-12-02 09:43:02] === LOGIN PAGE LOADED ===
+[2025-12-02 09:43:02] Request method: POST
+[2025-12-02 09:43:02] Email received: 1@gmail.com
+[2025-12-02 09:43:02] Remember received: NO
+[2025-12-02 09:43:02] Form submitted via POST
+[2025-12-02 09:43:02] User found: 1@gmail.com (ID: 1)
+[2025-12-02 09:43:02] Password verification SUCCESS
+[2025-12-02 09:43:02] Email and phone verified. Logging in
+[2025-12-02 09:45:10] === LOGIN PAGE LOADED ===
+[2025-12-02 09:45:10] Request method: GET
+[2025-12-02 09:45:10] Email received: empty
+[2025-12-02 09:45:10] Remember received: NO
+[2025-12-02 09:45:15] === LOGIN PAGE LOADED ===
+[2025-12-02 09:45:15] Request method: POST
+[2025-12-02 09:45:15] Email received: 2@gmail.com
+[2025-12-02 09:45:15] Remember received: NO
+[2025-12-02 09:45:15] Form submitted via POST
+[2025-12-02 09:45:15] User found: 2@gmail.com (ID: 2)
+[2025-12-02 09:45:15] Password verification SUCCESS
+[2025-12-02 09:45:15] Email and phone verified. Logging in
+[2025-12-04 15:37:23] === LOGIN PAGE LOADED ===
+[2025-12-04 15:37:23] Request method: GET
+[2025-12-04 15:37:23] Email received: empty
+[2025-12-04 15:37:23] Remember received: NO
+[2025-12-04 15:37:40] === LOGIN PAGE LOADED ===
+[2025-12-04 15:37:40] Request method: POST
+[2025-12-04 15:37:40] Email received: 2@gmail.com
+[2025-12-04 15:37:40] Remember received: NO
+[2025-12-04 15:37:40] Form submitted via POST
+[2025-12-04 15:37:40] User found: 2@gmail.com (ID: 2)
+[2025-12-04 15:37:40] Password verification SUCCESS
+[2025-12-04 15:37:40] Email and phone verified. Logging in
+[2025-12-04 15:37:47] === LOGIN PAGE LOADED ===
+[2025-12-04 15:37:47] Request method: GET
+[2025-12-04 15:37:47] Email received: empty
+[2025-12-04 15:37:47] Remember received: NO
+[2025-12-04 15:37:53] === LOGIN PAGE LOADED ===
+[2025-12-04 15:37:53] Request method: POST
+[2025-12-04 15:37:53] Email received: 1@gmail.com
+[2025-12-04 15:37:53] Remember received: NO
+[2025-12-04 15:37:53] Form submitted via POST
+[2025-12-04 15:37:53] User found: 1@gmail.com (ID: 1)
+[2025-12-04 15:37:53] Password verification SUCCESS
+[2025-12-04 15:37:53] Email and phone verified. Logging in
+[2025-12-04 15:47:25] === LOGIN PAGE LOADED ===
+[2025-12-04 15:47:25] Request method: GET
+[2025-12-04 15:47:25] Email received: empty
+[2025-12-04 15:47:25] Remember received: NO
+[2025-12-04 15:47:29] === LOGIN PAGE LOADED ===
+[2025-12-04 15:47:29] Request method: POST
+[2025-12-04 15:47:29] Email received: 2@gmail.com
+[2025-12-04 15:47:29] Remember received: NO
+[2025-12-04 15:47:29] Form submitted via POST
+[2025-12-04 15:47:29] User found: 2@gmail.com (ID: 2)
+[2025-12-04 15:47:29] Password verification SUCCESS
+[2025-12-04 15:47:29] Email and phone verified. Logging in
+[2025-12-04 15:47:52] === LOGIN PAGE LOADED ===
+[2025-12-04 15:47:52] Request method: GET
+[2025-12-04 15:47:52] Email received: empty
+[2025-12-04 15:47:52] Remember received: NO
+[2025-12-04 15:47:57] === LOGIN PAGE LOADED ===
+[2025-12-04 15:47:57] Request method: POST
+[2025-12-04 15:47:57] Email received: 1@gmail.com
+[2025-12-04 15:47:57] Remember received: NO
+[2025-12-04 15:47:57] Form submitted via POST
+[2025-12-04 15:47:57] User found: 1@gmail.com (ID: 1)
+[2025-12-04 15:47:57] Password verification SUCCESS
+[2025-12-04 15:47:57] Email and phone verified. Logging in
+[2025-12-04 15:48:14] === LOGIN PAGE LOADED ===
+[2025-12-04 15:48:14] Request method: GET
+[2025-12-04 15:48:14] Email received: empty
+[2025-12-04 15:48:14] Remember received: NO
+[2025-12-04 15:48:19] === LOGIN PAGE LOADED ===
+[2025-12-04 15:48:19] Request method: POST
+[2025-12-04 15:48:19] Email received: 2@gmail.com
+[2025-12-04 15:48:19] Remember received: NO
+[2025-12-04 15:48:19] Form submitted via POST
+[2025-12-04 15:48:19] User found: 2@gmail.com (ID: 2)
+[2025-12-04 15:48:19] Password verification SUCCESS
+[2025-12-04 15:48:19] Email and phone verified. Logging in
+[2025-12-04 15:53:37] === LOGIN PAGE LOADED ===
+[2025-12-04 15:53:37] Request method: GET
+[2025-12-04 15:53:37] Email received: empty
+[2025-12-04 15:53:37] Remember received: NO
+[2025-12-04 15:53:42] === LOGIN PAGE LOADED ===
+[2025-12-04 15:53:42] Request method: POST
+[2025-12-04 15:53:42] Email received: 1@gmail.com
+[2025-12-04 15:53:42] Remember received: NO
+[2025-12-04 15:53:42] Form submitted via POST
+[2025-12-04 15:53:42] User found: 1@gmail.com (ID: 1)
+[2025-12-04 15:53:42] Password verification SUCCESS
+[2025-12-04 15:53:42] Email and phone verified. Logging in
+[2025-12-04 15:55:28] === LOGIN PAGE LOADED ===
+[2025-12-04 15:55:28] Request method: GET
+[2025-12-04 15:55:28] Email received: empty
+[2025-12-04 15:55:28] Remember received: NO
+[2025-12-04 15:55:35] === LOGIN PAGE LOADED ===
+[2025-12-04 15:55:35] Request method: POST
+[2025-12-04 15:55:35] Email received: 2@gmail.com
+[2025-12-04 15:55:35] Remember received: NO
+[2025-12-04 15:55:35] Form submitted via POST
+[2025-12-04 15:55:35] User found: 2@gmail.com (ID: 2)
+[2025-12-04 15:55:35] Password verification SUCCESS
+[2025-12-04 15:55:35] Email and phone verified. Logging in
+[2025-12-04 15:55:47] === LOGIN PAGE LOADED ===
+[2025-12-04 15:55:47] Request method: GET
+[2025-12-04 15:55:47] Email received: empty
+[2025-12-04 15:55:47] Remember received: NO
+[2025-12-04 15:55:52] === LOGIN PAGE LOADED ===
+[2025-12-04 15:55:52] Request method: POST
+[2025-12-04 15:55:52] Email received: 1@gmail.com
+[2025-12-04 15:55:52] Remember received: NO
+[2025-12-04 15:55:52] Form submitted via POST
+[2025-12-04 15:55:52] User found: 1@gmail.com (ID: 1)
+[2025-12-04 15:55:52] Password verification SUCCESS
+[2025-12-04 15:55:52] Email and phone verified. Logging in
+[2025-12-04 15:56:19] === LOGIN PAGE LOADED ===
+[2025-12-04 15:56:19] Request method: GET
+[2025-12-04 15:56:19] Email received: empty
+[2025-12-04 15:56:19] Remember received: NO
+[2025-12-04 15:56:27] === LOGIN PAGE LOADED ===
+[2025-12-04 15:56:27] Request method: POST
+[2025-12-04 15:56:27] Email received: 2@gmail.com
+[2025-12-04 15:56:27] Remember received: NO
+[2025-12-04 15:56:27] Form submitted via POST
+[2025-12-04 15:56:27] User found: 2@gmail.com (ID: 2)
+[2025-12-04 15:56:27] Password verification SUCCESS
+[2025-12-04 15:56:27] Email and phone verified. Logging in
+[2025-12-04 15:57:36] === LOGIN PAGE LOADED ===
+[2025-12-04 15:57:36] Request method: GET
+[2025-12-04 15:57:36] Email received: empty
+[2025-12-04 15:57:36] Remember received: NO
+[2025-12-04 15:57:44] === LOGIN PAGE LOADED ===
+[2025-12-04 15:57:44] Request method: POST
+[2025-12-04 15:57:44] Email received: 1@gmail.com
+[2025-12-04 15:57:44] Remember received: NO
+[2025-12-04 15:57:44] Form submitted via POST
+[2025-12-04 15:57:44] User found: 1@gmail.com (ID: 1)
+[2025-12-04 15:57:44] Password verification SUCCESS
+[2025-12-04 15:57:44] Email and phone verified. Logging in
+[2025-12-04 16:03:11] === LOGIN PAGE LOADED ===
+[2025-12-04 16:03:11] Request method: GET
+[2025-12-04 16:03:11] Email received: empty
+[2025-12-04 16:03:11] Remember received: NO
+[2025-12-04 16:03:17] === LOGIN PAGE LOADED ===
+[2025-12-04 16:03:17] Request method: POST
+[2025-12-04 16:03:17] Email received: 2@gmail.com
+[2025-12-04 16:03:17] Remember received: NO
+[2025-12-04 16:03:17] Form submitted via POST
+[2025-12-04 16:03:17] User found: 2@gmail.com (ID: 2)
+[2025-12-04 16:03:17] Password verification SUCCESS
+[2025-12-04 16:03:17] Email and phone verified. Logging in
+[2025-12-04 16:05:51] === LOGIN PAGE LOADED ===
+[2025-12-04 16:05:51] Request method: GET
+[2025-12-04 16:05:51] Email received: empty
+[2025-12-04 16:05:51] Remember received: NO
+[2025-12-04 16:05:55] === LOGIN PAGE LOADED ===
+[2025-12-04 16:05:55] Request method: POST
+[2025-12-04 16:05:55] Email received: 1@gmail.com
+[2025-12-04 16:05:55] Remember received: NO
+[2025-12-04 16:05:55] Form submitted via POST
+[2025-12-04 16:05:55] User found: 1@gmail.com (ID: 1)
+[2025-12-04 16:05:55] Password verification SUCCESS
+[2025-12-04 16:05:55] Email and phone verified. Logging in
+[2025-12-04 16:06:25] === LOGIN PAGE LOADED ===
+[2025-12-04 16:06:25] Request method: GET
+[2025-12-04 16:06:25] Email received: empty
+[2025-12-04 16:06:25] Remember received: NO
+[2025-12-04 16:06:31] === LOGIN PAGE LOADED ===
+[2025-12-04 16:06:31] Request method: POST
+[2025-12-04 16:06:31] Email received: 2@gmail.com
+[2025-12-04 16:06:31] Remember received: NO
+[2025-12-04 16:06:31] Form submitted via POST
+[2025-12-04 16:06:31] User found: 2@gmail.com (ID: 2)
+[2025-12-04 16:06:31] Password verification SUCCESS
+[2025-12-04 16:06:31] Email and phone verified. Logging in
+[2025-12-04 16:11:38] === LOGIN PAGE LOADED ===
+[2025-12-04 16:11:38] Request method: GET
+[2025-12-04 16:11:38] Email received: empty
+[2025-12-04 16:11:38] Remember received: NO
+[2025-12-04 16:11:41] === LOGIN PAGE LOADED ===
+[2025-12-04 16:11:41] Request method: POST
+[2025-12-04 16:11:41] Email received: 1@gmail.com
+[2025-12-04 16:11:41] Remember received: NO
+[2025-12-04 16:11:41] Form submitted via POST
+[2025-12-04 16:11:41] User found: 1@gmail.com (ID: 1)
+[2025-12-04 16:11:41] Password verification SUCCESS
+[2025-12-04 16:11:41] Email and phone verified. Logging in
+[2025-12-04 16:15:00] === LOGIN PAGE LOADED ===
+[2025-12-04 16:15:00] Request method: GET
+[2025-12-04 16:15:00] Email received: empty
+[2025-12-04 16:15:00] Remember received: NO
+[2025-12-04 16:15:05] === LOGIN PAGE LOADED ===
+[2025-12-04 16:15:05] Request method: POST
+[2025-12-04 16:15:05] Email received: 2@gmail.com
+[2025-12-04 16:15:05] Remember received: NO
+[2025-12-04 16:15:05] Form submitted via POST
+[2025-12-04 16:15:05] User found: 2@gmail.com (ID: 2)
+[2025-12-04 16:15:05] Password verification SUCCESS
+[2025-12-04 16:15:05] Email and phone verified. Logging in
+[2025-12-04 16:25:06] === LOGIN PAGE LOADED ===
+[2025-12-04 16:25:06] Request method: GET
+[2025-12-04 16:25:06] Email received: empty
+[2025-12-04 16:25:06] Remember received: NO
+[2025-12-04 16:25:10] === LOGIN PAGE LOADED ===
+[2025-12-04 16:25:10] Request method: POST
+[2025-12-04 16:25:10] Email received: 1@gmail.com
+[2025-12-04 16:25:10] Remember received: NO
+[2025-12-04 16:25:10] Form submitted via POST
+[2025-12-04 16:25:10] User found: 1@gmail.com (ID: 1)
+[2025-12-04 16:25:10] Password verification SUCCESS
+[2025-12-04 16:25:10] Email and phone verified. Logging in

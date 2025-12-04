@@ -22,12 +22,13 @@ if (!$order) redirect($role === 'Admin' ? 'order.php' : 'history.php');
 if ($role === 'Member' && $order->userID != $_user->id) redirect('history.php');
 
 // --------------------------------------------------------------------
-// Fetch order items + main photo
+// Fetch order items + main photo + rating
 $stm = $_db->prepare('
-    SELECT oi.*, p.name, p.price AS product_price, pp.photoURL
+    SELECT oi.*, p.name, p.price AS product_price, pp.photoURL, pr.rating, pr.comment
     FROM order_item oi
     JOIN product p ON oi.productID = p.productID
     LEFT JOIN productPhoto pp ON p.productID = pp.productID AND pp.is_main = 1
+    LEFT JOIN productRating pr ON oi.order_item_id = pr.order_item_id
     WHERE oi.orderID = ?
 ');
 $stm->execute([$orderID]);
@@ -52,6 +53,7 @@ include '../navbar.php';
 ?>
 
 <style>
+/* Form styling */
 form.form {
     width: 90%;
     margin: 20px auto;
@@ -82,16 +84,18 @@ form.form button {
     border: none;
     border-radius: 6px;
     cursor: pointer;
+    transition: background 0.3s;
 }
 form.form button:hover {
     background: #0056b3;
 }
 
+/* Table styling */
 table.table {
     width: 90%;
     margin: 20px auto 40px;
     border-collapse: collapse;
-    background: white;
+    background: #fff;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     border-radius: 8px;
     overflow: hidden;
@@ -110,7 +114,6 @@ table.table tr:hover {
 table.table td.right {
     text-align: right;
 }
-
 .popup img {
     width: 60px;
     height: 60px;
@@ -118,7 +121,6 @@ table.table td.right {
     border: 1px solid #333;
     border-radius: 5px;
 }
-
 button.back-btn {
     margin: 0 5%;
     padding: 10px 20px;
@@ -128,11 +130,11 @@ button.back-btn {
     font-weight: 600;
     border: none;
     cursor: pointer;
+    transition: background 0.3s;
 }
 button.back-btn:hover {
     background: #1e7e34;
 }
-
 .cancel-btn {
     background: #dc3545;
     color: white;
@@ -145,15 +147,25 @@ button.back-btn:hover {
 .cancel-btn:hover {
     background: #a71d2a;
 }
+.rate-btn {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #ffc107; /* Yellow like Bootstrap warning */
+    color: #000;
+    font-weight: 600;
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.rate-btn:hover {
+    background: #e0a800;
+}
 
 @media screen and (max-width: 768px) {
-    .popup img {
-        width: 40px;
-        height: 40px;
-    }
-    form.form, table.table {
-        width: 95%;
-    }
+    .popup img { width: 40px; height: 40px; }
+    form.form, table.table { width: 95%; }
 }
 </style>
 
@@ -203,7 +215,7 @@ button.back-btn:hover {
     <?php endif; ?>
 </form>
 
-<!-- SEPARATED CANCEL ORDER FORM (NO LONGER NESTED) -->
+<!-- CANCEL ORDER FORM FOR MEMBER -->
 <?php if ($role === 'Member' && in_array($order->status, ['Pending','Paid']) && !$refund): ?>
 <form method="post" action="cancel_order.php" style="width:90%; margin:10px auto;">
     <input type="hidden" name="orderID" value="<?= $order->orderID ?>">
@@ -221,6 +233,7 @@ button.back-btn:hover {
         <th>Quantity</th>
         <th>Subtotal (RM)</th>
         <th>Photo</th>
+        <th>Rating</th>
     </tr>
 
     <?php foreach ($items as $item): ?>
@@ -237,6 +250,16 @@ button.back-btn:hover {
                 </div>
             <?php endif; ?>
         </td>
+        <td>
+            <?php if ($item->rating): ?>
+                <?= $item->rating ?> / 5
+                <?php if ($item->comment) echo "<br><small>".htmlspecialchars($item->comment)."</small>"; ?>
+            <?php elseif ($role==='Member' && $order->status==='Completed'): ?>
+                <a href="rating.php?order_item_id=<?= $item->order_item_id ?>" class="rate-btn">Rate</a>
+            <?php else: ?>
+                -
+            <?php endif; ?>
+        </td>
     </tr>
     <?php endforeach; ?>
 
@@ -244,7 +267,7 @@ button.back-btn:hover {
         <th colspan="3"></th>
         <th class="right"><?= array_sum(array_map(fn($i) => $i->quantity, $items)) ?></th>
         <th class="right"><?= number_format($order->TotalAmount, 2) ?></th>
-        <th></th>
+        <th colspan="2"></th>
     </tr>
 </table>
 

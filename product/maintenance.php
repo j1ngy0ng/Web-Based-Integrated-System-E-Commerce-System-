@@ -30,16 +30,20 @@ if ($search) {
 }
 
 // --------------------------------------------------------------------
-// Fetch Products
+// Fetch Products with Average Rating
 $sql = "
     SELECT
         p.*,
         c.categoryName,
-        ph.photoURL AS mainPhoto
+        ph.photoURL AS mainPhoto,
+        AVG(pr.rating) AS rating_avg
     FROM product p
     LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID
     LEFT JOIN productPhoto ph ON p.productID = ph.productID AND ph.is_main = 1
+    LEFT JOIN order_item oi ON p.productID = oi.productID
+    LEFT JOIN productRating pr ON oi.order_item_id = pr.order_item_id
     $search_sql
+    GROUP BY p.productID
     ORDER BY $sort $dir
 ";
 
@@ -63,25 +67,22 @@ th a.asc::after { content: " ▲"; }
 th a.desc::after { content: " ▼"; }
 tr:hover { background: #fafafa; }
 
-/* --- 1. FLEXBOX LAYOUT FOR ACTION BUTTONS --- */
-/* This forces the Edit button and the Form button to stay on the same line */
+/* Flex layout for action buttons */
 td.action-btns {
     display: flex;
-    align-items: center; /* Center vertically */
-    gap: 8px;           /* Space between buttons */
-    white-space: nowrap; /* Prevent wrapping */
-    border-bottom: none; /* Fix for potential border conflicts in flex */
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
 }
 
-/* Reset form margin so it fits perfectly */
+/* Reset form inside flex */
 .delete-form { 
     margin: 0; 
     padding: 0;
     display: flex; 
 }
 
-/* --- 2. BUTTON STYLES --- */
-/* Base style for Edit link and Form Button */
+/* Buttons */
 .action-btns a, 
 .delete-form button {
     display: inline-flex;
@@ -96,28 +97,24 @@ td.action-btns {
     cursor: pointer;
     color: #fff;
     transition: background 0.2s;
-    height: 32px; /* Ensure both buttons are exactly the same height */
+    height: 32px;
     box-sizing: border-box;
 }
 
-/* Blue Edit Button */
 .edit-btn { background: #007bff; }
 .edit-btn:hover { background: #0056b3; }
 
-/* Red Disable Button */
 .btn-disable { background: #dc3545; }
 .btn-disable:hover { background: #c82333; }
 
-/* Green Enable Button */
 .btn-enable { background: #28a745; }
 .btn-enable:hover { background: #218838; }
-
 
 /* Media Styles */
 .product-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; }
 .product-video-thumb { width: 80px; height: 60px; object-fit: cover; border-radius: 6px; background: #000; cursor: pointer; }
 
-/* Search Bar Styles */
+/* Search Bar */
 .table-controls-row { width: 95%; margin: 20px auto 15px auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
 .search-form-flex { flex-grow: 1; max-width: 600px; position: relative; display: flex; gap: 5px; }
 .search-form-flex .search-input { flex-grow: 1; padding: 12px 20px 12px 45px; border: 1px solid #ced4da; border-radius: 8px; font-size: 1rem; font-family: inherit; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); transition: all 0.3s ease; }
@@ -130,7 +127,7 @@ td.action-btns {
 .add-product-btn { padding: 10px 20px; background:#28a745; color:white; border-radius:6px; text-decoration:none; font-weight:600; white-space: nowrap; transition: background 0.2s; font-family: inherit; }
 .add-product-btn:hover { background:#218838; }
 
-/* Disabled Row Styling */
+/* Disabled Row */
 tr.disabled-row {
     background-color: #f8f9fa;
     color: #adb5bd;
@@ -140,22 +137,20 @@ tr.disabled-row video {
     filter: grayscale(100%);
     opacity: 0.5;
 }
-/* IMPORTANT: Force buttons to remain fully visible/opaque even in disabled rows */
 tr.disabled-row .action-btns {
     opacity: 1 !important; 
 }
 
-/* Low Stock Warning Style */
+/* Low Stock Warning */
 .stock-warning {
-    color: #dc3545; /* Red color */
+    color: #dc3545;
     font-weight: 700;
     font-size: 0.85rem;
-    display: block; /* Forces it to a new line below the number */
+    display: block;
     margin-top: 2px;
 }
-
 .stock-ok {
-    color: #28a745; /* Green color for good stock (optional) */
+    color: #28a745;
     font-weight: 600;
 }
 </style>
@@ -205,13 +200,7 @@ tr.disabled-row .action-btns {
             <?php foreach ($data as $p): ?>
                 
                 <?php 
-                    // Reset variable
-                    $rowClass = ''; 
-                    if ($p->is_active == 0) {
-                        $rowClass = 'disabled-row';
-                    }
-                    
-                    // DEFINE LOW STOCK THRESHOLD HERE
+                    $rowClass = $p->is_active == 0 ? 'disabled-row' : '';
                     $lowStockThreshold = 10; 
                 ?>
 
@@ -225,7 +214,6 @@ tr.disabled-row .action-btns {
                         <?php endif; ?>
                     </td>
                     <td>RM <?= number_format($p->price, 2) ?></td>
-                    
                     <td>
                         <?= $p->stock ?>
                         <?php if ($p->stock <= $lowStockThreshold): ?>
@@ -234,8 +222,7 @@ tr.disabled-row .action-btns {
                             </span>
                         <?php endif; ?>
                     </td>
-                    <td><?= $p->rating_avg ?> ⭐</td>
-                    
+                    <td><?= $p->rating_avg ? number_format($p->rating_avg, 2) . " ⭐" : '-' ?></td>
                     <td>
                         <?php if ($p->mainPhoto): ?>
                             <img src="../products/<?= $p->mainPhoto ?>" class="product-img">
@@ -243,7 +230,6 @@ tr.disabled-row .action-btns {
                             <span style="color:#888; font-size:0.8rem;">No Photo</span>
                         <?php endif; ?>
                     </td>
-
                     <td>
                         <?php if (!empty($p->video_url) && file_exists("../products/" . $p->video_url)): ?>
                             <video src="../products/<?= $p->video_url ?>" class="product-video-thumb" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>
@@ -251,7 +237,6 @@ tr.disabled-row .action-btns {
                             <span style="color:#888; font-size:0.8rem;">No Video</span>
                         <?php endif; ?>
                     </td>
-
                     <td class="action-btns">
                         <a class="edit-btn" href="detail_admin.php?productID=<?= $p->productID ?>">Edit</a>
 
@@ -260,15 +245,9 @@ tr.disabled-row .action-btns {
                             <input type="hidden" name="action_type" value="toggle_status">
                             
                             <?php if ($p->is_active == 1): ?>
-                                <button type="submit" class="btn-disable" 
-                                        onclick="return confirm('Disable this product?');">
-                                    Disable
-                                </button>
+                                <button type="submit" class="btn-disable" onclick="return confirm('Disable this product?');">Disable</button>
                             <?php else: ?>
-                                <button type="submit" class="btn-enable" 
-                                        onclick="return confirm('Activate this product?');">
-                                    Enable
-                                </button>
+                                <button type="submit" class="btn-enable" onclick="return confirm('Activate this product?');">Enable</button>
                             <?php endif; ?>
                         </form>
                     </td>
@@ -277,4 +256,5 @@ tr.disabled-row .action-btns {
         <?php endif ?>
     </tbody>
 </table>
+
 <?php include '../footer.php'; ?>
