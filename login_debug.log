@@ -2283,3 +2283,168 @@
 [2025-12-04 16:25:10] User found: 1@gmail.com (ID: 1)
 [2025-12-04 16:25:10] Password verification SUCCESS
 [2025-12-04 16:25:10] Email and phone verified. Logging in
+[2025-12-04 17:18:55] === LOGIN PAGE LOADED ===
+[2025-12-04 17:18:55] Request method: GET
+[2025-12-04 17:18:55] Email received: empty
+[2025-12-04 17:18:55] Remember received: NO
+[2025-12-04 17:19:01] === LOGIN PAGE LOADED ===
+[2025-12-04 17:19:01] Request method: POST
+[2025-12-04 17:19:01] Email received: shannellwong@gmail.com
+[2025-12-04 17:19:01] Remember received: NO
+[2025-12-04 17:19:01] Form submitted via POST
+[2025-12-04 17:19:01] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-04 17:19:01] Password verification SUCCESS
+[2025-12-04 17:19:01] Email and phone verified. Logging in
+[2025-12-04 17:41:35] === LOGIN PAGE LOADED ===
+[2025-12-04 17:41:35] Request method: GET
+[2025-12-04 17:41:35] Email received: empty
+[2025-12-04 17:41:35] Remember received: NO
+[2025-12-04 17:41:41] === LOGIN PAGE LOADED ===
+[2025-12-04 17:41:41] Request method: POST
+[2025-12-04 17:41:41] Email received: 1@gmail.com
+[2025-12-04 17:41:41] Remember received: NO
+[2025-12-04 17:41:41] Form submitted via POST
+[2025-12-04 17:41:41] User found: 1@gmail.com (ID: 1)
+[2025-12-04 17:41:41] Password verification SUCCESS
+[2025-12-04 17:41:41] Email and phone verified. Logging in
+[2025-12-04 17:42:18] === LOGIN PAGE LOADED ===
+[2025-12-04 17:42:18] Request method: GET
+[2025-12-04 17:42:18] Email received: empty
+[2025-12-04 17:42:18] Remember received: NO
+[2025-12-04 17:42:24] === LOGIN PAGE LOADED ===
+[2025-12-04 17:42:24] Request method: POST
+[2025-12-04 17:42:24] Email received: shannellwong@gmail.com
+[2025-12-04 17:42:24] Remember received: NO
+[2025-12-04 17:42:24] Form submitted via POST
+[2025-12-04 17:42:24] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-04 17:42:24] Password verification SUCCESS
+[2025-12-04 17:42:24] Email and phone verified. Logging in
+[2025-12-04 17:53:09] === LOGIN PAGE LOADED ===
+[2025-12-04 17:53:09] Request method: GET
+[2025-12-04 17:53:09] Email received: empty
+[2025-12-04 17:53:09] Remember received: NO
+[2025-12-04 17:53:15] === LOGIN PAGE LOADED ===
+[2025-12-04 17:53:15] Request method: POST
+[2025-12-04 17:53:15] Email received: 1@gmail.com
+[2025-12-04 17:53:15] Remember received: NO
+[2025-12-04 17:53:15] Form submitted via POST
+[2025-12-04 17:53:15] User found: 1@gmail.com (ID: 1)
+[2025-12-04 17:53:15] Password verification SUCCESS
+[2025-12-04 17:53:15] Email and phone verified. Logging in
+[2025-12-04 17:56:01] === LOGIN PAGE LOADED ===
+[2025-12-04 17:56:01] Request method: GET
+[2025-12-04 17:56:01] Email received: empty
+[2025-12-04 17:56:01] Remember received: NO
+[2025-12-04 17:56:07] === LOGIN PAGE LOADED ===
+[2025-12-04 17:56:07] Request method: POST
+[2025-12-04 17:56:07] Email received: shannellwong@gmail.com
+[2025-12-04 17:56:07] Remember received: NO
+[2025-12-04 17:56:07] Form submitted via POST
+[2025-12-04 17:56:07] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-04 17:56:07] Password verification SUCCESS
+[2025-12-04 17:56:07] Email and phone verified. Logging in
+[2025-12-04 17:57:17] === LOGIN PAGE LOADED ===
+[2025-12-04 17:57:17] Request method: GET
+[2025-12-04 17:57:17] Email received: empty
+[2025-12-04 17:57:17] Remember received: NO
+[2025-12-04 17:57:21] === LOGIN PAGE LOADED ===
+[2025-12-04 17:57:21] Request method: POST
+[2025-12-04 17:57:21] Email received: 1@gmail.com
+[2025-12-04 17:57:21] Remember received: NO
+[2025-12-04 17:57:21] Form submitted via POST
+[2025-12-04 17:57:21] User found: 1@gmail.com (ID: 1)
+[2025-12-04 17:57:21] Password verification SUCCESS
+[2025-12-04 17:57:21] Email and phone verified. Logging in
+[2025-12-04 17:57:36] === LOGIN PAGE LOADED ===
+[2025-12-04 17:57:36] Request method: GET
+[2025-12-04 17:57:36] Email received: empty
+[2025-12-04 17:57:36] Remember received: NO
+[2025-12-04 17:57:42] === LOGIN PAGE LOADED ===
+[2025-12-04 17:57:42] Request method: POST
+[2025-12-04 17:57:42] Email received: shannellwong@gmail.com
+[2025-12-04 17:57:42] Remember received: NO
+[2025-12-04 17:57:42] Form submitted via POST
+[2025-12-04 17:57:42] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-04 17:57:42] Password verification SUCCESS
+[2025-12-04 17:57:42] Email and phone verified. Logging in
+[2025-12-04 17:59:48] === LOGIN PAGE LOADED ===
+[2025-12-04 17:59:48] Request method: GET
+[2025-12-04 17:59:48] Email received: empty
+[2025-12-04 17:59:48] Remember received: NO
+[2025-12-04 17:59:57] === LOGIN PAGE LOADED ===
+[2025-12-04 17:59:57] Request method: POST
+[2025-12-04 17:59:57] Email received: 1@gmail.com
+[2025-12-04 17:59:57] Remember received: NO
+[2025-12-04 17:59:57] Form submitted via POST
+[2025-12-04 17:59:57] User found: 1@gmail.com (ID: 1)
+[2025-12-04 17:59:57] Password verification SUCCESS
+[2025-12-04 17:59:57] Email and phone verified. Logging in
+[2025-12-04 18:05:47] === LOGIN PAGE LOADED ===
+[2025-12-04 18:05:47] Request method: GET
+[2025-12-04 18:05:47] Email received: empty
+[2025-12-04 18:05:47] Remember received: NO
+[2025-12-04 18:05:52] === LOGIN PAGE LOADED ===
+[2025-12-04 18:05:52] Request method: POST
+[2025-12-04 18:05:52] Email received: shannellwong@gmail.com
+[2025-12-04 18:05:52] Remember received: NO
+[2025-12-04 18:05:52] Form submitted via POST
+[2025-12-04 18:05:52] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-04 18:05:52] Password verification FAILED
+[2025-12-04 18:05:57] === LOGIN PAGE LOADED ===
+[2025-12-04 18:05:57] Request method: POST
+[2025-12-04 18:05:57] Email received: shannellwong@gmail.com
+[2025-12-04 18:05:57] Remember received: NO
+[2025-12-04 18:05:57] Form submitted via POST
+[2025-12-04 18:05:57] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-04 18:05:57] Password verification SUCCESS
+[2025-12-04 18:05:57] Email and phone verified. Logging in
+[2025-12-04 18:06:14] === LOGIN PAGE LOADED ===
+[2025-12-04 18:06:14] Request method: GET
+[2025-12-04 18:06:14] Email received: empty
+[2025-12-04 18:06:14] Remember received: NO
+[2025-12-04 18:06:23] === LOGIN PAGE LOADED ===
+[2025-12-04 18:06:23] Request method: POST
+[2025-12-04 18:06:23] Email received: 1@gmail.com
+[2025-12-04 18:06:23] Remember received: NO
+[2025-12-04 18:06:23] Form submitted via POST
+[2025-12-04 18:06:23] User found: 1@gmail.com (ID: 1)
+[2025-12-04 18:06:23] Password verification SUCCESS
+[2025-12-04 18:06:23] Email and phone verified. Logging in
+[2025-12-04 18:08:43] === LOGIN PAGE LOADED ===
+[2025-12-04 18:08:43] Request method: GET
+[2025-12-04 18:08:43] Email received: empty
+[2025-12-04 18:08:43] Remember received: NO
+[2025-12-04 18:08:49] === LOGIN PAGE LOADED ===
+[2025-12-04 18:08:49] Request method: POST
+[2025-12-04 18:08:49] Email received: shannellwong@gmail.com
+[2025-12-04 18:08:49] Remember received: NO
+[2025-12-04 18:08:49] Form submitted via POST
+[2025-12-04 18:08:49] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-04 18:08:49] Password verification FAILED
+[2025-12-04 18:08:53] === LOGIN PAGE LOADED ===
+[2025-12-04 18:08:53] Request method: POST
+[2025-12-04 18:08:53] Email received: shannellwong@gmail.com
+[2025-12-04 18:08:53] Remember received: NO
+[2025-12-04 18:08:53] Form submitted via POST
+[2025-12-04 18:08:53] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-04 18:08:53] Password verification SUCCESS
+[2025-12-04 18:08:53] Email and phone verified. Logging in
+[2025-12-04 18:12:59] === LOGIN PAGE LOADED ===
+[2025-12-04 18:12:59] Request method: GET
+[2025-12-04 18:12:59] Email received: empty
+[2025-12-04 18:12:59] Remember received: NO
+[2025-12-04 18:13:05] === LOGIN PAGE LOADED ===
+[2025-12-04 18:13:05] Request method: POST
+[2025-12-04 18:13:05] Email received: 1@gmail.com
+[2025-12-04 18:13:05] Remember received: NO
+[2025-12-04 18:13:05] Form submitted via POST
+[2025-12-04 18:13:05] User found: 1@gmail.com (ID: 1)
+[2025-12-04 18:13:05] Password verification FAILED
+[2025-12-04 18:13:07] === LOGIN PAGE LOADED ===
+[2025-12-04 18:13:07] Request method: POST
+[2025-12-04 18:13:07] Email received: 1@gmail.com
+[2025-12-04 18:13:07] Remember received: NO
+[2025-12-04 18:13:07] Form submitted via POST
+[2025-12-04 18:13:07] User found: 1@gmail.com (ID: 1)
+[2025-12-04 18:13:07] Password verification SUCCESS
+[2025-12-04 18:13:07] Email and phone verified. Logging in
