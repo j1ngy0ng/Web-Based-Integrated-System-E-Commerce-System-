@@ -137,7 +137,7 @@ button.back-btn:hover {
 <?php endif; ?>
 
 <p style="text-align:center; margin-top:20px;">
-    <button class="back-btn" onclick="window.location.href='orderDetail.php?orderID=<?= $item->orderID ?>'">Back to Order</button>
+    <button class="back-btn" onclick="window.location.href='detail.php?orderID=<?= $item->orderID ?>'">Back to Order</button>
 </p>
 
 <?php include '../footer.php'; ?>
