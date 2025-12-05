@@ -174,7 +174,7 @@ include '../navbar.php';
                     <div class="cart-buttons">
                         <?php if ($unit > 0): ?>
                             <button type="button" class="btn btn-danger" id="deleteBtn">
-                                Delete from Cart
+                                🗑️
                             </button>
                         <?php endif; ?>
                     </div>

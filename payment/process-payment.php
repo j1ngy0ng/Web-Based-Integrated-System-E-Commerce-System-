@@ -119,13 +119,14 @@ try {
     // Make sure your database columns match these names:
     // voucher_code (VARCHAR), discount_amount (DECIMAL)
     // ---------------------------------------------------------
+    $address_id = $_SESSION['selected_address'] ?? null;
     $stm = $_db->prepare('
-        INSERT INTO `order` (userID, OrderDate, status, TotalAmount, voucher_code, discount_amount)
-        VALUES (?, NOW(), "Paid", ?, ?, ?)
+        INSERT INTO `order` (userID, OrderDate, status, TotalAmount, voucher_code, discount_amount, address_id)
+        VALUES (?, NOW(), "Paid", ?, ?, ?, ?)
     ');
     
     // Pass the calculated variables here
-    $stm->execute([$_user->id, $order_total, $voucher_code, $discount_amount]);
+    $stm->execute([$_user->id, $order_total, $voucher_code, $discount_amount, $address_id]);
     
     $orderID = $_db->lastInsertId();
 

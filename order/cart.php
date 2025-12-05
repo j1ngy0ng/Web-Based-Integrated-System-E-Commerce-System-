@@ -34,6 +34,16 @@ if ($_user) {
     $stm = $_db->prepare("SELECT * FROM shipping_addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC");
     $stm->execute([$_user->id]);
     $saved_addresses = $stm->fetchAll();
+    
+    // Auto-select default address if none selected
+    if (!isset($_SESSION['selected_address']) && !empty($saved_addresses)) {
+        foreach ($saved_addresses as $addr) {
+            if ($addr->is_default) {
+                $_SESSION['selected_address'] = $addr->address_id;
+                break;
+            }
+        }
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -94,6 +104,14 @@ if (is_post()) {
         $lng = req('longitude');
         $set_default = req('set_default') ? 1 : 0;
 
+        $phone = preg_replace('/\D/', '', $phone);
+
+        if (!preg_match('/^(01[0-9]{8,9}|03[0-9]{8})$/', $phone)) {
+            temp('info', 'Invalid phone number format. Use Malaysian format (e.g., 0123456789)');
+            redirect();
+            return;
+        }
+
         // If set as default, unset other defaults
         if ($set_default) {
             $stm = $_db->prepare("UPDATE shipping_addresses SET is_default = 0 WHERE user_id = ?");
@@ -124,9 +142,20 @@ if (is_post()) {
         $stm = $_db->prepare("DELETE FROM shipping_addresses WHERE address_id = ? AND user_id = ?");
         $stm->execute([$address_id, $_user->id]);
         
-        if ($_SESSION['selected_address'] == $address_id) {
+        // If deleted address was selected, auto-select another one
+        if (($_SESSION['selected_address'] ?? null) == $address_id) {
             unset($_SESSION['selected_address']);
+            
+            // Get remaining addresses
+            $stm = $_db->prepare("SELECT address_id FROM shipping_addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC LIMIT 1");
+            $stm->execute([$_user->id]);
+            $next_addr = $stm->fetch();
+            
+            if ($next_addr) {
+                $_SESSION['selected_address'] = $next_addr->address_id;
+            }
         }
+        
         temp('info', 'Address deleted.');
         redirect();
     }
@@ -134,6 +163,53 @@ if (is_post()) {
     if ($btn == 'use_new_address') {
         unset($_SESSION['selected_address']);
         $_SESSION['show_new_address_form'] = true;
+        redirect();
+    }
+
+    if ($btn == 'update_address') {
+        $address_id = req('address_id');
+        $recipient = req('recipient_name');
+        $phone = req('phone_number');
+        $addr1 = req('address_line1');
+        $addr2 = req('address_line2');
+        $city = req('city');
+        $state = req('state');
+        $postal = req('postal_code');
+        $lat = req('latitude');
+        $lng = req('longitude');
+        $set_default = req('set_default') ? 1 : 0;
+
+        $phone = preg_replace('/\D/', '', $phone);
+
+        if (!preg_match('/^(01[0-9]{8,9}|03[0-9]{8})$/', $phone)) {
+            temp('info', 'Invalid phone number format. Use Malaysian format (e.g., 0123456789)');
+            redirect();
+            return;
+        }
+
+        // If set as default, unset other defaults
+        if ($set_default) {
+            $stm = $_db->prepare("UPDATE shipping_addresses SET is_default = 0 WHERE user_id = ? AND address_id != ?");
+            $stm->execute([$_user->id, $address_id]);
+        }
+
+        $stm = $_db->prepare("
+            UPDATE shipping_addresses 
+            SET recipient_name = ?, phone_number = ?, address_line1 = ?, address_line2 = ?,
+                city = ?, state = ?, postal_code = ?, latitude = ?, longitude = ?, is_default = ?
+            WHERE address_id = ? AND user_id = ?
+        ");
+        $stm->execute([
+            $recipient, $phone, $addr1, $addr2, $city, $state, $postal, $lat, $lng, $set_default,
+            $address_id, $_user->id
+        ]);
+        
+        // If this is the address that was selected, keep it selected
+        if (($_SESSION['selected_address'] ?? null) == $address_id) {
+            $_SESSION['selected_address'] = $address_id;
+        }
+        
+        temp('info', 'Address updated successfully!');
         redirect();
     }
 
@@ -166,6 +242,7 @@ if ($applied_voucher) {
 $grand_total = $subtotal - $discount_amount;
 
 // ----------------------------------------------------------------------------
+
 $isCartPage = true;
 $_title = 'Order | Shopping Cart';
 include '../navbar.php';
@@ -391,6 +468,20 @@ include '../navbar.php';
     font-weight: 600;
 }
 
+.edit-address-btn {
+    background: transparent;
+    border: none;
+    color: #e53e3e;
+    cursor: pointer;
+    font-size: 1.1em;
+    padding: 5px;
+    transition: 0.2s;
+}
+
+.edit-address-btn:hover { 
+    transform: scale(1.2); 
+}
+
 .delete-address-btn {
     background: transparent;
     border: none;
@@ -528,19 +619,18 @@ include '../navbar.php';
                         <td class="cart-item-price">RM <?= number_format($p->price, 2) ?></td>
                         <td>
                             <div class="quantity-form">
-                                <form method="post" style="display: inline;">
+                                <form method="post" style="display: inline;" class="quantity-update-form" data-product-id="<?= $p->productID ?>">
                                     <?= html_hidden('id', "value='$p->productID'") ?>
-                                    <?= html_select('unit', $units_options, '', $p->unit) ?>
+                                    <?= html_select('unit', $units_options, '', $p->unit, '') ?>
                                 </form>
                             </div>
                         </td>
                         <td class="cart-subtotal">RM <?= number_format($p->line_total, 2) ?></td>
                         <td>
-                            <form method="post" style="display: inline;">
-                                <?= html_hidden('id', "value='$p->productID'") ?>
-                                <?= html_hidden('btn', "value='delete'") ?>
-                                <button type="submit" class="delete-btn" onclick="return confirm('Remove this item from cart?')">🗑️ Delete</button>
-                            </form>
+                            <button type="button" class="delete-btn" 
+                                    onclick="deleteCartItem(<?= $p->productID ?>, '<?= htmlspecialchars(addslashes($p->name)) ?>')">
+                                🗑️
+                            </button>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -603,10 +693,10 @@ include '../navbar.php';
                     <?php if ($saved_addresses): ?>
                         <div class="address-list">
                             <?php foreach ($saved_addresses as $addr): ?>
-                            <form method="post" class="address-card <?= ($_SESSION['selected_address'] ?? null) == $addr->address_id ? 'selected' : '' ?>">
+                            <form method="post" class="address-card <?= ($_SESSION['selected_address'] ?? ($addr->is_default ? $addr->address_id : null)) == $addr->address_id ? 'selected' : '' ?>">
                                 <input type="radio" name="address_id" value="<?= $addr->address_id ?>" 
                                     id="addr_<?= $addr->address_id ?>" 
-                                    <?= ($_SESSION['selected_address'] ?? $addr->is_default) == $addr->address_id ? 'checked' : '' ?>
+                                    <?= ($_SESSION['selected_address'] ?? ($addr->is_default ? $addr->address_id : null)) == $addr->address_id ? 'checked' : '' ?>
                                     onchange="this.form.submit()">
                                 <input type="hidden" name="btn" value="select_address">
                                 <label for="addr_<?= $addr->address_id ?>" class="address-info">
@@ -616,11 +706,32 @@ include '../navbar.php';
                                     <p><?= htmlspecialchars($addr->address_line1) ?><?= $addr->address_line2 ? ', ' . htmlspecialchars($addr->address_line2) : '' ?></p>
                                     <p><?= htmlspecialchars($addr->postal_code) ?> <?= htmlspecialchars($addr->city) ?>, <?= htmlspecialchars($addr->state) ?></p>
                                 </label>
-                                <button type="submit" name="btn" value="delete_address" class="delete-address-btn" 
-                                        onclick="event.stopPropagation(); return confirm('Delete this address?');">
-                                    🗑️
-                                </button>
+                                <div class="address-actions">
+                                    <button type="button" class="edit-address-btn" 
+                                            onclick="editAddress(
+                                                <?= $addr->address_id ?>, 
+                                                {
+                                                    recipient_name: '<?= addslashes($addr->recipient_name) ?>',
+                                                    phone_number: '<?= addslashes($addr->phone_number) ?>',
+                                                    address_line1: '<?= addslashes($addr->address_line1) ?>',
+                                                    address_line2: '<?= addslashes($addr->address_line2) ?>',
+                                                    city: '<?= addslashes($addr->city) ?>',
+                                                    state: '<?= addslashes($addr->state) ?>',
+                                                    postal_code: '<?= addslashes($addr->postal_code) ?>',
+                                                    latitude: <?= $addr->latitude ? "'" . addslashes($addr->latitude) . "'" : 'null' ?>,
+                                                    longitude: <?= $addr->longitude ? "'" . addslashes($addr->longitude) . "'" : 'null' ?>,
+                                                    is_default: <?= $addr->is_default ?>
+                                                }
+                                            )">
+                                        ✏️
+                                    </button>
+                                    <button type="submit" name="btn" value="delete_address" class="delete-address-btn" 
+                                            onclick="return confirmDeleteAddress(event)">
+                                        🗑️
+                                    </button>
+                                </div>
                             </form>
+                            
                             <?php endforeach; ?>
                         </div>
                         
@@ -637,8 +748,15 @@ include '../navbar.php';
                             <input type="text" id="address-search" class="address-input" placeholder="🔍 Search address or enter manually..." autocomplete="off">
                             <div id="map" style="display:none; height: 250px; border-radius: 12px; margin: 15px 0; border: 2px solid #e2e8f0;"></div>
                             
-                            <input type="text" name="recipient_name" placeholder="Recipient Name *" class="address-input" required>
-                            <input type="text" name="phone_number" placeholder="Phone Number *" class="address-input" required>
+                            <input type="text" name="recipient_name" id="recipient_name" placeholder="Recipient Name *" class="address-input" required>
+                            <input type="tel" 
+                                name="phone_number" 
+                                id="phone_number"
+                                placeholder="Phone Number * (e.g., 0123456789)" 
+                                class="address-input" 
+                                pattern="^(01[0-9]{8,9}|03[0-9]{8})$"
+                                maxlength="11"
+                                required>
                             <input type="text" name="address_line1" id="address_line1" placeholder="Address Line 1 *" class="address-input" required>
                             <input type="text" name="address_line2" id="address_line2" placeholder="Address Line 2 (Optional)" class="address-input">
                             
@@ -679,7 +797,7 @@ include '../navbar.php';
         </div>
         
         <div class="cart-actions">
-            <button class="btn btn-secondary" data-post="?btn=clear">🗑️ Clear Cart</button>
+            <button type="button" class="btn btn-secondary" onclick="clearCart()">🗑️ Clear Cart</button>
             <a href="../product/list.php" class="btn btn-outline">← Continue Shopping</a>
             <?php if ($_user?->role == 'Member'): ?>
                 <?php if (isset($_SESSION['selected_address']) || !empty($saved_addresses)): ?>
@@ -699,11 +817,23 @@ include '../navbar.php';
     <?php endif; ?>
 </div>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initAutocomplete" async defer></script>
-<script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCnmt907PtCJ_i5Yd3tIf2_w6CR3Y7KL84&libraries=places&callback=initAutocomplete" async defer>
+    console.log('jQuery loaded:', typeof $ !== 'undefined');
+    console.log('Forms found:', $('form').length);
     $(document).ready(function() {
-        $('select[name="unit"]').on('change', function(e) {
-            if (this.value !== '') { $(this).closest('form').submit(); }
+        $('.quantity-update-form select[name="unit"]').on('change', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (this.value !== '') {
+                const form = $(this).closest('.quantity-update-form');
+                const productId = form.data('product-id');
+                
+                // Submit only this specific form
+                form[0].submit();
+            }
+            
+            return false;
         });
 
         // Add smooth animations
@@ -712,18 +842,65 @@ include '../navbar.php';
             function() { $(this).css('transform', 'translateY(0)'); }
         );
 
-        $('[data-post]').on('click', function(e) {
-            const message = $(this).text().includes('Clear Cart') ? 'Clear entire cart?' : 'Proceed with action?';
-            if (!confirm(message)) { e.preventDefault(); return false; }
+        $('#phone_number').on('input', function(e) {
+            let value = this.value.replace(/\D/g, '');
+            
+            if (value.length > 11) {
+                value = value.slice(0, 11);
+            }
+            
+            this.value = value;
+            
+            const input = $(this);
+            const mobilePattern = /^01[0-9]{8,9}$/;
+            const landlinePattern = /^03[0-9]{8}$/;
+            
+            if (value.length > 0) {
+                if (mobilePattern.test(value) || landlinePattern.test(value)) {
+                    input.css('border-color', '#48bb78');
+                } else if (value.length >= 9) {
+                    input.css('border-color', '#f56565');
+                } else {
+                    input.css('border-color', '#e2e8f0');
+                }
+            } else {
+                input.css('border-color', '#e2e8f0');
+            }
         });
 
-        $('.delete-btn').on('click', function(e) {
-            if (!confirm('Remove this item from cart?')) { e.preventDefault(); return; }
-            const row = $(this).closest('tr');
-            row.css({ 'background-color': '#fee', 'transition': 'all 0.3s ease' });
-            setTimeout(() => { row.fadeOut(300, function() { $(this).remove(); }); }, 100);
+        // Form submission validation
+        $('#address-form').on('submit', function(e) {
+            const phone = $('#phone_number').val();
+            const mobilePattern = /^01[0-9]{8,9}$/;
+            const landlinePattern = /^03[0-9]{8}$/;
+            
+            if (!mobilePattern.test(phone) && !landlinePattern.test(phone)) {
+                e.preventDefault();
+                alert('Please enter a valid Malaysian phone number:\n• Mobile: 01X-XXXXXXXX (10-11 digits)\n• Landline: 03-XXXXXXXX (10 digits)');
+                $('#phone_number').focus();
+                return false;
+            }
         });
     });
+
+    function clearCart() {
+        if (!confirm('Clear entire cart?')) {
+            return false;
+        }
+        
+        const form = $('<form>', {
+            method: 'POST',
+            action: ''
+        });
+        
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'btn',
+            value: 'clear'
+        }));
+        
+        form.appendTo('body').submit();
+    }
 
     function updateCartCount() {
         const itemCount = <?= $count ?>;
@@ -737,90 +914,226 @@ include '../navbar.php';
     function initAutocomplete() {
         const input = document.getElementById('address-search');
         if (!input) {
-            // If input doesn't exist yet, wait a bit and retry
-            setTimeout(initAutocomplete, 100);
+            console.log('Address search input not found, skipping autocomplete');
             return;
         }
 
-        autocomplete = new google.maps.places.Autocomplete(input, {
-            componentRestrictions: { country: 'my' },
-            fields: ['address_components', 'geometry', 'formatted_address']
-        });
+        try {
+            autocomplete = new google.maps.places.Autocomplete(input, {
+                componentRestrictions: { country: 'my' },
+                fields: ['address_components', 'geometry', 'formatted_address', 'name']
+            });
 
-        autocomplete.addListener('place_changed', function() {
-            const place = autocomplete.getPlace();
-            
-            if (!place.geometry) {
-                alert('No details available for this address');
-                return;
-            }
-
-            const lat = place.geometry.location.lat();
-            const lng = place.geometry.location.lng();
-
-            $('#latitude').val(lat);
-            $('#longitude').val(lng);
-
-            // Extract address components
-            let street = '', city = '', state = '', postal = '';
-            
-            for (let component of place.address_components) {
-                const types = component.types;
+            autocomplete.addListener('place_changed', function() {
+                const place = autocomplete.getPlace();
                 
-                if (types.includes('street_number') || types.includes('route')) {
-                    street += component.long_name + ' ';
+                if (!place.geometry) {
+                    alert('No details available for this address');
+                    return;
                 }
-                if (types.includes('locality') || types.includes('sublocality')) {
-                    city = component.long_name;
-                }
-                if (types.includes('administrative_area_level_1')) {
-                    state = component.long_name;
-                }
-                if (types.includes('postal_code')) {
-                    postal = component.long_name;
-                }
-            }
 
-            $('#address_line1').val(street.trim());
-            $('#city').val(city);
-            $('#state').val(state);
-            $('#postal_code').val(postal);
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
 
-            initMap(lat, lng);
-        });
+                $('#latitude').val(lat);
+                $('#longitude').val(lng);
+
+                let streetNumber = '', route = '', premise = '', subpremise = '';
+                let city = '', state = '', postal = '';
+                
+                for (let component of place.address_components) {
+                    const types = component.types;
+                    
+                    if (types.includes('street_number')) streetNumber = component.long_name;
+                    if (types.includes('route')) route = component.long_name;
+                    if (types.includes('premise')) premise = component.long_name;
+                    if (types.includes('subpremise')) subpremise = component.long_name;
+                    if (types.includes('locality')) city = component.long_name;
+                    if (types.includes('sublocality') && !city) city = component.long_name;
+                    if (types.includes('administrative_area_level_1')) state = component.long_name;
+                    if (types.includes('postal_code')) postal = component.long_name;
+                }
+
+                let addressLine1 = '';
+                if (place.name && !place.name.includes(route) && !place.name.match(/^\d+$/)) {
+                    addressLine1 = place.name;
+                }
+                if (premise && premise !== place.name) {
+                    addressLine1 += (addressLine1 ? ', ' : '') + premise;
+                }
+                if (subpremise) {
+                    addressLine1 += (addressLine1 ? ', ' : '') + 'Unit ' + subpremise;
+                }
+
+                let addressLine2 = '';
+                if (streetNumber) addressLine2 = streetNumber;
+                if (route) addressLine2 += (addressLine2 ? ' ' : '') + route;
+
+                if (!addressLine1 && place.formatted_address) {
+                    addressLine1 = place.formatted_address.split(',')[0];
+                }
+
+                $('#address_line1').val(addressLine1.trim());
+                $('#address_line2').val(addressLine2.trim());
+                $('#city').val(city);
+                $('#state').val(state);
+                $('#postal_code').val(postal);
+
+                initMap(lat, lng);
+            });
+        } catch (error) {
+            console.error('Google Maps autocomplete error:', error);
+        }
     }
 
     function initMap(lat, lng) {
         const mapDiv = document.getElementById('map');
+        if (!mapDiv) {
+            console.error('Map div not found!');
+            return;
+        }
         mapDiv.style.display = 'block';
 
-        const location = { lat: lat, lng: lng };
+        try {
+            const location = { lat: parseFloat(lat), lng: parseFloat(lng) };
 
-        map = new google.maps.Map(mapDiv, {
-            center: location,
-            zoom: 15,
-            disableDefaultUI: false,
-            zoomControl: true
-        });
+            map = new google.maps.Map(mapDiv, {
+                center: location,
+                zoom: 15,
+                disableDefaultUI: false,
+                zoomControl: true,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
 
-        if (marker) marker.setMap(null);
+            if (marker) marker.setMap(null);
 
-        marker = new google.maps.Marker({
-            position: location,
-            map: map,
-            draggable: true,
-            animation: google.maps.Animation.DROP
-        });
+            marker = new google.maps.Marker({
+                position: location,
+                map: map,
+                draggable: true,
+                animation: google.maps.Animation.DROP
+            });
 
-        marker.addListener('dragend', function() {
-            const pos = marker.getPosition();
-            $('#latitude').val(pos.lat());
-            $('#longitude').val(pos.lng());
-        });
+            marker.addListener('dragend', function() {
+                const pos = marker.getPosition();
+                $('#latitude').val(pos.lat());
+                $('#longitude').val(pos.lng());
+            });
+        } catch (error) {
+            console.error('Error initializing map:', error);
+            mapDiv.innerHTML = '<p style="color: red; padding: 20px;">Map could not be loaded. Please check your API key.</p>';
+        }
     }
 
     function toggleNewAddressForm() {
         $('.new-address-form').slideToggle(300);
+    }
+
+    function editAddress(addressId, addressData) {
+        $('.new-address-form').slideDown(300);
+        $('#address-form input[name="address_id"]').remove();
+        $('#address-form input[name="btn"]').val('update_address');
+        $('#address-form').append('<input type="hidden" name="address_id" value="' + addressId + '">');
+        
+        $('#address-search').val(addressData.address_line1 + (addressData.address_line2 ? ', ' + addressData.address_line2 : ''));
+        $('#recipient_name').val(addressData.recipient_name);
+        $('#phone_number').val(addressData.phone_number);
+        $('#address_line1').val(addressData.address_line1);
+        $('#address_line2').val(addressData.address_line2 || '');
+        $('#city').val(addressData.city);
+        $('#state').val(addressData.state);
+        $('#postal_code').val(addressData.postal_code);
+        $('input[name="set_default"]').prop('checked', addressData.is_default == 1);
+        
+        if (addressData.latitude && addressData.longitude) {
+            $('#latitude').val(addressData.latitude);
+            $('#longitude').val(addressData.longitude);
+            setTimeout(() => {
+                initMap(addressData.latitude, addressData.longitude);
+            }, 500);
+        } else {
+            $('#map').hide();
+        }
+        
+        if (!$('#cancel-edit-btn').length) {
+            $('#address-form').append('<button type="button" id="cancel-edit-btn" class="btn-cancel" style="width: 100%; margin-top: 10px; background: #f7fafc; color: #4a5568; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px;">Cancel Edit</button>');
+        }
+        
+        $('#cancel-edit-btn').off('click').on('click', function() {
+            resetAddressForm();
+        });
+        
+        $('html, body').animate({
+            scrollTop: $('.new-address-form').offset().top - 100
+        }, 500);
+    }
+
+    function resetAddressForm() {
+        $('#address-form')[0].reset();
+        $('#address-form input[name="btn"]').val('save_address');
+        $('#address-form input[name="address_id"]').remove();
+        $('#cancel-edit-btn').remove();
+        $('#map').hide();
+    }
+
+    function confirmDeleteAddress(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        if (!confirm('Delete this address?')) {
+            return false;
+        }
+        
+        // Create a new form specifically for deletion
+        const button = $(event.target).closest('button');
+        const addressId = button.closest('form').find('input[name="address_id"]').val();
+        
+        const deleteForm = $('<form>', {
+            'method': 'post',
+            'action': ''
+        });
+        
+        deleteForm.append($('<input>', {
+            'type': 'hidden',
+            'name': 'btn',
+            'value': 'delete_address'
+        }));
+        
+        deleteForm.append($('<input>', {
+            'type': 'hidden',
+            'name': 'address_id',
+            'value': addressId
+        }));
+        
+        deleteForm.appendTo('body').submit();
+        
+        return false;
+    }
+
+    function deleteCartItem(productId, productName) {
+        if (!confirm('Remove "' + productName + '" from cart?')) {
+            return false;
+        }
+        
+        const form = $('<form>', {
+            method: 'POST',
+            action: window.location.href
+        });
+        
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'id',
+            value: productId
+        }));
+        
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'btn',
+            value: 'delete'
+        }));
+        
+        $('body').append(form);
+        form.submit();
     }
 </script>
 
