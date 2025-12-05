@@ -10,36 +10,66 @@ auth('Member');
 $cart = get_cart();
 if (!$cart) redirect('../order/cart.php');
 
-// Calculate total amount
-$TotalAmount = 0;
+// ----------------------------------------------------------------------------
+// 1. CALCULATE SUBTOTAL (Sum of items)
+// ----------------------------------------------------------------------------
+$subtotal = 0;
 foreach ($cart as $productID => $quantity) {
     $stm = $_db->prepare('SELECT price FROM product WHERE productID = ?');
     $stm->execute([$productID]);
     $price = $stm->fetchColumn();
-    $TotalAmount += $price * $quantity;
+    $subtotal += $price * $quantity;
 }
 
-// Convert to cents for Stripe (Stripe uses smallest currency unit)
-$amount_cents = $TotalAmount * 100;
+// ----------------------------------------------------------------------------
+// 2. APPLY VOUCHER DISCOUNT (Check Session)
+// ----------------------------------------------------------------------------
+$discount_amount = 0;
+$voucher_code = null;
+
+if (isset($_SESSION['voucher'])) {
+    $v = $_SESSION['voucher'];
+    
+    // Re-validate minimum spend to be safe
+    if ($subtotal >= $v->min_spend) {
+        $voucher_code = $v->voucher_code;
+        
+        if ($v->discount_type == 'fixed') {
+            $discount_amount = $v->discount_value;
+        } else {
+            // Percent
+            $discount_amount = $subtotal * ($v->discount_value / 100);
+        }
+        
+        // Cap discount at subtotal (cannot be negative)
+        if ($discount_amount > $subtotal) {
+            $discount_amount = $subtotal;
+        }
+    }
+}
+
+// Final Total to Charge
+$TotalAmount = $subtotal - $discount_amount;
+
+// Convert to cents for Stripe
+$amount_cents = round($TotalAmount * 100); // Round ensures integer
 
 // ----------------------------------------------------------------------------
-// Create PaymentIntent on the backend FIRST
+// Create PaymentIntent
 // ----------------------------------------------------------------------------
 require_once '../vendor/autoload.php';
 
 try {
     \Stripe\Stripe::setApiKey(getenv('STRIPE_SECRET_KEY'));
     
-    // Create PaymentIntent
     $paymentIntent = \Stripe\PaymentIntent::create([
         'amount' => $amount_cents,
         'currency' => 'myr',
-        'automatic_payment_methods' => [
-            'enabled' => true,
-        ],
+        'automatic_payment_methods' => ['enabled' => true],
         'metadata' => [
             'user_id' => $_user->id,
-            'order_total' => $TotalAmount
+            'order_total' => $TotalAmount,
+            'voucher_code' => $voucher_code // Store code in metadata for reference
         ]
     ]);
     
@@ -49,8 +79,6 @@ try {
     temp('error', 'Failed to initialize payment. Please try again.');
     redirect('../order/cart.php');
 }
-
-// ----------------------------------------------------------------------------
 
 $_title = 'Payment | Checkout';
 include '../navbar.php';
@@ -62,7 +90,23 @@ include '../navbar.php';
         
         <div class="order-summary">
             <h3>Order Summary</h3>
-            <p><strong>Total Amount:</strong> RM <?= number_format($TotalAmount, 2) ?></p>
+            
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span>Subtotal:</span>
+                <span>RM <?= number_format($subtotal, 2) ?></span>
+            </div>
+
+            <?php if ($discount_amount > 0): ?>
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; color:#e53e3e;">
+                    <span>Discount (<?= htmlspecialchars($voucher_code) ?>):</span>
+                    <span>- RM <?= number_format($discount_amount, 2) ?></span>
+                </div>
+            <?php endif; ?>
+
+            <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; padding-top:10px; margin-top:10px; font-weight:bold; font-size:1.1em;">
+                <span>Total to Pay:</span>
+                <span style="color:#006989;">RM <?= number_format($TotalAmount, 2) ?></span>
+            </div>
         </div>
 
         <form id="payment-form">
