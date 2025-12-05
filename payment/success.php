@@ -22,6 +22,14 @@ $stm->execute([$id]);
 $order = $stm->fetch();
 
 if (!$order) redirect('cart.php');
+$product_stm = $_db->prepare('
+    SELECT p.name, oi.quantity, oi.price 
+    FROM order_item oi
+    JOIN product p ON oi.productID = p.productID
+    WHERE oi.orderID = ?
+');
+$product_stm->execute([$order->orderID]);
+$products = $product_stm->fetchAll(PDO::FETCH_OBJ);
 
 // Send email receipt
 sendReceiptEmail($order, $_db);
@@ -186,7 +194,7 @@ function sendReceiptEmail($order, $_db) {
 
         <div class="success-actions">
             <button onclick="printReceipt()" class="btn btn-outline">🖨️ Print Receipt</button>
-            <button onclick="sendEmail()" class="btn btn-outline" id="resendBtn">📧 Resend Email</button>
+            <button onclick="sendReceiptEmail($order, $_db)" class="btn btn-outline" id="resendBtn">📧 Resend Email</button>
             <a href="../order/detail.php?orderID=<?= $order->orderID ?>" class="btn btn-secondary">📋 View Order Details</a>
             <a href="../product/list.php" class="btn btn-primary">🛒 Continue Shopping</a>
         </div>
@@ -285,43 +293,6 @@ function printReceipt() {
     window.print();
     document.body.innerHTML = originalContent;
     window.location.reload(); // Reload to restore functionality
-}
-
-function sendEmail() {
-    // Show loading state
-    const btn = document.getElementById('resendBtn');
-    const originalText = btn.innerHTML;
-    btn.innerHTML = '⏳ Sending...';
-    btn.disabled = true;
-    
-    // Send AJAX request to resend email
-    fetch('resend_email.php?orderID=<?= $order->orderID ?>', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                alert('✅ Email receipt has been sent to <?= $order->email ?>');
-            } else {
-                alert('❌ Failed to send email: ' + (data.message || 'Please try again.'));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('❌ Error sending email. Please try again later.');
-        })
-        .finally(() => {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        });
 }
 </script>
 

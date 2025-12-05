@@ -211,10 +211,9 @@ include 'navbar.php';
 </div>
 
 <div class="container">
-    
     <div class="section">
         <div class="section-header">
-            <h2>🏆 Top Selling Products</h2>
+            <h2>Top 8 Selling Products</h2>
             <div class="section-controls">
                 <button class="filter-btn active" onclick="filterTopSelling('all')">All</button>
                 <?php foreach ($categories as $cat): ?>

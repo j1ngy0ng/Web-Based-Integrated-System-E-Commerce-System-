@@ -2512,3 +2512,15 @@
 [2025-12-05 22:20:46] Request method: GET
 [2025-12-05 22:20:46] Email received: empty
 [2025-12-05 22:20:46] Remember received: NO
+[2025-12-05 22:22:16] === LOGIN PAGE LOADED ===
+[2025-12-05 22:22:16] Request method: GET
+[2025-12-05 22:22:16] Email received: empty
+[2025-12-05 22:22:16] Remember received: NO
+[2025-12-05 22:22:25] === LOGIN PAGE LOADED ===
+[2025-12-05 22:22:25] Request method: POST
+[2025-12-05 22:22:25] Email received: mailleejx@gmail.com
+[2025-12-05 22:22:25] Remember received: NO
+[2025-12-05 22:22:25] Form submitted via POST
+[2025-12-05 22:22:25] User found: mailleejx@gmail.com (ID: 3)
+[2025-12-05 22:22:25] Password verification SUCCESS
+[2025-12-05 22:22:25] Email and phone verified. Logging in

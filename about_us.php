@@ -18,7 +18,7 @@ include 'navbar.php';
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow-x: hidden;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2c8ba8ff 0%, #7ec9dfff 100%);
         }
 
         /* Hero Section */
@@ -93,7 +93,7 @@ include 'navbar.php';
         .story-title {
             text-align: center;
             font-size: 3rem;
-            color: #667eea;
+            color: #006989;
             margin-bottom: 60px;
         }
 
@@ -127,7 +127,7 @@ include 'navbar.php';
             align-items: center;
             justify-content: center;
             font-size: 5rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #006989 0%, #009688 100%);
             border-radius: 50%;
             margin: 0 40px;
             animation: float 3s ease-in-out infinite;
@@ -144,7 +144,7 @@ include 'navbar.php';
 
         .story-content h3 {
             font-size: 2rem;
-            color: #764ba2;
+            color: #006989;
             margin-bottom: 15px;
         }
 
@@ -169,7 +169,7 @@ include 'navbar.php';
         .location-title {
             text-align: center;
             font-size: 3rem;
-            color: #667eea;
+            color: #006989;
             margin-bottom: 60px;
         }
 
@@ -189,7 +189,7 @@ include 'navbar.php';
 
         .location-info h3 {
             font-size: 2rem;
-            color: #764ba2;
+            color: #006989;
             margin-bottom: 30px;
         }
 
