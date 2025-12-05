@@ -4,7 +4,7 @@ include '../_base.php';
 // ----------------------------------------------------------------------------
 
 // (1) Authorization (member)
-auth('Member'); // Only members can checkout
+auth('Member'); 
 
 if (is_post()) {
     // (2) Get shopping cart (reject if empty)
@@ -12,28 +12,30 @@ if (is_post()) {
     if (!$cart) redirect('cart.php');
 
     // ------------------------------------------
-    // DB transaction (insert order, items, and payment)
+    // DB transaction
     // ------------------------------------------
 
     // (A) Begin transaction
     $_db->beginTransaction();
 
     try {
-        // (B) Insert order, keep order id
+        // (B) Insert order (Initialize with 0, we update later)
+        // Note: Added voucher columns here, defaulting to null/0 for now
         $stm = $_db->prepare('
-            INSERT INTO `order` (userID, OrderDate, status, TotalAmount)
-            VALUES (?, NOW(), "Pending", 0)
+            INSERT INTO `order` (userID, OrderDate, status, TotalAmount, voucher_code, discount_amount)
+            VALUES (?, NOW(), "Pending", 0, NULL, 0)
         ');
         $stm->execute([$_user->id]);
         $orderID = $_db->lastInsertId();
 
-        // (C) Insert order items and calculate total
-        $stm = $_db->prepare('
+        // (C) Insert order items and calculate RAW Subtotal
+        $stm_item = $_db->prepare('
             INSERT INTO order_item (orderID, productID, quantity, price)
-            VALUES (?, ?, ?, (SELECT price FROM product WHERE productID = ?))
+            VALUES (?, ?, ?, ?)
         ');
         
-        $TotalAmount = 0;
+        $rawSubtotal = 0; // This is the total BEFORE discount
+
         foreach ($cart as $productID => $quantity) {
             // Get product price
             $price_stm = $_db->prepare('SELECT price FROM product WHERE productID = ?');
@@ -41,46 +43,80 @@ if (is_post()) {
             $price = $price_stm->fetchColumn();
             
             // Insert order item
-            $stm->execute([$orderID, $productID, $quantity, $productID]);
+            $stm_item->execute([$orderID, $productID, $quantity, $price]);
             
             // Calculate subtotal
-            $subtotal = $price * $quantity;
-            $TotalAmount += $subtotal;
+            $rawSubtotal += ($price * $quantity);
             
             // Update product stock
             $update_stock = $_db->prepare('UPDATE product SET stock = stock - ? WHERE productID = ?');
             $update_stock->execute([$quantity, $productID]);
         }
 
-        // (D) Update order total amount
-        $stm = $_db->prepare('UPDATE `order` SET TotalAmount = ? WHERE orderID = ?');
-        $stm->execute([$TotalAmount, $orderID]);
+        // ======================================================
+        // (D) VOUCHER CALCULATION LOGIC (New Addition)
+        // ======================================================
+        $discount_amount = 0;
+        $voucher_code = null;
+        $voucher = $_SESSION['voucher'] ?? null;
 
-        // (E) Insert payment record
+        if ($voucher) {
+            // Re-validate minimum spend
+            if ($rawSubtotal >= $voucher->min_spend) {
+                $voucher_code = $voucher->voucher_code;
+                
+                if ($voucher->discount_type == 'fixed') {
+                    $discount_amount = $voucher->discount_value;
+                } else {
+                    // Percentage calculation
+                    $discount_amount = $rawSubtotal * ($voucher->discount_value / 100);
+                }
+
+                // Cap discount if it exceeds total
+                if ($discount_amount > $rawSubtotal) {
+                    $discount_amount = $rawSubtotal;
+                }
+            }
+        }
+
+        // Calculate Final Total to be paid
+        $finalTotal = $rawSubtotal - $discount_amount;
+        // ======================================================
+
+
+        // (E) Update order with Final Total and Voucher Info
+        $stm = $_db->prepare('
+            UPDATE `order` 
+            SET TotalAmount = ?, voucher_code = ?, discount_amount = ? 
+            WHERE orderID = ?
+        ');
+        $stm->execute([$finalTotal, $voucher_code, $discount_amount, $orderID]);
+
+        // (F) Insert payment record (Use Final Total, not raw total)
         $stm = $_db->prepare('
             INSERT INTO payment (orderID, payment_method, payment_amount, payment_status, payment_date)
             VALUES (?, "Credit Card", ?, "Completed", NOW())
         ');
-        $stm->execute([$orderID, $TotalAmount]);
+        $stm->execute([$orderID, $finalTotal]);
 
-        // (F) Update order status to Completed
+        // (G) Update order status
         $stm = $_db->prepare('UPDATE `order` SET status = "Completed" WHERE orderID = ?');
         $stm->execute([$orderID]);
 
-        // (G) Commit transaction
+        // (H) Commit transaction
         $_db->commit();
 
         // ------------------------------------------
 
-        // (3) Clear shopping cart
+        // (3) Clear shopping cart AND Voucher session
         set_cart();
+        unset($_SESSION['voucher']); // <--- IMPORTANT: Clear voucher after use
 
-        // (4) Redirect to detail.php?id=XXX
+        // (4) Redirect
         temp('info', 'Order placed successfully!');
         redirect("detail.php?id=$orderID");
 
     } catch (Exception $e) {
-        // Rollback transaction on error
         $_db->rollBack();
         temp('error', 'Order failed: ' . $e->getMessage());
         redirect('cart.php');
@@ -88,3 +124,4 @@ if (is_post()) {
 }
 
 redirect('cart.php');
+?>

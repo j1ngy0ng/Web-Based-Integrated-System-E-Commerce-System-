@@ -54,7 +54,6 @@ if (is_post()) {
 
 // ----------------------------------------------------------------------------
 $_title = 'Verify Phone';
-include '../navbar.php';
 ?>
 
 <!DOCTYPE html>
@@ -159,6 +158,3 @@ include '../navbar.php';
     </div>
 </body>
 </html>
-
-<?php
-include '../footer.php';

@@ -2,188 +2,572 @@
 include '../_base.php';
 
 // ----------------------------------------------------------------------------
+// 1. PRE-CALCULATE TOTALS & FETCH DATA
+// ----------------------------------------------------------------------------
+$cart = get_cart();
+$cart_products = [];
+$subtotal = 0;
+$count = 0;
+
+if ($cart) {
+    foreach ($cart as $id => $unit) {
+        $stm = $_db->prepare('SELECT p.*, c.categoryName FROM product p LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID WHERE p.productID = ?');
+        $stm->execute([$id]);
+        $p = $stm->fetch();
+        
+        if ($p) {
+            $p->unit = $unit;
+            $p->line_total = $p->price * $unit;
+            $cart_products[] = $p;
+            $subtotal += $p->line_total;
+            $count += $unit;
+        }
+    }
+}
+
+// --- FETCH AVAILABLE VOUCHERS ---
+$stm = $_db->prepare("SELECT * FROM vouchers WHERE expiry_date >= CURDATE() ORDER BY min_spend ASC");
+$stm->execute();
+$available_vouchers = $stm->fetchAll();
+
+if ($_user) {
+    $stm = $_db->prepare("SELECT * FROM shipping_addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC");
+    $stm->execute([$_user->id]);
+    $saved_addresses = $stm->fetchAll();
+    
+    // Auto-select default address if none selected
+    if (!isset($_SESSION['selected_address']) && !empty($saved_addresses)) {
+        foreach ($saved_addresses as $addr) {
+            if ($addr->is_default) {
+                $_SESSION['selected_address'] = $addr->address_id;
+                break;
+            }
+        }
+    }
+}
+
+// ----------------------------------------------------------------------------
+// 2. HANDLE POST REQUESTS
+// ----------------------------------------------------------------------------
 
 if (is_post()) {
     $btn = req('btn');
+
     if ($btn == 'clear') {
         clear_cart();
+        unset($_SESSION['voucher']);
+        unset($_SESSION['selected_address']);
+        unset($_SESSION['show_new_address_form']);
         redirect('?');
     }
+    if ($btn == 'delete') {
+        $id = req('id');
+        $cart = get_cart();
+        unset($cart[$id]);
+        $_SESSION['cart'] = $cart;
+        if (empty($cart)) unset($_SESSION['voucher']);
+        redirect();
+    }
 
-    $id   = req('id');
-    $unit = req('unit');
-    update_cart($id, $unit);
+    if ($btn == 'apply_voucher') {
+        $code = strtoupper(trim(req('voucher_code')));
+        $stm = $_db->prepare("SELECT * FROM vouchers WHERE voucher_code = ? AND expiry_date >= CURDATE()");
+        $stm->execute([$code]);
+        $voucher = $stm->fetch();
+
+        if (!$voucher) {
+            temp('info', 'Invalid or expired voucher code.');
+        } elseif ($subtotal < $voucher->min_spend) {
+            temp('info', "Minimum spend of RM " . number_format($voucher->min_spend, 2) . " required.");
+        } else {
+            $_SESSION['voucher'] = $voucher;
+            temp('info', 'Voucher applied successfully!');
+        }
+        redirect();
+    }
+
+    if ($btn == 'remove_voucher') {
+        unset($_SESSION['voucher']);
+        temp('info', 'Voucher removed.');
+        redirect();
+    }
+
+    if ($btn == 'save_address') {
+        $recipient = req('recipient_name');
+        $phone = req('phone_number');
+        $addr1 = req('address_line1');
+        $addr2 = req('address_line2');
+        $city = req('city');
+        $state = req('state');
+        $postal = req('postal_code');
+        $lat = req('latitude');
+        $lng = req('longitude');
+        $set_default = req('set_default') ? 1 : 0;
+
+        $phone = preg_replace('/\D/', '', $phone);
+
+        if (!preg_match('/^(01[0-9]{8,9}|03[0-9]{8})$/', $phone)) {
+            temp('info', 'Invalid phone number format. Use Malaysian format (e.g., 0123456789)');
+            redirect();
+            return;
+        }
+
+        // If set as default, unset other defaults
+        if ($set_default) {
+            $stm = $_db->prepare("UPDATE shipping_addresses SET is_default = 0 WHERE user_id = ?");
+            $stm->execute([$_user->id]);
+        }
+
+        $stm = $_db->prepare("
+            INSERT INTO shipping_addresses 
+            (user_id, recipient_name, phone_number, address_line1, address_line2, city, state, postal_code, latitude, longitude, is_default)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stm->execute([$_user->id, $recipient, $phone, $addr1, $addr2, $city, $state, $postal, $lat, $lng, $set_default]);
+        
+        $_SESSION['selected_address'] = $_db->lastInsertId();
+            temp('info', 'Address saved successfully!');
+            redirect();
+    }
+
+    if ($btn == 'select_address') {
+        $address_id = req('address_id');
+        $_SESSION['selected_address'] = $address_id;
+        temp('info', 'Delivery address selected.');
+        redirect();
+    }
+
+    if ($btn == 'delete_address') {
+        $address_id = req('address_id');
+        $stm = $_db->prepare("DELETE FROM shipping_addresses WHERE address_id = ? AND user_id = ?");
+        $stm->execute([$address_id, $_user->id]);
+        
+        // If deleted address was selected, auto-select another one
+        if (($_SESSION['selected_address'] ?? null) == $address_id) {
+            unset($_SESSION['selected_address']);
+            
+            // Get remaining addresses
+            $stm = $_db->prepare("SELECT address_id FROM shipping_addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC LIMIT 1");
+            $stm->execute([$_user->id]);
+            $next_addr = $stm->fetch();
+            
+            if ($next_addr) {
+                $_SESSION['selected_address'] = $next_addr->address_id;
+            }
+        }
+        
+        temp('info', 'Address deleted.');
+        redirect();
+    }
+
+    if ($btn == 'use_new_address') {
+        unset($_SESSION['selected_address']);
+        $_SESSION['show_new_address_form'] = true;
+        redirect();
+    }
+
+    if ($btn == 'update_address') {
+        $address_id = req('address_id');
+        $recipient = req('recipient_name');
+        $phone = req('phone_number');
+        $addr1 = req('address_line1');
+        $addr2 = req('address_line2');
+        $city = req('city');
+        $state = req('state');
+        $postal = req('postal_code');
+        $lat = req('latitude');
+        $lng = req('longitude');
+        $set_default = req('set_default') ? 1 : 0;
+
+        $phone = preg_replace('/\D/', '', $phone);
+
+        if (!preg_match('/^(01[0-9]{8,9}|03[0-9]{8})$/', $phone)) {
+            temp('info', 'Invalid phone number format. Use Malaysian format (e.g., 0123456789)');
+            redirect();
+            return;
+        }
+
+        // If set as default, unset other defaults
+        if ($set_default) {
+            $stm = $_db->prepare("UPDATE shipping_addresses SET is_default = 0 WHERE user_id = ? AND address_id != ?");
+            $stm->execute([$_user->id, $address_id]);
+        }
+
+        $stm = $_db->prepare("
+            UPDATE shipping_addresses 
+            SET recipient_name = ?, phone_number = ?, address_line1 = ?, address_line2 = ?,
+                city = ?, state = ?, postal_code = ?, latitude = ?, longitude = ?, is_default = ?
+            WHERE address_id = ? AND user_id = ?
+        ");
+        $stm->execute([
+            $recipient, $phone, $addr1, $addr2, $city, $state, $postal, $lat, $lng, $set_default,
+            $address_id, $_user->id
+        ]);
+        
+        // If this is the address that was selected, keep it selected
+        if (($_SESSION['selected_address'] ?? null) == $address_id) {
+            $_SESSION['selected_address'] = $address_id;
+        }
+        
+        temp('info', 'Address updated successfully!');
+        redirect();
+    }
+
+    $id = req('id'); $unit = req('unit');
+    if ($id && $unit) { update_cart($id, $unit); }
     redirect();
 }
 
 // ----------------------------------------------------------------------------
+// 3. CALCULATE DISCOUNT
+// ----------------------------------------------------------------------------
 
+$discount_amount = 0;
+$applied_voucher = $_SESSION['voucher'] ?? null;
+
+if ($applied_voucher) {
+    if ($subtotal < $applied_voucher->min_spend) {
+        unset($_SESSION['voucher']);
+        $applied_voucher = null;
+    } else {
+        if ($applied_voucher->discount_type == 'fixed') {
+            $discount_amount = $applied_voucher->discount_value;
+        } else {
+            $discount_amount = $subtotal * ($applied_voucher->discount_value / 100);
+        }
+        if ($discount_amount > $subtotal) $discount_amount = $subtotal;
+    }
+}
+
+$grand_total = $subtotal - $discount_amount;
+
+// ----------------------------------------------------------------------------
+
+$isCartPage = true;
 $_title = 'Order | Shopping Cart';
 include '../navbar.php';
-
-$cart = get_cart();
-$count = 0;
-$total = 0;
 ?>
 
 <style>
-.cart-page-container {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 30px 20px;
-	min-height: 70vh;
-}
+/* ... (Standard Layout Styles) ... */
+.cart-page-container { max-width: 1200px; margin: 0 auto; padding: 30px 20px; min-height: 70vh; }
+.cart-header { text-align: center; margin-bottom: 40px; }
+.cart-header h1 { color: #2d3748; font-size: 2.5em; margin-bottom: 10px; background: linear-gradient(135deg, #006989, #00a8cc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.cart-header p { color: #718096; font-size: 1.1em; }
+.cart-summary { background: white; border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 105, 137, 0.15); overflow: hidden; border: 1px solid #e8f4f8; }
+.cart-table { width: 100%; border-collapse: collapse; }
+.cart-table th { background: linear-gradient(#006989); color: white; padding: 20px 15px; text-align: left; font-weight: 600; font-size: 1em; }
+.cart-table th:first-child { border-radius: 20px 0 0 0; }
+.cart-table th:last-child { border-radius: 0 20px 0 0; }
+.cart-table td { padding: 25px 15px; border-bottom: 1px solid #f1f8fc; vertical-align: middle; transition: background-color 0.3s ease; }
+.cart-table tr:hover td { background-color: #f8fcfd; }
+.cart-table tr:last-child td { border-bottom: none; }
+.cart-item-image { width: 80px; height: 80px; border-radius: 12px; overflow: hidden; background: #f8fafc; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease; }
+.cart-item-image:hover { transform: scale(1.05); }
+.cart-item-image img { width: 100%; height: 100%; object-fit: cover; }
+.cart-item-name { font-weight: 600; color: #2d3748; font-size: 1.1em; margin-bottom: 5px; }
+.cart-item-category { color: #718096; font-size: 0.9em; }
+.cart-item-price { color: #006989; font-weight: 700; font-size: 1.2em; }
+.quantity-form { display: flex; align-items: center; gap: 10px; }
+.quantity-form select { padding: 10px 15px; border: 2px solid #e2e8f0; border-radius: 10px; background: white; font-size: 0.95em; min-width: 120px; transition: all 0.3s ease; }
+.quantity-form select:focus { border-color: #006989; box-shadow: 0 0 0 3px rgba(0, 105, 137, 0.1); outline: none; }
+.delete-btn { background: linear-gradient(135deg, #e53e3e, #c53030); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.9em; transition: all 0.3s ease; display: flex; align-items: center; gap: 5px; }
+.delete-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3); }
+.cart-subtotal { color: #2d3748; font-weight: 700; font-size: 1.2em; }
 
-.cart-header {
-    text-align: center;
-    margin-bottom: 30px;
-}
-
-.cart-header h1 {
-    color: #2d3748;
-    font-size: 2.2em;
-    margin-bottom: 10px;
-}
-
-.cart-summary {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 5px 20px rgba(0, 105, 137, 0.1);
-    overflow: hidden;
-}
-
-.cart-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.cart-table th {
-    background: #006989;
-    color: white;
-    padding: 15px;
-    text-align: left;
-    font-weight: 600;
-}
-
-.cart-table td {
-    padding: 20px 15px;
-    border-bottom: 1px solid #e8f4f8;
-    vertical-align: middle;
-}
-
-.cart-item-image {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #f8fafc;
-}
-
-.cart-item-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.cart-item-name {
-    font-weight: 600;
-    color: #2d3748;
-    font-size: 1.1em;
-}
-
-.cart-item-price {
-    color: #006989;
-    font-weight: 600;
-    font-size: 1.1em;
-}
-
-.quantity-form select {
-    padding: 8px 12px;
-    border: 2px solid #e2e8f0;
-    border-radius: 6px;
-    background: white;
-    font-size: 0.9em;
-}
-
-.cart-subtotal {
-    color: #2d3748;
-    font-weight: 600;
-    font-size: 1.1em;
-}
-
-.cart-total {
-    background: #f8fafc;
-    padding: 20px;
-    text-align: right;
-    font-size: 1.3em;
-    font-weight: 700;
-    color: #006989;
-}
-
-.cart-actions {
+/* --- UPDATED CONSISTENT THEME STYLES --- */
+.totals-section {
+    background: linear-gradient(135deg, #f8fafc, #e8f4f8);
+    padding: 30px;
+    border-top: 2px solid #e8f4f8;
     display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-top: 30px;
+    justify-content: space-between;
+    align-items: flex-start;
     flex-wrap: wrap;
+    gap: 30px;
 }
 
-.btn {
-    padding: 12px 30px;
-    border: none;
-    border-radius: 8px;
-    font-size: 1em;
-    font-weight: 600;
+/* Voucher Area */
+.voucher-box { flex: 1; min-width: 300px; }
+.voucher-header { font-weight: 700; color: #006989; margin-bottom: 15px; display: block; font-size: 1.1em; }
+
+/* Manual Input */
+.voucher-form { display: flex; gap: 10px; margin-bottom: 20px; }
+.voucher-input { flex: 1; padding: 12px; border: 2px solid #cbd5e0; border-radius: 10px; outline: none; }
+.voucher-input:focus { border-color: #006989; box-shadow: 0 0 0 3px rgba(0, 105, 137, 0.1); }
+
+/* Apply Button - Matches Primary Theme */
+.btn-apply { 
+    background: linear-gradient(135deg, #006989, #0088aa); 
+    color: white; 
+    border: none; 
+    padding: 15px 25px; 
+    border-radius: 10px; 
+    cursor: pointer; 
+    font-weight: 600; 
+    transition: all 0.2s;
+}
+.btn-apply:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 105, 137, 0.2);
+}
+
+/* Voucher List */
+.voucher-list { display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; padding-right: 5px; }
+.voucher-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 15px;
+    border-radius: 12px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+.voucher-card:hover { border-color: #006989; box-shadow: 0 4px 12px rgba(0, 105, 137, 0.08); }
+
+/* Left border accent for visual consistency */
+.voucher-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: #006989;
+}
+
+.voucher-info strong { color: #006989; font-size: 1.1em; display: block; margin-bottom: 2px; }
+.voucher-info p { margin: 0; color: #718096; font-size: 0.85em; }
+
+/* Claim Button - Consistent Blue Outline Style */
+.voucher-btn {
+    background: transparent; 
+    color: #006989; 
+    border: 2px solid #006989; 
+    padding: 6px 16px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    font-weight: 700; 
+    font-size: 0.85em;
+    transition: all 0.2s;
+}
+.voucher-btn:hover { 
+    background: #006989; 
+    color: white; 
+}
+
+/* Disabled State */
+.voucher-card.disabled { opacity: 0.6; background: #f8fafc; border-color: #e2e8f0; }
+.voucher-card.disabled::before { background: #cbd5e0; }
+.voucher-card.disabled .voucher-btn { 
+    border-color: #cbd5e0; color: #a0aec0; cursor: not-allowed; 
+}
+.voucher-card.disabled .voucher-btn:hover { background: transparent; color: #a0aec0; }
+
+/* Applied State - Theme Consistent */
+.applied-voucher-tag { 
+    margin-top: 10px; 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 10px; 
+    background: #e0f2f5; /* Light version of your teal */
+    color: #006989; 
+    padding: 12px 20px; 
+    border-radius: 12px; 
+    font-size: 1em; 
+    font-weight: 600; 
+    border: 1px solid #bce3eb; 
+    width: 100%; 
+    box-sizing: border-box; 
+    justify-content: space-between; 
+}
+.remove-voucher { 
+    background: white; 
+    border: 1px solid #e53e3e; 
+    color: #e53e3e; 
+    cursor: pointer; 
+    font-weight: bold; 
+    border-radius: 50%; 
+    width: 26px; height: 26px; 
+    display: flex; align-items: center; justify-content: center; 
+    font-size: 1.1em; line-height: 1; transition: 0.2s; 
+}
+.remove-voucher:hover { background: #e53e3e; color: white; }
+
+/* Address Box */
+.address-box { 
+    flex: 1; 
+    min-width: 300px; 
+    border-right: 1px solid #e2e8f0; 
+    padding-right: 30px; 
+}
+
+.address-list { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    max-height: 300px; 
+    overflow-y: auto; 
+    margin-bottom: 15px; 
+}
+
+.address-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    padding: 15px;
+    border-radius: 12px;
+    transition: all 0.2s;
+    position: relative;
     cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-    text-align: center;
 }
 
-.btn-primary {
+.address-card:hover { 
+    border-color: #006989; 
+    box-shadow: 0 4px 12px rgba(0, 105, 137, 0.08); 
+}
+
+.address-card.selected { 
+    border-color: #006989; 
+    background: #f0f9fc; 
+}
+
+.address-card input[type="radio"] {
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #006989;
+}
+
+.address-info { 
+    flex: 1; 
+    cursor: pointer; 
+}
+
+.address-info strong { 
+    color: #2d3748; 
+    font-size: 1.05em; 
+    display: inline-block; 
+    margin-bottom: 5px; 
+}
+
+.address-info p { 
+    margin: 2px 0; 
+    color: #4a5568; 
+    font-size: 0.9em; 
+    line-height: 1.4;
+}
+
+.default-badge {
     background: #006989;
     color: white;
+    font-size: 0.7em;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-left: 8px;
+    font-weight: 600;
 }
 
-.btn-primary:hover {
-    background: #005672;
-    transform: translateY(-2px);
-}
-
-.btn-secondary {
-    background: #e53e3e;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background: #c53030;
-    transform: translateY(-2px);
-}
-
-.btn-outline {
+.edit-address-btn {
     background: transparent;
+    border: none;
+    color: #e53e3e;
+    cursor: pointer;
+    font-size: 1.1em;
+    padding: 5px;
+    transition: 0.2s;
+}
+
+.edit-address-btn:hover { 
+    transform: scale(1.2); 
+}
+
+.delete-address-btn {
+    background: transparent;
+    border: none;
+    color: #e53e3e;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 5px;
+    transition: 0.2s;
+}
+
+.delete-address-btn:hover { 
+    transform: scale(1.2); 
+}
+
+.btn-use-new {
+    width: 100%;
+    background: transparent;
+    border: 2px dashed #006989;
     color: #006989;
-    border: 2px solid #006989;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
 }
 
-.btn-outline:hover {
-    background: #006989;
-    color: white;
-    transform: translateY(-2px);
+.btn-use-new:hover {
+    background: #f0f9fc;
+    border-style: solid;
 }
 
-.empty-cart {
-    text-align: center;
-    padding: 60px 20px;
-    color: #718096;
+.new-address-form {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
 }
 
-.empty-cart h3 {
-    font-size: 1.5em;
+.address-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
     margin-bottom: 10px;
-    color: #2d3748;
+    font-size: 0.95em;
+    transition: 0.2s;
+    box-sizing: border-box;
 }
+
+.address-input:focus {
+    border-color: #006989;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 105, 137, 0.1);
+}
+
+@media (max-width: 768px) {
+    .address-box { 
+        border-right: none; 
+        padding-right: 0; 
+        border-bottom: 1px solid #e2e8f0; 
+        padding-bottom: 20px; 
+        margin-bottom: 20px; 
+    }
+}
+
+/* Totals Area */
+.totals-box { flex: 1; min-width: 250px; text-align: right; }
+.totals-row { display: flex; justify-content: flex-end; gap: 30px; margin-bottom: 10px; color: #4a5568; font-size: 1.1em; }
+.totals-row.final { font-size: 1.5em; font-weight: 800; color: #006989; margin-top: 15px; padding-top: 15px; border-top: 1px solid #cbd5e0; }
+.discount-text { color: #e53e3e; }
+
+/* ... (Rest of existing styles) ... */
+.cart-actions { display: flex; gap: 20px; justify-content: center; margin-top: 40px; flex-wrap: wrap; }
+.btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; text-align: center; }
+.btn-primary { background: linear-gradient(135deg, #006989, #0088aa); color: white; box-shadow: 0 4px 15px rgba(0, 105, 137, 0.3); }
+.btn-primary:hover { background: linear-gradient(135deg, #005672, #006989); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0, 105, 137, 0.4); }
+.btn-secondary { background: linear-gradient(135deg, #e53e3e, #c53030); color: white; box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3); }
+.btn-secondary:hover { background: linear-gradient(135deg, #c53030, #a31818); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(229, 62, 62, 0.4); }
+.btn-outline { background: transparent; color: #006989; border: 2px solid #006989; }
+.btn-outline:hover { background: #006989; color: white; transform: translateY(-3px); }
+.empty-cart { text-align: center; padding: 80px 20px; color: #718096; }
+.empty-cart-icon { font-size: 4em; margin-bottom: 20px; opacity: 0.7; }
+.empty-cart h3 { font-size: 1.8em; margin-bottom: 15px; color: #2d3748; }
+.empty-cart p { font-size: 1.1em; margin-bottom: 30px; color: #718096; }
+.stock-warning { color: #e67e22; font-size: 0.85em; margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+.low-stock { color: #e74c3c; font-weight: 600; }
+@media (max-width: 768px) { .totals-section { flex-direction: column-reverse; } .totals-box, .voucher-box { width: 100%; text-align: left; } .totals-row { justify-content: space-between; } .cart-table { display: block; overflow-x: auto; } .cart-table th, .cart-table td { padding: 15px 10px; } .btn { padding: 12px 25px; font-size: 1em; } .quantity-form { flex-direction: column; gap: 8px; } }
 </style>
 
 <div class="cart-page-container">
@@ -192,7 +576,7 @@ $total = 0;
         <p>Review your items and proceed to checkout</p>
     </div>
     
-    <?php if ($cart): ?>
+    <?php if ($cart_products): ?>
         <div class="cart-summary">
             <table class="cart-table">
                 <thead>
@@ -201,27 +585,15 @@ $total = 0;
                         <th>Price</th>
                         <th>Quantity</th>
                         <th>Subtotal</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($cart as $id => $unit): 
-                        $stm = $_db->prepare('SELECT * FROM product WHERE productID = ?');
-                        $stm->execute([$id]);
-                        $p = $stm->fetch();
-                        if (!$p) continue;
-                        
-                        $subtotal = $p->price * $unit;
-                        $count += $unit;
-                        $total += $subtotal; 
-
-                        // Generate quantity options
+                    <?php foreach ($cart_products as $p): 
                         $units_options = ['' => 'Select quantity'];
                         $max_units = min($p->stock, 10);
-                        for ($i = 1; $i <= $max_units; $i++) {
-                            $units_options[$i] = $i . ' unit' . ($i > 1 ? 's' : '');
-                        }
-                        
-                        $main_photo = get_main_photo($id);
+                        for ($i = 1; $i <= $max_units; $i++) { $units_options[$i] = $i . ' unit' . ($i > 1 ? 's' : ''); }
+                        $main_photo = get_main_photo($p->productID);
                     ?>
                     <tr>
                         <td>
@@ -230,204 +602,542 @@ $total = 0;
                                     <?php if (!empty($main_photo)): ?>
                                         <img src="/products/<?= $main_photo ?>" alt="<?= $p->name ?>">
                                     <?php else: ?>
-                                        <div style="width: 100%; height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 0.8em;">
-                                            No Image
-                                        </div>
+                                        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #f8fafc, #e8f4f8); display: flex; align-items: center; justify-content: center; font-size: 0.8em; color: #718096;">No Image</div>
                                     <?php endif; ?>
                                 </div>
-                                <div class="cart-item-name"><?= $p->name ?></div>
+                                <div>
+                                    <div class="cart-item-name"><?= $p->name ?></div>
+                                    <div class="cart-item-category"><?= $p->categoryName ?? 'Uncategorized' ?></div>
+                                    <?php if ($p->stock < $p->unit): ?>
+                                        <div class="stock-warning low-stock">⚠️ Only <?= $p->stock ?> in stock</div>
+                                    <?php elseif ($p->stock <= 5): ?>
+                                        <div class="stock-warning">⚠️ Low stock</div>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </td>
                         <td class="cart-item-price">RM <?= number_format($p->price, 2) ?></td>
                         <td>
-                            <form method="post" class="quantity-form">
-                                <?= html_hidden('id', "value='$p->productID'") ?>
-                                <?= html_select('unit', $units_options, '', $unit) ?>
-                            </form>
+                            <div class="quantity-form">
+                                <form method="post" style="display: inline;" class="quantity-update-form" data-product-id="<?= $p->productID ?>">
+                                    <?= html_hidden('id', "value='$p->productID'") ?>
+                                    <?= html_select('unit', $units_options, '', $p->unit, '') ?>
+                                </form>
+                            </div>
                         </td>
-                        <td class="cart-subtotal">RM <?= number_format($subtotal, 2) ?></td>
+                        <td class="cart-subtotal">RM <?= number_format($p->line_total, 2) ?></td>
+                        <td>
+                            <button type="button" class="delete-btn" 
+                                    onclick="deleteCartItem(<?= $p->productID ?>, '<?= htmlspecialchars(addslashes($p->name)) ?>')">
+                                🗑️
+                            </button>
+                        </td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
             
-            <div class="cart-total">
-                Total (<?= $count ?> items): RM <?= number_format($total, 2) ?>
+            <div class="totals-section">
+                
+                <div class="voucher-box">
+                    <span class="voucher-header">Available Vouchers</span>
+                    
+                    <?php if (!$applied_voucher): ?>
+                        
+                        <form method="post" class="voucher-form">
+                            <input type="text" name="voucher_code" class="voucher-input" placeholder="Enter code (e.g. SAVE10)" required>
+                            <button type="submit" name="btn" value="apply_voucher" class="btn-apply">Apply</button>
+                        </form>
+
+                        <?php if ($available_vouchers): ?>
+                            <div class="voucher-list">
+                                <?php foreach ($available_vouchers as $v): 
+                                    $min_met = $subtotal >= $v->min_spend;
+                                    $desc = ($v->discount_type == 'fixed') 
+                                            ? "RM " . number_format($v->discount_value, 0) . " OFF" 
+                                            : number_format($v->discount_value, 0) . "% OFF";
+                                ?>
+                                <div class="voucher-card <?= $min_met ? '' : 'disabled' ?>">
+                                    <div class="voucher-info">
+                                        <strong><?= htmlspecialchars($v->voucher_code) ?></strong>
+                                        <p><?= $desc ?> (Min spend: RM<?= $v->min_spend ?>)</p>
+                                    </div>
+                                    <form method="post">
+                                        <input type="hidden" name="voucher_code" value="<?= $v->voucher_code ?>">
+                                        <button type="submit" name="btn" value="apply_voucher" class="voucher-btn" <?= $min_met ? '' : 'disabled title="Spend more to unlock"' ?>>
+                                            <?= $min_met ? 'Claim' : 'Locked' ?>
+                                        </button>
+                                    </form>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+
+                    <?php else: ?>
+                        <div class="applied-voucher-tag">
+                            <div>
+                                <span style="display:block; font-size:0.8em; opacity:0.8;">Applied Voucher:</span>
+                                <span>🏷️ <b><?= htmlspecialchars($applied_voucher->voucher_code) ?></b></span>
+                            </div>
+                            <form method="post" style="display:inline;">
+                                <button type="submit" name="btn" value="remove_voucher" class="remove-voucher" title="Remove Voucher">&times;</button>
+                            </form>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Address Selection Box -->
+                <div class="address-box">
+                    <span class="voucher-header">Delivery Address</span>
+                    
+                    <?php if ($saved_addresses): ?>
+                        <div class="address-list">
+                            <?php foreach ($saved_addresses as $addr): ?>
+                            <form method="post" class="address-card <?= ($_SESSION['selected_address'] ?? ($addr->is_default ? $addr->address_id : null)) == $addr->address_id ? 'selected' : '' ?>">
+                                <input type="radio" name="address_id" value="<?= $addr->address_id ?>" 
+                                    id="addr_<?= $addr->address_id ?>" 
+                                    <?= ($_SESSION['selected_address'] ?? ($addr->is_default ? $addr->address_id : null)) == $addr->address_id ? 'checked' : '' ?>
+                                    onchange="this.form.submit()">
+                                <input type="hidden" name="btn" value="select_address">
+                                <label for="addr_<?= $addr->address_id ?>" class="address-info">
+                                    <strong><?= htmlspecialchars($addr->recipient_name) ?></strong>
+                                    <?php if ($addr->is_default): ?><span class="default-badge">Default</span><?php endif; ?>
+                                    <p><?= htmlspecialchars($addr->phone_number) ?></p>
+                                    <p><?= htmlspecialchars($addr->address_line1) ?><?= $addr->address_line2 ? ', ' . htmlspecialchars($addr->address_line2) : '' ?></p>
+                                    <p><?= htmlspecialchars($addr->postal_code) ?> <?= htmlspecialchars($addr->city) ?>, <?= htmlspecialchars($addr->state) ?></p>
+                                </label>
+                                <div class="address-actions">
+                                    <button type="button" class="edit-address-btn" 
+                                            onclick="editAddress(
+                                                <?= $addr->address_id ?>, 
+                                                {
+                                                    recipient_name: '<?= addslashes($addr->recipient_name) ?>',
+                                                    phone_number: '<?= addslashes($addr->phone_number) ?>',
+                                                    address_line1: '<?= addslashes($addr->address_line1) ?>',
+                                                    address_line2: '<?= addslashes($addr->address_line2) ?>',
+                                                    city: '<?= addslashes($addr->city) ?>',
+                                                    state: '<?= addslashes($addr->state) ?>',
+                                                    postal_code: '<?= addslashes($addr->postal_code) ?>',
+                                                    latitude: <?= $addr->latitude ? "'" . addslashes($addr->latitude) . "'" : 'null' ?>,
+                                                    longitude: <?= $addr->longitude ? "'" . addslashes($addr->longitude) . "'" : 'null' ?>,
+                                                    is_default: <?= $addr->is_default ?>
+                                                }
+                                            )">
+                                        ✏️
+                                    </button>
+                                    <button type="submit" name="btn" value="delete_address" class="delete-address-btn" 
+                                            onclick="return confirmDeleteAddress(event)">
+                                        🗑️
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <?php endforeach; ?>
+                        </div>
+                        
+                        <button class="btn-use-new" onclick="toggleNewAddressForm(); return false;">+ Add New Address</button>
+                    <?php endif; ?>
+
+                    <!-- New Address Form -->
+                    <div class="new-address-form" style="<?= !$saved_addresses || isset($_SESSION['show_new_address_form']) ? 'display:block;' : 'display:none;' ?>">
+                        <form method="post" id="address-form">
+                            <input type="hidden" name="btn" value="save_address">
+                            <input type="hidden" name="latitude" id="latitude">
+                            <input type="hidden" name="longitude" id="longitude">
+                            
+                            <input type="text" id="address-search" class="address-input" placeholder="🔍 Search address or enter manually..." autocomplete="off">
+                            <div id="map" style="display:none; height: 250px; border-radius: 12px; margin: 15px 0; border: 2px solid #e2e8f0;"></div>
+                            
+                            <input type="text" name="recipient_name" id="recipient_name" placeholder="Recipient Name *" class="address-input" required>
+                            <input type="tel" 
+                                name="phone_number" 
+                                id="phone_number"
+                                placeholder="Phone Number * (e.g., 0123456789)" 
+                                class="address-input" 
+                                pattern="^(01[0-9]{8,9}|03[0-9]{8})$"
+                                maxlength="11"
+                                required>
+                            <input type="text" name="address_line1" id="address_line1" placeholder="Address Line 1 *" class="address-input" required>
+                            <input type="text" name="address_line2" id="address_line2" placeholder="Address Line 2 (Optional)" class="address-input">
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <input type="text" name="city" id="city" placeholder="City *" class="address-input" required>
+                                <input type="text" name="state" id="state" placeholder="State *" class="address-input" required>
+                            </div>
+                            
+                            <input type="text" name="postal_code" id="postal_code" placeholder="Postal Code *" class="address-input" required>
+                            
+                            <label style="display: flex; align-items: center; gap: 8px; margin: 10px 0; color: #4a5568;">
+                                <input type="checkbox" name="set_default" value="1">
+                                Set as default address
+                            </label>
+                            
+                            <button type="submit" class="btn-apply" style="width: 100%; margin-top: 10px;">💾 Save Address</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="totals-box">
+                    <div class="totals-row">
+                        <span>Subtotal:</span>
+                        <span>RM <?= number_format($subtotal, 2) ?></span>
+                    </div>
+                    <?php if ($discount_amount > 0): ?>
+                    <div class="totals-row discount-text">
+                        <span>Discount:</span>
+                        <span>- RM <?= number_format($discount_amount, 2) ?></span>
+                    </div>
+                    <?php endif; ?>
+                    <div class="totals-row final">
+                        <span>Grand Total:</span>
+                        <span>RM <?= number_format($grand_total, 2) ?></span>
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="cart-actions">
-            <button class="btn btn-secondary" data-post="?btn=clear">Clear Cart</button>
+            <button type="button" class="btn btn-secondary" onclick="clearCart()">🗑️ Clear Cart</button>
+            <a href="../product/list.php" class="btn btn-outline">← Continue Shopping</a>
             <?php if ($_user?->role == 'Member'): ?>
-                <button class="btn btn-primary" data-get="../payment/payment.php">Proceed to Checkout</button>
+                <?php if (isset($_SESSION['selected_address']) || !empty($saved_addresses)): ?>
+                    <button class="btn btn-primary" data-get="../payment/payment.php">🛒 Proceed to Checkout</button>
+                <?php else: ?>
+                    <button class="btn btn-primary" onclick="alert('Please select or add a delivery address first.'); return false;">🛒 Proceed to Checkout</button>
+                <?php endif; ?>
             <?php else: ?>
-                <a href="/login.php" class="btn btn-outline">Login to Checkout</a>
+                <a href="/login.php" class="btn btn-outline">🔐 Login to Checkout</a>
             <?php endif; ?>
         </div>
     <?php else: ?>
         <div class="empty-cart">
             <h3>Your cart is empty</h3>
-            <p>Browse our products and add some items to your cart!</p>
-            <a href="../product/list.php" class="btn btn-primary">Start Shopping</a>
+            <a href="../product/list.php" class="btn btn-primary">🛍️ Start Shopping</a>
         </div>
     <?php endif; ?>
 </div>
-
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCnmt907PtCJ_i5Yd3tIf2_w6CR3Y7KL84&libraries=places&callback=initAutocomplete" async defer></script>
 <script>
-    // ============================================================================
-    // Shopping Cart
-    // ============================================================================
-    function initImageModal() {
-        let currentImageIndex = 0;
-        let images = [];
-        
-        function collectImages() {
-            images = [];
-            
-            // Add main photo if exists
-            const mainImage = document.getElementById('mainProductImage');
-            if (mainImage) {
-                images.push({
-                    src: mainImage.dataset.fullsize || mainImage.src,
-                    alt: mainImage.alt,
-                    index: 0
-                });
-            }
-            
-            // Add additional photos
-            const thumbnails = document.querySelectorAll('.thumbnail');
-            thumbnails.forEach(thumb => {
-                images.push({
-                    src: thumb.dataset.fullsize || thumb.src,
-                    alt: thumb.alt,
-                    index: parseInt(thumb.dataset.index)
-                });
-            });
-            
-            images.sort((a, b) => a.index - b.index);
+    console.log('jQuery loaded:', typeof $ !== 'undefined');
+    console.log('Forms found:', $('form').length);
+    // Google Maps Integration
+    let map, marker, autocomplete;
+
+    function initAutocomplete() {
+        console.log('initAutocomplete called');
+        const input = document.getElementById('address-search');
+        if (!input) {
+            console.log('Address search input not found, skipping autocomplete');
+            return;
         }
-        
-        function openModal(index) {
-            currentImageIndex = index;
-            const image = images[currentImageIndex];
-            
-            if (image) {
-                const modal = document.getElementById("imageModal");
-                const modalImg = document.getElementById("modalImage");
-                const captionText = document.querySelector(".modal-caption");
-                const counter = document.getElementById("imageCounter");
+
+        try {
+            autocomplete = new google.maps.places.Autocomplete(input, {
+                componentRestrictions: { country: 'my' },
+                fields: ['address_components', 'geometry', 'formatted_address', 'name']
+            });
+
+            autocomplete.addListener('place_changed', function() {
+                const place = autocomplete.getPlace();
                 
-                modal.style.display = "block";
-                modalImg.src = image.src;
-                captionText.innerHTML = image.alt;
-                counter.innerHTML = `${currentImageIndex + 1} / ${images.length}`;
+                if (!place.geometry) {
+                    alert('No details available for this address');
+                    return;
+                }
+
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+
+                $('#latitude').val(lat);
+                $('#longitude').val(lng);
+
+                let streetNumber = '', route = '', premise = '', subpremise = '';
+                let city = '', state = '', postal = '';
                 
-                updateNavigation();
-            }
-        }
-        
-        function updateNavigation() {
-            const prevBtn = document.getElementById("prevBtn");
-            const nextBtn = document.getElementById("nextBtn");
-            
-            prevBtn.style.display = images.length > 1 ? "block" : "none";
-            nextBtn.style.display = images.length > 1 ? "block" : "none";
-        }
-        
-        function nextImage() {
-            currentImageIndex = (currentImageIndex + 1) % images.length;
-            openModal(currentImageIndex);
-        }
-        
-        function prevImage() {
-            currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
-            openModal(currentImageIndex);
-        }
-        
-        function initEventListeners() {
-            const modal = document.getElementById("imageModal");
-            const modalImg = document.getElementById("modalImage");
-            const captionText = document.querySelector(".modal-caption");
-            const counter = document.getElementById("imageCounter");
-            
-            document.querySelectorAll('.clickable-main, .thumbnail').forEach(img => {
-                img.addEventListener('click', function() {
-                    collectImages();
-                    const index = parseInt(this.dataset.index);
-                    openModal(index);
-                });
-            });
-            
-            document.getElementById('nextBtn').addEventListener('click', nextImage);
-            document.getElementById('prevBtn').addEventListener('click', prevImage);
-            
-            document.querySelector('.modal-close').addEventListener('click', function() {
-                modal.style.display = "none";
-            });
-            
-            modal.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    modal.style.display = "none";
+                for (let component of place.address_components) {
+                    const types = component.types;
+                    
+                    if (types.includes('street_number')) streetNumber = component.long_name;
+                    if (types.includes('route')) route = component.long_name;
+                    if (types.includes('premise')) premise = component.long_name;
+                    if (types.includes('subpremise')) subpremise = component.long_name;
+                    if (types.includes('locality')) city = component.long_name;
+                    if (types.includes('sublocality') && !city) city = component.long_name;
+                    if (types.includes('administrative_area_level_1')) state = component.long_name;
+                    if (types.includes('postal_code')) postal = component.long_name;
                 }
-            });
-            
-            document.addEventListener('keydown', function(event) {
-                if (modal.style.display === "block") {
-                    if (event.key === 'Escape') {
-                        modal.style.display = "none";
-                    } else if (event.key === 'ArrowRight') {
-                        nextImage();
-                    } else if (event.key === 'ArrowLeft') {
-                        prevImage();
-                    }
+
+                let addressLine1 = '';
+                if (place.name && !place.name.includes(route) && !place.name.match(/^\d+$/)) {
+                    addressLine1 = place.name;
                 }
+                if (premise && premise !== place.name) {
+                    addressLine1 += (addressLine1 ? ', ' : '') + premise;
+                }
+                if (subpremise) {
+                    addressLine1 += (addressLine1 ? ', ' : '') + 'Unit ' + subpremise;
+                }
+
+                let addressLine2 = '';
+                if (streetNumber) addressLine2 = streetNumber;
+                if (route) addressLine2 += (addressLine2 ? ' ' : '') + route;
+
+                if (!addressLine1 && place.formatted_address) {
+                    addressLine1 = place.formatted_address.split(',')[0];
+                }
+
+                $('#address_line1').val(addressLine1.trim());
+                $('#address_line2').val(addressLine2.trim());
+                $('#city').val(city);
+                $('#state').val(state);
+                $('#postal_code').val(postal);
+
+                initMap(lat, lng);
             });
+        } catch (error) {
+            console.error('Google Maps autocomplete error:', error);
         }
-        
-        // Initialize everything
-        collectImages();
-        initEventListeners();
     }
 
-    function initCartHandlers() {
-        $('select[name="unit"]').on('change', function(e) {
-            if (this.value !== '') {
-                e.target.form.submit();
-            }
+    function clearCart() {
+        if (!confirm('Clear entire cart?')) {
+            return false;
+        }
+        
+        const form = $('<form>', {
+            method: 'POST',
+            action: ''
         });
+        
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'btn',
+            value: 'clear'
+        }));
+        
+        form.appendTo('body').submit();
+    }
 
-        $(document).on('click', '#clearBtn', function() {
-            $('#unit').val('');
-            $(this).closest('form').submit();
+    function updateCartCount() {
+        const itemCount = <?= $count ?>;
+        $('.cart-count').text(itemCount);
+    }
+    updateCartCount();
+
+    function initMap(lat, lng) {
+        const mapDiv = document.getElementById('map');
+        if (!mapDiv) {
+            console.error('Map div not found!');
+            return;
+        }
+        mapDiv.style.display = 'block';
+
+        try {
+            const location = { lat: parseFloat(lat), lng: parseFloat(lng) };
+
+            map = new google.maps.Map(mapDiv, {
+                center: location,
+                zoom: 15,
+                disableDefaultUI: false,
+                zoomControl: true,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+
+            if (marker) marker.setMap(null);
+
+            marker = new google.maps.Marker({
+                position: location,
+                map: map,
+                draggable: true,
+                animation: google.maps.Animation.DROP
+            });
+
+            marker.addListener('dragend', function() {
+                const pos = marker.getPosition();
+                $('#latitude').val(pos.lat());
+                $('#longitude').val(pos.lng());
+            });
+        } catch (error) {
+            console.error('Error initializing map:', error);
+            mapDiv.innerHTML = '<p style="color: red; padding: 20px;">Map could not be loaded. Please check your API key.</p>';
+        }
+    }
+
+    function toggleNewAddressForm() {
+        $('.new-address-form').slideToggle(300);
+    }
+
+    function editAddress(addressId, addressData) {
+        $('.new-address-form').slideDown(300);
+        $('#address-form input[name="address_id"]').remove();
+        $('#address-form input[name="btn"]').val('update_address');
+        $('#address-form').append('<input type="hidden" name="address_id" value="' + addressId + '">');
+        
+        $('#address-search').val(addressData.address_line1 + (addressData.address_line2 ? ', ' + addressData.address_line2 : ''));
+        $('#recipient_name').val(addressData.recipient_name);
+        $('#phone_number').val(addressData.phone_number);
+        $('#address_line1').val(addressData.address_line1);
+        $('#address_line2').val(addressData.address_line2 || '');
+        $('#city').val(addressData.city);
+        $('#state').val(addressData.state);
+        $('#postal_code').val(addressData.postal_code);
+        $('input[name="set_default"]').prop('checked', addressData.is_default == 1);
+        
+        if (addressData.latitude && addressData.longitude) {
+            $('#latitude').val(addressData.latitude);
+            $('#longitude').val(addressData.longitude);
+            setTimeout(() => {
+                initMap(addressData.latitude, addressData.longitude);
+            }, 500);
+        } else {
+            $('#map').hide();
+        }
+        
+        if (!$('#cancel-edit-btn').length) {
+            $('#address-form').append('<button type="button" id="cancel-edit-btn" class="btn-cancel" style="width: 100%; margin-top: 10px; background: #f7fafc; color: #4a5568; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px;">Cancel Edit</button>');
+        }
+        
+        $('#cancel-edit-btn').off('click').on('click', function() {
+            resetAddressForm();
         });
+        
+        $('html, body').animate({
+            scrollTop: $('.new-address-form').offset().top - 100
+        }, 500);
+    }
 
-        $(document).on('click', '#addToCartBtn', function(e) {
-            const form = $(this).closest('form');
-            const select = form.find('select[name="unit"]');
-            
-            if (select.val() === '') {
-                e.preventDefault();
-                alert('Please select a quantity first');
-                select.focus();
-            }
+    function resetAddressForm() {
+        $('#address-form')[0].reset();
+        $('#address-form input[name="btn"]').val('save_address');
+        $('#address-form input[name="address_id"]').remove();
+        $('#cancel-edit-btn').remove();
+        $('#map').hide();
+    }
+
+    function confirmDeleteAddress(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        if (!confirm('Delete this address?')) {
+            return false;
+        }
+        
+        // Create a new form specifically for deletion
+        const button = $(event.target).closest('button');
+        const addressId = button.closest('form').find('input[name="address_id"]').val();
+        
+        const deleteForm = $('<form>', {
+            'method': 'post',
+            'action': ''
         });
+        
+        deleteForm.append($('<input>', {
+            'type': 'hidden',
+            'name': 'btn',
+            'value': 'delete_address'
+        }));
+        
+        deleteForm.append($('<input>', {
+            'type': 'hidden',
+            'name': 'address_id',
+            'value': addressId
+        }));
+        
+        deleteForm.appendTo('body').submit();
+        
+        return false;
+    }
 
-        $(document).on('click', '.product-image img[data-get]', function(e) {
+    function deleteCartItem(productId, productName) {
+        if (!confirm('Remove "' + productName + '" from cart?')) {
+            return false;
+        }
+        
+        const form = $('<form>', {
+            method: 'POST',
+            action: window.location.href
+        });
+        
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'id',
+            value: productId
+        }));
+        
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'btn',
+            value: 'delete'
+        }));
+        
+        $('body').append(form);
+        form.submit();
+    }
+    
+    $(document).ready(function() {
+        $('.quantity-update-form select[name="unit"]').on('change', function(e) {
             e.preventDefault();
-            const url = $(this).data('get');
-            if (url) {
-                window.location.href = url;
+            e.stopPropagation();
+            
+            if (this.value !== '') {
+                const form = $(this).closest('.quantity-update-form');
+                const productId = form.data('product-id');
+                
+                // Submit only this specific form
+                form[0].submit();
+            }
+            
+            return false;
+        });
+
+        // Add smooth animations
+        $('.delete-btn, .btn').hover(
+            function() { $(this).css('transform', 'translateY(-2px)'); },
+            function() { $(this).css('transform', 'translateY(0)'); }
+        );
+
+        $('#phone_number').on('input', function(e) {
+            let value = this.value.replace(/\D/g, '');
+            
+            if (value.length > 11) {
+                value = value.slice(0, 11);
+            }
+            
+            this.value = value;
+            
+            const input = $(this);
+            const mobilePattern = /^01[0-9]{8,9}$/;
+            const landlinePattern = /^03[0-9]{8}$/;
+            
+            if (value.length > 0) {
+                if (mobilePattern.test(value) || landlinePattern.test(value)) {
+                    input.css('border-color', '#48bb78');
+                } else if (value.length >= 9) {
+                    input.css('border-color', '#f56565');
+                } else {
+                    input.css('border-color', '#e2e8f0');
+                }
+            } else {
+                input.css('border-color', '#e2e8f0');
             }
         });
-        
-        initImageModal();
-    }
-    $('select').on('change', function(e) {
-        if (this.value !== '') {
-            e.target.form.submit();
-        }
+
+        // Form submission validation
+        $('#address-form').on('submit', function(e) {
+            const phone = $('#phone_number').val();
+            const mobilePattern = /^01[0-9]{8,9}$/;
+            const landlinePattern = /^03[0-9]{8}$/;
+            
+            if (!mobilePattern.test(phone) && !landlinePattern.test(phone)) {
+                e.preventDefault();
+                alert('Please enter a valid Malaysian phone number:\n• Mobile: 01X-XXXXXXXX (10-11 digits)\n• Landline: 03-XXXXXXXX (10 digits)');
+                $('#phone_number').focus();
+                return false;
+            }
+        });
     });
 </script>
 
 <?php
 include '../footer.php';
+?>

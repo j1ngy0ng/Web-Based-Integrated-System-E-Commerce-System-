@@ -97,11 +97,18 @@ form.form { max-width: 450px; margin: 50px auto; background: #fff; padding: 30px
 form label { display: block; margin-bottom: 8px; font-weight: 600; margin-top: 20px; }
 
 /* Text inputs */
-form input[type="text"], form input[type="email"], form input[type="password"] {
-    width: 95%; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; transition: border 0.3s;
+form.form input[type="text"], form.form input[type="email"], form.form input[type="password"] {
+    width: 95%; 
+    padding: 10px 14px; 
+    border: 1px solid #ccc; 
+    border-radius: 8px; 
+    font-size: 1rem; 
+    transition: border 0.3s;
 }
-form input[type="text"]:focus, form input[type="email"]:focus, form input[type="password"]:focus {
-    border-color: #007BFF; outline: none;
+
+form.form input[type="text"]:focus, form.form input[type="email"]:focus, form.form input[type="password"]:focus {
+    border-color: #007BFF; 
+    outline: none;
 }
 
 /* Error messages */

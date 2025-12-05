@@ -1,0 +1,16 @@
+-- 1. Ensure the parent column (vouchers) is ready
+ALTER TABLE vouchers 
+MODIFY voucher_code VARCHAR(20) NOT NULL;
+
+-- 2. Ensure the child column (order) matches exactly and allows NULL
+ALTER TABLE `order` 
+MODIFY voucher_code VARCHAR(20) NULL;
+
+-- 3. Add the Foreign Key Constraint
+ALTER TABLE `order`
+ADD CONSTRAINT fk_order_voucher
+FOREIGN KEY (voucher_code) REFERENCES vouchers(voucher_code)
+ON UPDATE CASCADE
+ON DELETE SET NULL;
+
+ALTER TABLE `order` DROP COLUMN ShippingAddress;

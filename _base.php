@@ -287,8 +287,8 @@ function html_radios($key, $items, $br = false) {
 }
 
 // Generate <select>
-function html_select($key, $items, $default = '- Select One -', $attr = '') {
-    $value = encode($GLOBALS[$key] ?? '');
+function html_select($key, $items, $default = '- Select One -', $selected = '', $attr = '') {
+    $value = $selected !== '' ? encode($selected) : encode($GLOBALS[$key] ?? '');
     echo "<select id='$key' name='$key' $attr>";
     if ($default !== null) {
         echo "<option value=''>$default</option>";
@@ -323,6 +323,10 @@ function table_headers($fields, $sort, $dir, $href = '') {
 // ============================================================================
 // Error Handlings
 // ============================================================================
+
+function alert($message) {
+    $_SESSION['alert'] = $message;
+}
 
 // Global error array
 $_err = [];

@@ -10,36 +10,96 @@ auth('Member');
 $cart = get_cart();
 if (!$cart) redirect('../order/cart.php');
 
-// Calculate total amount
-$TotalAmount = 0;
-foreach ($cart as $productID => $quantity) {
-    $stm = $_db->prepare('SELECT price FROM product WHERE productID = ?');
-    $stm->execute([$productID]);
-    $price = $stm->fetchColumn();
-    $TotalAmount += $price * $quantity;
+// ----------------------------------------------------------------------------
+// 1. CALCULATE SUBTOTAL (Sum of items)
+// ----------------------------------------------------------------------------
+$cartItems = [];
+$subtotal = 0;
+
+// Get product IDs from cart
+$productIDs = array_keys($cart);
+$placeholders = str_repeat('?,', count($productIDs) - 1) . '?';
+
+// Fetch all products in cart in one query for efficiency
+$stm = $_db->prepare("
+    SELECT p.productID, p.name, p.price, p.stock,
+       pp.photoURL as image
+    FROM product p
+    LEFT JOIN productPhoto pp ON p.productID = pp.productID AND pp.is_main = 1
+    WHERE p.productID IN ($placeholders)
+");
+$stm->execute($productIDs);
+$products = $stm->fetchAll(PDO::FETCH_OBJ);
+
+// Create cart items array with all details
+foreach ($products as $product) {
+    $quantity = $cart[$product->productID];
+    $itemTotal = $product->price * $quantity;
+    $subtotal += $itemTotal;
+    
+    $cartItems[] = [
+        'id' => $product->productID,
+        'name' => $product->name,
+        'price' => $product->price,
+        'quantity' => $quantity,
+        'total' => $itemTotal,
+        'image' => $product->image
+    ];
 }
 
-// Convert to cents for Stripe (Stripe uses smallest currency unit)
-$amount_cents = $TotalAmount * 100;
+// Store in session for later use (optional)
+$_SESSION['cart_items'] = $cartItems;
 
 // ----------------------------------------------------------------------------
-// Create PaymentIntent on the backend FIRST
+// 2. APPLY VOUCHER DISCOUNT (Check Session)
+// ----------------------------------------------------------------------------
+$discount_amount = 0;
+$voucher_code = null;
+
+if (isset($_SESSION['voucher'])) {
+    $v = $_SESSION['voucher'];
+    
+    // Re-validate minimum spend to be safe
+    if ($subtotal >= $v->min_spend) {
+        $voucher_code = $v->voucher_code;
+        
+        if ($v->discount_type == 'fixed') {
+            $discount_amount = $v->discount_value;
+        } else {
+            // Percent
+            $discount_amount = $subtotal * ($v->discount_value / 100);
+        }
+        
+        // Cap discount at subtotal (cannot be negative)
+        if ($discount_amount > $subtotal) {
+            $discount_amount = $subtotal;
+        }
+    }
+}
+
+// Final Total to Charge
+$TotalAmount = $subtotal - $discount_amount;
+
+// Convert to cents for Stripe
+$amount_cents = round($TotalAmount * 100);
+
+// ----------------------------------------------------------------------------
+// Create PaymentIntent
 // ----------------------------------------------------------------------------
 require_once '../vendor/autoload.php';
 
 try {
     \Stripe\Stripe::setApiKey(getenv('STRIPE_SECRET_KEY'));
     
-    // Create PaymentIntent
     $paymentIntent = \Stripe\PaymentIntent::create([
         'amount' => $amount_cents,
         'currency' => 'myr',
-        'automatic_payment_methods' => [
-            'enabled' => true,
-        ],
+        'automatic_payment_methods' => ['enabled' => true],
         'metadata' => [
             'user_id' => $_user->id,
-            'order_total' => $TotalAmount
+            'order_total' => $TotalAmount,
+            'voucher_code' => $voucher_code,
+            'item_count' => count($cartItems)
         ]
     ]);
     
@@ -50,19 +110,197 @@ try {
     redirect('../order/cart.php');
 }
 
-// ----------------------------------------------------------------------------
-
 $_title = 'Payment | Checkout';
 include '../navbar.php';
 ?>
+
+<style>
+    .payment-container {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .shipping-info, .order-summary {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .cart-item {
+        display: flex;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .item-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-right: 15px;
+    }
+    
+    .item-details {
+        flex: 1;
+    }
+    
+    .item-price {
+        text-align: right;
+        min-width: 150px;
+    }
+    
+    .amount-row {
+        border-top: 2px solid #dee2e6;
+        padding-top: 10px;
+        margin-top: 10px;
+        text-align: right;
+    }
+    
+    .total-row {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #28a745;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    #card-element {
+        padding: 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        background: white;
+    }
+    
+    .error-message {
+        color: #dc3545;
+        margin-top: 5px;
+        font-size: 0.9em;
+    }
+    
+    .payment-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+        border: none;
+    }
+    
+    .btn-primary {
+        background: #007bff;
+        color: white;
+        border: none;
+    }
+    
+    .btn-primary:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+</style>
 
 <div class="container">
     <div class="payment-container">
         <h2>Payment Details</h2>
         
+        <div class="shipping-info">
+            <?php if (isset($_SESSION['selected_address'])): 
+                $address_id = $_SESSION['selected_address'];
+                $stm = $_db->prepare('SELECT recipient_name, phone_number, address_line1, address_line2, city, state, postal_code FROM shipping_addresses WHERE address_id = ?');
+                $stm->execute([$address_id]);
+                $address = $stm->fetch();
+            ?>
+                <h3>Shipping Information</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Recipient:</strong> <?= htmlspecialchars($address->recipient_name) ?></p>
+                        <p><strong>Phone:</strong> <?= htmlspecialchars($address->phone_number) ?></p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Address:</strong></p>
+                        <p>
+                            <?= htmlspecialchars($address->address_line1) ?>
+                            <?= $address->address_line2 ? ', ' . htmlspecialchars($address->address_line2) : '' ?><br>
+                            <?= htmlspecialchars($address->postal_code) ?> <?= htmlspecialchars($address->city) ?><br>
+                            <?= htmlspecialchars($address->state) ?>
+                        </p>
+                    </div>
+                </div>
+            <?php else: ?>
+                <p class="text-danger">No shipping address selected. Please go back and select an address.</p>
+            <?php endif; ?>
+        </div>
+
         <div class="order-summary">
             <h3>Order Summary</h3>
-            <p><strong>Total Amount:</strong> RM <?= number_format($TotalAmount, 2) ?></p>
+            
+            <?php if (!empty($cartItems)): ?>
+                <div class="mb-3">
+                    <?php foreach ($cartItems as $item): ?>
+                        <div class="cart-item">
+                            <?php if ($item['image']): ?>
+                                <img src="../products/<?= htmlspecialchars($item['image']) ?>" 
+                                    alt="<?= htmlspecialchars($item['name']) ?>" 
+                                    class="item-image">
+                            <?php else: ?>
+                                <div class="item-image bg-light d-flex align-items-center justify-content-center">
+                                    <span class="text-muted">No Image</span>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <div class="item-details">
+                                <h6 class="mb-1"><?= htmlspecialchars($item['name']) ?></h6>
+                                <small class="text-muted">Quantity: <?= $item['quantity'] ?></small>
+                            </div>
+                            
+                            <div class="item-price">
+                                <div>RM <?= number_format($item['price'], 2) ?> each</div>
+                                <div><strong>RM <?= number_format($item['total'], 2) ?></strong></div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                
+                <!-- Order Totals -->
+                <div class="amount-row">
+                    <div class="d-flex justify-content-between">
+                        <span>Subtotal:</span>
+                        <span>RM <?= number_format($subtotal, 2) ?></span>
+                    </div>
+                    
+                    <?php if ($discount_amount > 0): ?>
+                    <div class="d-flex justify-content-between text-success">
+                        <span>Discount:</span>
+                        <span>- RM <?= number_format($discount_amount, 2) ?></span>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <div class="d-flex justify-content-between total-row">
+                        <span>Total:</span>
+                        <span>RM <?= number_format($TotalAmount, 2) ?></span>
+                    </div>
+                </div>
+            <?php else: ?>
+                <p class="text-muted">No items in cart</p>
+            <?php endif; ?>
         </div>
 
         <form id="payment-form">
@@ -185,63 +423,6 @@ cardElement.on('change', ({ error }) => {
     }
 });
 </script>
-
-<style>
-.payment-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.order-summary {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-control {
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    min-height: 45px;
-}
-
-.error-message {
-    color: #dc3545;
-    font-size: 14px;
-    margin-top: 5px;
-}
-
-.payment-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-block;
-}
-
-.btn-primary {
-    background: #007bff;
-    color: white;
-}
-
-.btn-secondary {
-    background: #6c757d;
-    color: white;
-}
-</style>
 
 <?php
 include '../footer.php';
