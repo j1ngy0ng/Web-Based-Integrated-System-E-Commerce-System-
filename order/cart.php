@@ -816,102 +816,15 @@ include '../navbar.php';
         </div>
     <?php endif; ?>
 </div>
-
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCnmt907PtCJ_i5Yd3tIf2_w6CR3Y7KL84&libraries=places&callback=initAutocomplete" async defer>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCnmt907PtCJ_i5Yd3tIf2_w6CR3Y7KL84&libraries=places&callback=initAutocomplete" async defer></script>
+<script>
     console.log('jQuery loaded:', typeof $ !== 'undefined');
     console.log('Forms found:', $('form').length);
-    $(document).ready(function() {
-        $('.quantity-update-form select[name="unit"]').on('change', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (this.value !== '') {
-                const form = $(this).closest('.quantity-update-form');
-                const productId = form.data('product-id');
-                
-                // Submit only this specific form
-                form[0].submit();
-            }
-            
-            return false;
-        });
-
-        // Add smooth animations
-        $('.delete-btn, .btn').hover(
-            function() { $(this).css('transform', 'translateY(-2px)'); },
-            function() { $(this).css('transform', 'translateY(0)'); }
-        );
-
-        $('#phone_number').on('input', function(e) {
-            let value = this.value.replace(/\D/g, '');
-            
-            if (value.length > 11) {
-                value = value.slice(0, 11);
-            }
-            
-            this.value = value;
-            
-            const input = $(this);
-            const mobilePattern = /^01[0-9]{8,9}$/;
-            const landlinePattern = /^03[0-9]{8}$/;
-            
-            if (value.length > 0) {
-                if (mobilePattern.test(value) || landlinePattern.test(value)) {
-                    input.css('border-color', '#48bb78');
-                } else if (value.length >= 9) {
-                    input.css('border-color', '#f56565');
-                } else {
-                    input.css('border-color', '#e2e8f0');
-                }
-            } else {
-                input.css('border-color', '#e2e8f0');
-            }
-        });
-
-        // Form submission validation
-        $('#address-form').on('submit', function(e) {
-            const phone = $('#phone_number').val();
-            const mobilePattern = /^01[0-9]{8,9}$/;
-            const landlinePattern = /^03[0-9]{8}$/;
-            
-            if (!mobilePattern.test(phone) && !landlinePattern.test(phone)) {
-                e.preventDefault();
-                alert('Please enter a valid Malaysian phone number:\n• Mobile: 01X-XXXXXXXX (10-11 digits)\n• Landline: 03-XXXXXXXX (10 digits)');
-                $('#phone_number').focus();
-                return false;
-            }
-        });
-    });
-
-    function clearCart() {
-        if (!confirm('Clear entire cart?')) {
-            return false;
-        }
-        
-        const form = $('<form>', {
-            method: 'POST',
-            action: ''
-        });
-        
-        form.append($('<input>', {
-            type: 'hidden',
-            name: 'btn',
-            value: 'clear'
-        }));
-        
-        form.appendTo('body').submit();
-    }
-
-    function updateCartCount() {
-        const itemCount = <?= $count ?>;
-        $('.cart-count').text(itemCount);
-    }
-    updateCartCount();
-
     // Google Maps Integration
     let map, marker, autocomplete;
 
     function initAutocomplete() {
+        console.log('initAutocomplete called');
         const input = document.getElementById('address-search');
         if (!input) {
             console.log('Address search input not found, skipping autocomplete');
@@ -985,6 +898,31 @@ include '../navbar.php';
             console.error('Google Maps autocomplete error:', error);
         }
     }
+
+    function clearCart() {
+        if (!confirm('Clear entire cart?')) {
+            return false;
+        }
+        
+        const form = $('<form>', {
+            method: 'POST',
+            action: ''
+        });
+        
+        form.append($('<input>', {
+            type: 'hidden',
+            name: 'btn',
+            value: 'clear'
+        }));
+        
+        form.appendTo('body').submit();
+    }
+
+    function updateCartCount() {
+        const itemCount = <?= $count ?>;
+        $('.cart-count').text(itemCount);
+    }
+    updateCartCount();
 
     function initMap(lat, lng) {
         const mapDiv = document.getElementById('map');
@@ -1135,6 +1073,69 @@ include '../navbar.php';
         $('body').append(form);
         form.submit();
     }
+    
+    $(document).ready(function() {
+        $('.quantity-update-form select[name="unit"]').on('change', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (this.value !== '') {
+                const form = $(this).closest('.quantity-update-form');
+                const productId = form.data('product-id');
+                
+                // Submit only this specific form
+                form[0].submit();
+            }
+            
+            return false;
+        });
+
+        // Add smooth animations
+        $('.delete-btn, .btn').hover(
+            function() { $(this).css('transform', 'translateY(-2px)'); },
+            function() { $(this).css('transform', 'translateY(0)'); }
+        );
+
+        $('#phone_number').on('input', function(e) {
+            let value = this.value.replace(/\D/g, '');
+            
+            if (value.length > 11) {
+                value = value.slice(0, 11);
+            }
+            
+            this.value = value;
+            
+            const input = $(this);
+            const mobilePattern = /^01[0-9]{8,9}$/;
+            const landlinePattern = /^03[0-9]{8}$/;
+            
+            if (value.length > 0) {
+                if (mobilePattern.test(value) || landlinePattern.test(value)) {
+                    input.css('border-color', '#48bb78');
+                } else if (value.length >= 9) {
+                    input.css('border-color', '#f56565');
+                } else {
+                    input.css('border-color', '#e2e8f0');
+                }
+            } else {
+                input.css('border-color', '#e2e8f0');
+            }
+        });
+
+        // Form submission validation
+        $('#address-form').on('submit', function(e) {
+            const phone = $('#phone_number').val();
+            const mobilePattern = /^01[0-9]{8,9}$/;
+            const landlinePattern = /^03[0-9]{8}$/;
+            
+            if (!mobilePattern.test(phone) && !landlinePattern.test(phone)) {
+                e.preventDefault();
+                alert('Please enter a valid Malaysian phone number:\n• Mobile: 01X-XXXXXXXX (10-11 digits)\n• Landline: 03-XXXXXXXX (10 digits)');
+                $('#phone_number').focus();
+                return false;
+            }
+        });
+    });
 </script>
 
 <?php

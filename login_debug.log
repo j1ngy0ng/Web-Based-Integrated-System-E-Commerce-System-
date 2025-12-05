@@ -2496,3 +2496,19 @@
 [2025-12-05 08:35:08] User found: shannellwong@gmail.com (ID: 3)
 [2025-12-05 08:35:08] Password verification SUCCESS
 [2025-12-05 08:35:08] Email and phone verified. Logging in
+[2025-12-05 21:14:50] === LOGIN PAGE LOADED ===
+[2025-12-05 21:14:50] Request method: GET
+[2025-12-05 21:14:50] Email received: empty
+[2025-12-05 21:14:50] Remember received: NO
+[2025-12-05 21:14:58] === LOGIN PAGE LOADED ===
+[2025-12-05 21:14:58] Request method: POST
+[2025-12-05 21:14:58] Email received: mailleejx@gmail.com
+[2025-12-05 21:14:58] Remember received: NO
+[2025-12-05 21:14:58] Form submitted via POST
+[2025-12-05 21:14:58] User found: mailleejx@gmail.com (ID: 3)
+[2025-12-05 21:14:58] Password verification SUCCESS
+[2025-12-05 21:14:58] Email and phone verified. Logging in
+[2025-12-05 22:20:46] === LOGIN PAGE LOADED ===
+[2025-12-05 22:20:46] Request method: GET
+[2025-12-05 22:20:46] Email received: empty
+[2025-12-05 22:20:46] Remember received: NO

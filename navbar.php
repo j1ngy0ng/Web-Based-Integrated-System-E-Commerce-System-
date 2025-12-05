@@ -781,7 +781,7 @@
 				<li class="nav-item"><a class="nav-link" href="/product/list.php">Product</a></li>
 				<li class="nav-item"><a class="nav-link" href="/order/history.php">Track Order</a></li>
 				<li class="nav-item"><a class="nav-link" href="/chat/member/chat.php">Live Chat</a></li>
-				<li class="nav-item"><a class="nav-link" href="contact.php">Contact Us</a></li>
+				<li class="nav-item"><a class="nav-link" href="../about_us.php">About Us</a></li>
 			<?php endif ?>
 
 			<?php if ($_user?->role == 'Admin'): ?>
