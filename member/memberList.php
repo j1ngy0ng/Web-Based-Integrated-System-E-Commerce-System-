@@ -17,36 +17,41 @@ $allowedSort = [
     'is_active', 'failed_attempts', 'lock_until'
 ];
 
+// --------------------------------------------------------------------
+// Filters
+$roleFilter     = req('role_filter', '');
+$verifiedFilter = req('verified_filter', '');
+$activeFilter   = req('active_filter', '');
+$failedFilter   = req('failed_filter', '');
 
 // --------------------------------------------------------------------
-// Fetch members
+// Search term
 $q = req('q', '');
-if ($q) {
-    $stm = $_db->prepare("SELECT * FROM user 
-                          WHERE 
-                                id LIKE ?
-                                OR email LIKE ?
-                                OR name LIKE ?
-                                OR role LIKE ?
-                                OR phone_number LIKE ?
-                                OR failed_attempts LIKE ?
-                                OR phone_verified LIKE ?
-                                OR is_active LIKE ?
-                                OR lock_until LIKE ?
-
-                          ORDER BY $sort $dir");
-
 $searchTerm = "%$q%";
-$stm->execute([
-    $searchTerm, $searchTerm, $searchTerm, $searchTerm,
-    $searchTerm, $searchTerm, $searchTerm, $searchTerm,
-    $searchTerm
-]);
-} else {
-    $stm = $_db->prepare("SELECT * FROM user ORDER BY $sort $dir");
-    $stm->execute();
+
+// --------------------------------------------------------------------
+// Build dynamic WHERE conditions
+$where = [];
+$params = [];
+
+if ($roleFilter)      { $where[] = "role = ?"; $params[] = $roleFilter; }
+if ($verifiedFilter !== '') { $where[] = "phone_verified = ?"; $params[] = $verifiedFilter; }
+if ($activeFilter !== '')   { $where[] = "is_active = ?"; $params[] = $activeFilter; }
+if ($failedFilter !== '')   { $where[] = "failed_attempts = ?"; $params[] = $failedFilter; }
+
+if ($q) {
+    $where[] = "(id LIKE ? OR email LIKE ? OR name LIKE ? OR role LIKE ? OR phone_number LIKE ? OR failed_attempts LIKE ? OR phone_verified LIKE ? OR is_active LIKE ?)";
+    $params = array_merge($params, array_fill(0, 8, $searchTerm));
 }
 
+// --------------------------------------------------------------------
+// Build final SQL
+$sql = "SELECT * FROM user";
+if ($where) $sql .= " WHERE " . implode(" AND ", $where);
+$sql .= " ORDER BY $sort $dir";
+
+$stm = $_db->prepare($sql);
+$stm->execute($params);
 $data = $stm->fetchAll();
 
 // --------------------------------------------------------------------
@@ -81,17 +86,10 @@ th a {
     color: #333;
 }
 
-th a.asc::after {
-    content: " ▲";
-}
+th a.asc::after { content: " ▲"; }
+th a.desc::after { content: " ▼"; }
 
-th a.desc::after {
-    content: " ▼";
-}
-
-tr:hover {
-    background: #fafafa;
-}
+tr:hover { background: #fafafa; }
 
 .action-btns a {
     text-decoration: none;
@@ -100,15 +98,10 @@ tr:hover {
     font-size: 0.9rem;
 }
 
-.edit-btn {
-    background: #007bff;
-    color: #fff;
-}
+.edit-btn { background: #007bff; color: #fff; }
+.delete-btn { background: #dc3545; color: #fff; }
 
-.delete-btn {
-    background: #dc3545;
-    color: #fff;
-}
+th select { margin-left: 5px; padding: 2px 5px; font-size: 0.85rem; }
 </style>
 
 <h2 style="text-align:center; margin-top:30px;">Member List</h2>
@@ -116,7 +109,7 @@ tr:hover {
 <div style="width:90%; margin: 20px auto; text-align:right;">
     <form method="get" style="display:flex; justify-content:flex-end; gap:10px;">
         <input type="text" name="q" placeholder="Search by name or email..." 
-               value="<?= htmlspecialchars(req('q', '')) ?>" 
+               value="<?= htmlspecialchars($q) ?>" 
                style="padding:6px 12px; border-radius:6px; border:1px solid #ccc;">
         <button type="submit" style="padding:6px 12px; border:none; background:#007bff; color:white; border-radius:6px;">Search</button>
     </form>
@@ -136,17 +129,72 @@ tr:hover {
                 'id'             => 'ID',
                 'email'          => 'Email',
                 'name'           => 'Name',
-                'role'           => 'Role',
                 'phone_number'   => 'Phone',
-                'phone_verified' => 'Verified',
-                'is_active'      => 'Active',
-                'failed_attempts'=> 'Failed Attempts',
                 'lock_until'     => 'Locked Until'
             ],
             $sort,
             $dir
         );
         ?>
+
+        <!-- Columns with filters -->
+        <th>
+            <a href="?sort=role&dir=<?= $sort=='role' && $dir=='asc' ? 'desc' : 'asc' ?>">
+                Role <?= $sort=='role' ? ($dir=='asc'?'▲':'▼') : '' ?>
+            </a>
+            <form method="get" style="display:inline;">
+                <input type="hidden" name="sort" value="<?= $sort ?>">
+                <input type="hidden" name="dir" value="<?= $dir ?>">
+                <select name="role_filter" onchange="this.form.submit()">
+                    <option value="">All</option>
+                    <option value="Admin" <?= $roleFilter=='Admin'?'selected':'' ?>>Admin</option>
+                    <option value="Member" <?= $roleFilter=='Member'?'selected':'' ?>>Member</option>
+                </select>
+            </form>
+        </th>
+
+
+        <th>
+            <a href="?sort=role&dir=<?= $sort=='role' && $dir=='asc' ? 'desc' : 'asc' ?>">
+                Verified <?= $sort=='role' ? ($dir=='asc'?'▲':'▼') : '' ?>
+            </a>
+            <form method="get" style="display:inline;">
+                <select name="verified_filter" onchange="this.form.submit()">
+                    <option value="">All</option>
+                    <option value="1" <?= $verifiedFilter=='1'?'selected':'' ?>>Yes</option>
+                    <option value="0" <?= $verifiedFilter=='0'?'selected':'' ?>>No</option>
+                </select>
+            </form>
+        </th>
+
+        <th>
+            <a href="?sort=role&dir=<?= $sort=='role' && $dir=='asc' ? 'desc' : 'asc' ?>">
+                Active <?= $sort=='role' ? ($dir=='asc'?'▲':'▼') : '' ?>
+            </a>
+            <form method="get" style="display:inline;">
+                <select name="active_filter" onchange="this.form.submit()">
+                    <option value="">All</option>
+                    <option value="1" <?= $activeFilter=='1'?'selected':'' ?>>Active</option>
+                    <option value="0" <?= $activeFilter=='0'?'selected':'' ?>>Blocked</option>
+                </select>
+            </form>
+        </th>
+
+        <th>
+            <a href="?sort=role&dir=<?= $sort=='role' && $dir=='asc' ? 'desc' : 'asc' ?>">
+                Failed Attempts <?= $sort=='role' ? ($dir=='asc'?'▲':'▼') : '' ?>
+            </a>
+
+            <form method="get" style="display:inline;">
+                <select name="failed_filter" onchange="this.form.submit()">
+                    <option value="">All</option>
+                    <?php for($i=0; $i<=10; $i++): ?>
+                        <option value="<?= $i ?>" <?= $failedFilter==$i?'selected':'' ?>><?= $i ?></option>
+                    <?php endfor; ?>
+                </select>
+            </form>
+        </th>
+
         <th>Photo</th>
         <th>Action</th>
     </tr>
@@ -161,41 +209,39 @@ tr:hover {
     </tr>
 <?php else: ?>
     <?php foreach ($data as $row): ?>
-        <tr>
-            <td><?= $row->id ?></td>
-            <td><?= htmlspecialchars($row->email) ?></td>
-            <td><?= htmlspecialchars($row->name) ?></td>
-            <td><?= htmlspecialchars($row->role) ?></td>
+    <tr>
+        <td><?= highlight($row->id, $q) ?></td>
+        <td><?= highlight($row->email, $q) ?></td>
+        <td><?= highlight($row->name, $q) ?></td>
+        <td><?= $row->phone_number ? highlight($row->phone_number, $q) : '-' ?></td>
+        <td><?= $row->lock_until ?: '-' ?></td>
 
-            <td><?= htmlspecialchars($row->phone_number ?: '-') ?></td>
+        <td><?= highlight($row->role, $q) ?></td>
 
-            <td>
-                <?= $row->phone_verified ? '✔ Yes' : '✖ No' ?>
-            </td>
+        <td>
+            <?php $pv = $row->phone_verified ? '✔ Yes' : '✖ No';
+                  echo highlight($pv, $q); ?>
+        </td>
 
-            <td>
-                <?= $row->is_active ? 'Active' : 'Blocked' ?>
-            </td>
+        <td>
+            <?php $act = $row->is_active ? 'Active' : 'Blocked';
+                  echo highlight($act, $q); ?>
+        </td>
 
-            <td><?= $row->failed_attempts ?></td>
+        <td><?= highlight($row->failed_attempts, $q) ?></td>
 
-            <td><?= $row->lock_until ?: '-' ?></td>
+        <td>
+            <?php if ($row->photo): ?>
+                <img src="../photos/<?= htmlspecialchars($row->photo) ?>"
+                     style="width:50px; height:50px; border-radius:50%;">
+            <?php else: ?>No photo<?php endif; ?>
+        </td>
 
-            <td>
-                <?php if ($row->photo): ?>
-                    <img src="../photos/<?= htmlspecialchars($row->photo) ?>"
-                         style="width:50px; height:50px; border-radius:50%;">
-                <?php else: ?>
-                    No photo
-                <?php endif; ?>
-            </td>
-
-            <td class="action-btns">
-                <a class="edit-btn" href="memberDetail.php?id=<?= $row->id ?>">Edit</a>
-                <a class="delete-btn" href="deleteMember.php?id=<?= $row->id ?>"
-                   onclick="return confirm('Are you sure?');">Delete</a>
-            </td>
-        </tr>
+        <td class="action-btns">
+            <a class="edit-btn" href="memberDetail.php?id=<?= $row->id ?>">Edit</a>
+            <a class="delete-btn" href="deleteMember.php?id=<?= $row->id ?>" onclick="return confirm('Are you sure?');">Delete</a>
+        </td>
+    </tr>
     <?php endforeach ?>
 <?php endif ?>
 </tbody>

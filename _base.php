@@ -219,6 +219,17 @@ function html_search($key, $attr = '') {
     echo "<input type='search' id='$key' name='$key' value='$value' $attr>";
 }
 
+//Generate highlight search
+function highlight($text, $keyword) {
+    if (!$keyword) return htmlspecialchars($text);
+
+    return preg_replace(
+        "/(" . preg_quote($keyword, '/') . ")/i",
+        '<mark>$1</mark>',
+        htmlspecialchars($text)
+    );
+}
+
 // Generate <input type='date'>
 function html_date($key, $min= '', $max = '', $attr = '') {
     $value = encode($GLOBALS[$key] ?? '');
