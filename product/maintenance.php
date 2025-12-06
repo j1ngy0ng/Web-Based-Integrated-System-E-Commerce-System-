@@ -55,15 +55,11 @@ $sql = "
     SELECT
         p.*,
         c.categoryName,
-        ph.photoURL AS mainPhoto,
-        AVG(pr.rating) AS rating_avg
+        ph.photoURL AS mainPhoto
     FROM product p
     LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID
     LEFT JOIN productPhoto ph ON p.productID = ph.productID AND ph.is_main = 1
-    LEFT JOIN order_item oi ON p.productID = oi.productID
-    LEFT JOIN productRating pr ON oi.order_item_id = pr.order_item_id
     $search_sql
-    GROUP BY p.productID
     ORDER BY $sort $dir
 ";
 
