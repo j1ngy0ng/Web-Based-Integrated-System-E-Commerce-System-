@@ -14,7 +14,7 @@ $dir  = $dir == 'desc' ? 'desc' : 'asc';
 $allowedSort = [
     'id', 'email', 'name', 'role',
     'phone_number', 'phone_verified',
-    'is_active', 'failed_attempts', 'lock_until'
+    'is_active', 'failed_attempts', 'lock_until','reward_points'
 ];
 
 // --------------------------------------------------------------------
@@ -40,8 +40,8 @@ if ($activeFilter !== '')   { $where[] = "is_active = ?"; $params[] = $activeFil
 if ($failedFilter !== '')   { $where[] = "failed_attempts = ?"; $params[] = $failedFilter; }
 
 if ($q) {
-    $where[] = "(id LIKE ? OR email LIKE ? OR name LIKE ? OR role LIKE ? OR phone_number LIKE ? OR failed_attempts LIKE ? OR phone_verified LIKE ? OR is_active LIKE ?)";
-    $params = array_merge($params, array_fill(0, 8, $searchTerm));
+    $where[] = "(id LIKE ? OR email LIKE ? OR name LIKE ? OR role LIKE ? OR phone_number LIKE ? OR failed_attempts LIKE ? OR phone_verified LIKE ? OR is_active LIKE ? OR reward_points LIKE ?)";
+    $params = array_merge($params, array_fill(0, 9, $searchTerm));
 }
 
 // --------------------------------------------------------------------
@@ -124,17 +124,18 @@ th select { margin-left: 5px; padding: 2px 5px; font-size: 0.85rem; }
 <thead>
     <tr>
         <?php
-        table_headers(
-            [
-                'id'             => 'ID',
-                'email'          => 'Email',
-                'name'           => 'Name',
-                'phone_number'   => 'Phone',
-                'lock_until'     => 'Locked Until'
-            ],
-            $sort,
-            $dir
-        );
+            table_headers(
+                [
+                    'id'             => 'ID',
+                    'email'          => 'Email',
+                    'name'           => 'Name',
+                    'phone_number'   => 'Phone',
+                    'reward_points'  => 'Reward Points',
+                    'lock_until'     => 'Locked Until'
+                ],
+                $sort,
+                $dir
+            );
         ?>
 
         <!-- Columns with filters -->
@@ -214,6 +215,7 @@ th select { margin-left: 5px; padding: 2px 5px; font-size: 0.85rem; }
         <td><?= highlight($row->email, $q) ?></td>
         <td><?= highlight($row->name, $q) ?></td>
         <td><?= $row->phone_number ? highlight($row->phone_number, $q) : '-' ?></td>
+        <td><?= highlight($row->reward_points, $q) ?></td>
         <td><?= $row->lock_until ?: '-' ?></td>
 
         <td><?= highlight($row->role, $q) ?></td>

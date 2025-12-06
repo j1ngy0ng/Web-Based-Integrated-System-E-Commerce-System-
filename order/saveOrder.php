@@ -11,9 +11,16 @@ if ($_user->role !== 'Admin') {
 
 // --------------------------------------------------------
 // Validate POST
-$orderID = req('orderID');
-$status  = req('status');
-$address = req('ShippingAddress');
+$orderID       = req('orderID');
+$status        = req('status');
+$address_id    = req('address_id');
+$recipient_name = req('recipient_name');
+$phone_number   = req('phone_number');
+$address_line1  = req('address_line1');
+$address_line2  = req('address_line2');
+$city           = req('city');
+$state          = req('state');
+$postal_code    = req('postal_code');
 
 if (!$orderID) {
     redirect('order.php');
@@ -21,7 +28,6 @@ if (!$orderID) {
 
 // Allowed statuses
 $allowedStatus = ['Pending','Paid','Shipped','Completed','Cancelled'];
-
 if (!in_array($status, $allowedStatus)) {
     redirect("detail.php?orderID=$orderID&err=InvalidStatus");
 }
@@ -43,13 +49,34 @@ $_db->beginTransaction();
 try {
 
     // --------------------------------------------------------
-    // Update order details
+    // Update order status
     $stm = $_db->prepare("
         UPDATE `order`
-        SET status = ?, ShippingAddress = ?
+        SET status = ?
         WHERE orderID = ?
     ");
-    $stm->execute([$status, $address, $orderID]);
+    $stm->execute([$status, $orderID]);
+
+    // --------------------------------------------------------
+    // Update shipping address (if address_id provided)
+    if ($address_id) {
+        $stm = $_db->prepare("
+            UPDATE shipping_addresses
+            SET recipient_name = ?, phone_number = ?, address_line1 = ?, address_line2 = ?,
+                city = ?, state = ?, postal_code = ?
+            WHERE address_id = ?
+        ");
+        $stm->execute([
+            $recipient_name,
+            $phone_number,
+            $address_line1,
+            $address_line2,
+            $city,
+            $state,
+            $postal_code,
+            $address_id
+        ]);
+    }
 
     // --------------------------------------------------------
     // If Admin sets order to Cancelled -> create refund
