@@ -293,14 +293,6 @@ include '../navbar.php';
                             <?= html_select('unit', $stock_options, '', $unit, $p->stock) ?>
                         </div>
                         
-                        <div class="cart-buttons">
-                            <?php if ($unit > 0): ?>
-                                <button type="button" class="btn btn-danger" id="deleteBtn">
-                                    🗑️ Delete from Cart
-                                </button>
-                            <?php endif; ?>
-                        </div>
-                        
                         <?php if ($unit): ?>
                             <div class="cart-message">
                                 ✅ <?= $unit ?> unit<?= $unit > 1 ? 's' : '' ?> in cart

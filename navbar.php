@@ -8,6 +8,7 @@
 	<link href="/font-awesome/css/font-awesome.css" rel="stylesheet">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 	<script src="/js/app.js"></script>
+    <script src="/order/ajax_cart_count.php"></script>
 	<style>
 		
 		/* Category Filter Header Styles */
@@ -768,6 +769,39 @@
             grid-template-columns: 1fr;
         }
     }
+
+    .cart-link {
+        position: relative;
+        display: inline-block;
+    }
+
+    .cart-counter {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        transition: all 0.3s ease;
+    }
+
+    .cart-counter.pulse {
+        animation: pulse 0.5s ease-in-out;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
 </style>
 
 <body>
@@ -928,15 +962,16 @@
 						</div>
 					<?php endif; ?>
 					<!-- CART -->
-					<div class="header-actions">
-					<a href="/product/favorites.php" class="action-link" title="My Favorites">
+                    <div class="header-actions">
+                        <a href="/product/favorites.php" class="action-link" title="My Favorites">
                             <i class="fa fa-heart" aria-hidden="true" style="font-size: 1.8lh; color: #dc3545;"></i>
                         </a>
-						
-						<a href="/order/cart.php" class="action-link" title="Shopping Cart">
+                        
+                        <a href="/order/cart.php" class="action-link cart-link" title="Shopping Cart">
                             <i class="fa fa-shopping-cart" aria-hidden="true" style="font-size: 1.8lh; color: #000;"></i>
+                            <span class="cart-counter" id="live-cart-count">0</span>
                         </a>
-					</div>
+                    </div>
 				</form>
 			</div>
 		</section>
@@ -1183,6 +1218,30 @@
         
         updateSliderTrack();
     });
+
+    function updateCartCount() {
+        $.ajax({
+            url: '/order/ajax_cart_count.php',
+            method: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    $('#live-cart-count').text(response.count);
+                }
+            },
+            error: function() {
+                console.log('Failed to update cart count');
+            }
+        });
+    }
+
+    // Update immediately on page load
+    $(document).ready(function() {
+        updateCartCount();
+    });
+
+    // Update every 5 seconds (optional - for real-time updates)
+    setInterval(updateCartCount, 5000);
 
     $('select').on('change', e => e.target.form.submit());
 </script>

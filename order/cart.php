@@ -11,6 +11,8 @@ $cart_products = [];
 $subtotal = 0;
 $count = 0;
 $has_unavailable_items = false;
+$isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+          strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
 if ($cart) {
     foreach ($cart as $id => $unit) {
@@ -64,6 +66,68 @@ if ($_user) {
 
 if (is_post()) {
     $btn = req('btn');
+    $id = req('id');
+    $unit = req('unit', 1);
+
+    if ($btn == 'add_to_cart') {
+        // Add item to cart
+        $cart = get_cart();
+        
+        if (!isset($cart[$id])) {
+            $cart[$id] = 0;
+        }
+        
+        $cart[$id] += $unit;
+        
+        // Check stock availability
+        $stm = $_db->prepare('SELECT stock, is_active FROM product WHERE productID = ?');
+        $stm->execute([$id]);
+        $product = $stm->fetch();
+        
+        if ($product) {
+            if ($product->is_active == 0) {
+                // Product is inactive, remove from cart
+                unset($cart[$id]);
+                $message = 'Product is no longer available';
+                $success = false;
+            } elseif ($cart[$id] > $product->stock) {
+                // Limit to available stock
+                $cart[$id] = $product->stock;
+                $message = 'Limited to available stock: ' . $product->stock;
+                $success = true;
+            } else {
+                $message = 'Added to cart successfully!';
+                $success = true;
+            }
+        } else {
+            unset($cart[$id]);
+            $message = 'Product not found';
+            $success = false;
+        }
+        
+        $_SESSION['cart'] = $cart;
+        $_SESSION['cart_last_updated'] = time();
+        
+        // Calculate total count
+        $count = 0;
+        foreach ($cart as $itemQty) {
+            $count += $itemQty;
+        }
+        
+        // If it's an AJAX request, return JSON
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => $success,
+                'count' => $count,
+                'message' => $message
+            ]);
+            exit;
+        } else {
+            temp('info', $message);
+            redirect();
+        }
+    }
 
     if ($btn == 'clear') {
         clear_cart();
@@ -71,6 +135,8 @@ if (is_post()) {
         unset($_SESSION['selected_address']);
         unset($_SESSION['show_new_address_form']);
         redirect('?');
+        $_SESSION['cart_last_updated'] = time();
+        echo '<script>if(window.parent) window.parent.dispatchEvent(new CustomEvent("cartUpdate"));</script>';
     }
     if ($btn == 'delete') {
         error_log("DELETE TRIGGERED - btn: $btn, id: " . req('id'));
@@ -82,6 +148,8 @@ if (is_post()) {
         $_SESSION['cart'] = $cart;
         if (empty($cart)) unset($_SESSION['voucher']);
         redirect();
+        $_SESSION['cart_last_updated'] = time();
+        echo '<script>if(window.parent) window.parent.dispatchEvent(new CustomEvent("cartUpdate"));</script>';
     }
 
     if ($btn == 'update') {
@@ -89,6 +157,8 @@ if (is_post()) {
         $unit = req('unit');
         update_cart($id, $unit);
         redirect();
+        $_SESSION['cart_last_updated'] = time();
+        echo '<script>if(window.parent) window.parent.dispatchEvent(new CustomEvent("cartUpdate"));</script>';
     }
 
     if ($btn == 'apply_voucher') {
