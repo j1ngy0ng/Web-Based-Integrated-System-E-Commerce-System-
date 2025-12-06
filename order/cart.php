@@ -1,5 +1,7 @@
 <?php
 include '../_base.php';
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
 // ----------------------------------------------------------------------------
 // 1. PRE-CALCULATE TOTALS & FETCH DATA
@@ -61,11 +63,21 @@ if (is_post()) {
         redirect('?');
     }
     if ($btn == 'delete') {
+        error_log("DELETE TRIGGERED - btn: $btn, id: " . req('id'));
         $id = req('id');
         $cart = get_cart();
+        error_log("Cart before delete: " . print_r($cart, true));
         unset($cart[$id]);
+        error_log("Cart after delete: " . print_r($cart, true));
         $_SESSION['cart'] = $cart;
         if (empty($cart)) unset($_SESSION['voucher']);
+        redirect();
+    }
+
+    if ($btn == 'update') {
+        $id = req('id');
+        $unit = req('unit');
+        update_cart($id, $unit);
         redirect();
     }
 
@@ -212,10 +224,6 @@ if (is_post()) {
         temp('info', 'Address updated successfully!');
         redirect();
     }
-
-    $id = req('id'); $unit = req('unit');
-    if ($id && $unit) { update_cart($id, $unit); }
-    redirect();
 }
 
 // ----------------------------------------------------------------------------
@@ -268,9 +276,12 @@ include '../navbar.php';
 .cart-item-name { font-weight: 600; color: #2d3748; font-size: 1.1em; margin-bottom: 5px; }
 .cart-item-category { color: #718096; font-size: 0.9em; }
 .cart-item-price { color: #006989; font-weight: 700; font-size: 1.2em; }
-.quantity-form { display: flex; align-items: center; gap: 10px; }
-.quantity-form select { padding: 10px 15px; border: 2px solid #e2e8f0; border-radius: 10px; background: white; font-size: 0.95em; min-width: 120px; transition: all 0.3s ease; }
-.quantity-form select:focus { border-color: #006989; box-shadow: 0 0 0 3px rgba(0, 105, 137, 0.1); outline: none; }
+
+.quantity-form {display: flex;align-items: center;gap: 5px;background: #f7f7fa;border: 1px solid #ddd;border-radius: 8px;padding: 4px 6px;width: fit-content;}
+.qty-btn {width: 32px;height: 32px;font-size: 18px;border: none;background: #ffffff;border-radius: 6px;cursor: pointer;border: 1px solid #ccc;transition: 0.2s ease;}
+.qty-btn:hover {background: #e8f0ff;border-color: #7aa7ff;}
+.qty-display {padding: 0 12px;font-size: 16px;font-weight: 600;}
+
 .delete-btn { background: linear-gradient(135deg, #e53e3e, #c53030); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.9em; transition: all 0.3s ease; display: flex; align-items: center; gap: 5px; }
 .delete-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3); }
 .cart-subtotal { color: #2d3748; font-weight: 700; font-size: 1.2em; }
@@ -619,18 +630,34 @@ include '../navbar.php';
                         <td class="cart-item-price">RM <?= number_format($p->price, 2) ?></td>
                         <td>
                             <div class="quantity-form">
-                                <form method="post" style="display: inline;" class="quantity-update-form" data-product-id="<?= $p->productID ?>">
-                                    <?= html_hidden('id', "value='$p->productID'") ?>
-                                    <?= html_select('unit', $units_options, '', $p->unit, '') ?>
+                                <!-- Minus button -->
+                                <form method="post" style="display:inline;">
+                                    <input type="hidden" name="btn" value="update">
+                                    <input type="hidden" name="id" value="<?= $p->productID ?>">
+                                    <input type="hidden" name="unit" value="<?= max(1, $p->unit - 1) ?>">
+                                    <button type="submit" class="qty-btn">-</button>
+                                </form>
+
+                                <div class="qty-display"><?= $p->unit ?></div>
+
+                                <!-- Plus button -->
+                                <form method="post" style="display:inline;">
+                                    <input type="hidden" name="btn" value="update">
+                                    <input type="hidden" name="id" value="<?= $p->productID ?>">
+                                    <input type="hidden" name="unit" value="<?= $p->unit + 1 ?>">
+                                    <button type="submit" class="qty-btn">+</button>
                                 </form>
                             </div>
                         </td>
                         <td class="cart-subtotal">RM <?= number_format($p->line_total, 2) ?></td>
                         <td>
-                            <button type="button" class="delete-btn" 
-                                    onclick="deleteCartItem(<?= $p->productID ?>, '<?= htmlspecialchars(addslashes($p->name)) ?>')">
-                                🗑️
-                            </button>
+                            <form method="POST" class="delete-cart-form" style="display:inline;">
+                                <input type="hidden" name="id" value="<?= $p->productID ?>">
+                                <input type="hidden" name="btn" value="delete">
+                                <button type="submit" class="delete-btn" data-product-name="<?= htmlspecialchars($p->name) ?>">
+                                    🗑️
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -1047,32 +1074,6 @@ include '../navbar.php';
         
         return false;
     }
-
-    function deleteCartItem(productId, productName) {
-        if (!confirm('Remove "' + productName + '" from cart?')) {
-            return false;
-        }
-        
-        const form = $('<form>', {
-            method: 'POST',
-            action: window.location.href
-        });
-        
-        form.append($('<input>', {
-            type: 'hidden',
-            name: 'id',
-            value: productId
-        }));
-        
-        form.append($('<input>', {
-            type: 'hidden',
-            name: 'btn',
-            value: 'delete'
-        }));
-        
-        $('body').append(form);
-        form.submit();
-    }
     
     $(document).ready(function() {
         $('.quantity-update-form select[name="unit"]').on('change', function(e) {
@@ -1095,6 +1096,15 @@ include '../navbar.php';
             function() { $(this).css('transform', 'translateY(-2px)'); },
             function() { $(this).css('transform', 'translateY(0)'); }
         );
+
+        $('.delete-btn').on('click', function(e) {
+            e.preventDefault();
+            const productName = $(this).data('product-name');
+            if (confirm('Remove "' + productName + '" from cart?')) {
+                $(this).closest('form').submit();
+            }
+            return false;
+        });
 
         $('#phone_number').on('input', function(e) {
             let value = this.value.replace(/\D/g, '');
