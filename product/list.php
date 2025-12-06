@@ -212,8 +212,6 @@ include '../navbar.php';
                 if ($isDisabled) {
                     // Show "UNAVAILABLE" badge if disabled
                     $badgeHTML = '<div class="badge-top-left bg-gray">Unavailable</div>';
-                } elseif ($p->stock <= 5 && $p->stock > 0) {
-                    $badgeHTML = '<div class="badge-top-left bg-red">Hot</div>';
                 } elseif ($p->productID > 50) { 
                     $badgeHTML = '<div class="badge-top-left bg-green">New</div>';
                 }
