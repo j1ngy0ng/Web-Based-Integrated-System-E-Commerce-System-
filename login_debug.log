@@ -2854,3 +2854,82 @@
 [2025-12-06 10:50:45] User found: shannellwong@gmail.com (ID: 3)
 [2025-12-06 10:50:45] Password verification SUCCESS
 [2025-12-06 10:50:45] Email and phone verified. Logging in
+[2025-12-06 10:55:29] === LOGIN PAGE LOADED ===
+[2025-12-06 10:55:29] Request method: GET
+[2025-12-06 10:55:29] Email received: empty
+[2025-12-06 10:55:29] Remember received: NO
+[2025-12-06 10:55:35] === LOGIN PAGE LOADED ===
+[2025-12-06 10:55:35] Request method: POST
+[2025-12-06 10:55:35] Email received: 1@gmail.com
+[2025-12-06 10:55:35] Remember received: NO
+[2025-12-06 10:55:35] Form submitted via POST
+[2025-12-06 10:55:35] User found: 1@gmail.com (ID: 1)
+[2025-12-06 10:55:35] Password verification SUCCESS
+[2025-12-06 10:55:35] Email and phone verified. Logging in
+[2025-12-06 10:55:54] === LOGIN PAGE LOADED ===
+[2025-12-06 10:55:54] Request method: GET
+[2025-12-06 10:55:54] Email received: empty
+[2025-12-06 10:55:54] Remember received: NO
+[2025-12-06 10:55:59] === LOGIN PAGE LOADED ===
+[2025-12-06 10:55:59] Request method: POST
+[2025-12-06 10:55:59] Email received: shannellwong@gmail.com
+[2025-12-06 10:55:59] Remember received: NO
+[2025-12-06 10:55:59] Form submitted via POST
+[2025-12-06 10:55:59] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-06 10:55:59] Password verification SUCCESS
+[2025-12-06 10:55:59] Email and phone verified. Logging in
+[2025-12-06 10:56:12] === LOGIN PAGE LOADED ===
+[2025-12-06 10:56:12] Request method: GET
+[2025-12-06 10:56:12] Email received: empty
+[2025-12-06 10:56:12] Remember received: NO
+[2025-12-06 10:56:18] === LOGIN PAGE LOADED ===
+[2025-12-06 10:56:18] Request method: POST
+[2025-12-06 10:56:18] Email received: 1@gmail.com
+[2025-12-06 10:56:18] Remember received: NO
+[2025-12-06 10:56:18] Form submitted via POST
+[2025-12-06 10:56:18] User found: 1@gmail.com (ID: 1)
+[2025-12-06 10:56:18] Password verification SUCCESS
+[2025-12-06 10:56:18] Email and phone verified. Logging in
+[2025-12-06 10:57:37] === LOGIN PAGE LOADED ===
+[2025-12-06 10:57:37] Request method: GET
+[2025-12-06 10:57:37] Email received: empty
+[2025-12-06 10:57:37] Remember received: NO
+[2025-12-06 10:57:41] === LOGIN PAGE LOADED ===
+[2025-12-06 10:57:41] Request method: POST
+[2025-12-06 10:57:41] Email received: shannellwong@gmail.com
+[2025-12-06 10:57:41] Remember received: NO
+[2025-12-06 10:57:41] Form submitted via POST
+[2025-12-06 10:57:41] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-06 10:57:41] Password verification SUCCESS
+[2025-12-06 10:57:41] Email and phone verified. Logging in
+[2025-12-06 11:00:57] === LOGIN PAGE LOADED ===
+[2025-12-06 11:00:57] Request method: GET
+[2025-12-06 11:00:57] Email received: empty
+[2025-12-06 11:00:57] Remember received: NO
+[2025-12-06 11:01:03] === LOGIN PAGE LOADED ===
+[2025-12-06 11:01:03] Request method: POST
+[2025-12-06 11:01:03] Email received: 1@gmail.com
+[2025-12-06 11:01:03] Remember received: NO
+[2025-12-06 11:01:03] Form submitted via POST
+[2025-12-06 11:01:03] User found: 1@gmail.com (ID: 1)
+[2025-12-06 11:01:03] Password verification FAILED
+[2025-12-06 11:01:06] === LOGIN PAGE LOADED ===
+[2025-12-06 11:01:06] Request method: POST
+[2025-12-06 11:01:06] Email received: 1@gmail.com
+[2025-12-06 11:01:06] Remember received: NO
+[2025-12-06 11:01:06] Form submitted via POST
+[2025-12-06 11:01:06] User found: 1@gmail.com (ID: 1)
+[2025-12-06 11:01:06] Password verification SUCCESS
+[2025-12-06 11:01:06] Email and phone verified. Logging in
+[2025-12-06 11:31:02] === LOGIN PAGE LOADED ===
+[2025-12-06 11:31:02] Request method: GET
+[2025-12-06 11:31:02] Email received: empty
+[2025-12-06 11:31:02] Remember received: NO
+[2025-12-06 11:31:07] === LOGIN PAGE LOADED ===
+[2025-12-06 11:31:07] Request method: POST
+[2025-12-06 11:31:07] Email received: shannellwong@gmail.com
+[2025-12-06 11:31:07] Remember received: NO
+[2025-12-06 11:31:07] Form submitted via POST
+[2025-12-06 11:31:07] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-06 11:31:07] Password verification SUCCESS
+[2025-12-06 11:31:07] Email and phone verified. Logging in
