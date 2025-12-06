@@ -2830,3 +2830,27 @@
 [2025-12-06 10:26:04] User found: mailleejx@gmail.com (ID: 3)
 [2025-12-06 10:26:04] Password verification SUCCESS
 [2025-12-06 10:26:04] Email and phone verified. Logging in
+[2025-12-06 10:38:02] === LOGIN PAGE LOADED ===
+[2025-12-06 10:38:02] Request method: GET
+[2025-12-06 10:38:02] Email received: empty
+[2025-12-06 10:38:02] Remember received: NO
+[2025-12-06 10:38:07] === LOGIN PAGE LOADED ===
+[2025-12-06 10:38:07] Request method: POST
+[2025-12-06 10:38:07] Email received: 1@gmail.com
+[2025-12-06 10:38:07] Remember received: NO
+[2025-12-06 10:38:07] Form submitted via POST
+[2025-12-06 10:38:07] User found: 1@gmail.com (ID: 1)
+[2025-12-06 10:38:07] Password verification SUCCESS
+[2025-12-06 10:38:07] Email and phone verified. Logging in
+[2025-12-06 10:50:40] === LOGIN PAGE LOADED ===
+[2025-12-06 10:50:40] Request method: GET
+[2025-12-06 10:50:40] Email received: empty
+[2025-12-06 10:50:40] Remember received: NO
+[2025-12-06 10:50:45] === LOGIN PAGE LOADED ===
+[2025-12-06 10:50:45] Request method: POST
+[2025-12-06 10:50:45] Email received: shannellwong@gmail.com
+[2025-12-06 10:50:45] Remember received: NO
+[2025-12-06 10:50:45] Form submitted via POST
+[2025-12-06 10:50:45] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-06 10:50:45] Password verification SUCCESS
+[2025-12-06 10:50:45] Email and phone verified. Logging in

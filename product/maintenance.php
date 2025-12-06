@@ -95,40 +95,55 @@ td.action-btns {
     white-space: nowrap;
 }
 
-/* Reset form inside flex */
-.delete-form { 
-    margin: 0; 
-    padding: 0;
-    display: flex; 
+/* --- ACTION BUTTONS --- */
+td.action-btns {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Consistent gap */
+    white-space: nowrap;
+    height: 100%; /* Ensure it fills the cell height */
+    padding: 30px 15px; /* Match standard cell padding */
 }
 
-/* Buttons */
+/* Reset form margins completely */
+.status-form { 
+    margin: 0; 
+    padding: 0; 
+    display: flex; /* Makes the button inside behave like a flex item */
+}
+
+/* Unified Button Style */
 .action-btns a, 
-.delete-form button {
+.status-form button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-family: inherit;
+    
+    /* Strict Height Control */
+    height: 34px; 
+    min-width: 70px; /* Optional: ensures buttons are roughly same width */
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-family: inherit; /* Inherit font from body */
     text-decoration: none;
     border: none;
     cursor: pointer;
     color: #fff;
-    transition: background 0.2s;
-    height: 32px;
-    box-sizing: border-box;
+    line-height: 1; /* Reset line height */
+    transition: opacity 0.2s;
+    box-sizing: border-box; /* Include padding in height calculation */
 }
 
-.edit-btn { background: #007bff; }
-.edit-btn:hover { background: #0056b3; }
+.action-btns a:hover, 
+.status-form button:hover {
+    opacity: 0.9;
+}
 
-.btn-disable { background: #dc3545; }
-.btn-disable:hover { background: #c82333; }
-
-.btn-enable { background: #28a745; }
-.btn-enable:hover { background: #218838; }
+/* Colors */
+.edit-btn { background: #007bff; }    /* Blue */
+.btn-disable { background: #dc3545; } /* Red */
+.btn-enable { background: #28a745; }  /* Green */
 
 /* Media Styles */
 .product-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; }
@@ -258,19 +273,19 @@ tr.disabled-row .action-btns {
                         <?php endif; ?>
                     </td>
                     <td class="action-btns">
-                        <a class="edit-btn" href="detail_admin.php?productID=<?= $p->productID ?>">Edit</a>
+                    <a class="edit-btn" href="detail_admin.php?productID=<?= $p->productID ?>">Edit</a>
 
-                        <form class="delete-form" method="post">
-                            <input type="hidden" name="productID" value="<?= $p->productID ?>">
-                            <input type="hidden" name="action_type" value="toggle_status">
-                            
-                            <?php if ($p->is_active == 1): ?>
-                                <button type="submit" class="btn-disable" onclick="return confirm('Disable this product?');">Disable</button>
-                            <?php else: ?>
-                                <button type="submit" class="btn-enable" onclick="return confirm('Activate this product?');">Enable</button>
-                            <?php endif; ?>
-                        </form>
-                    </td>
+                    <form class="status-form" method="post">
+                        <input type="hidden" name="productID" value="<?= $p->productID ?>">
+                        <input type="hidden" name="action_type" value="toggle_status">
+                        
+                        <?php if ($p->is_active == 1): ?>
+                            <button type="submit" class="btn-disable" onclick="return confirm('Disable this product?');">Disable</button>
+                        <?php else: ?>
+                            <button type="submit" class="btn-enable" onclick="return confirm('Activate this product?');">Enable</button>
+                        <?php endif; ?>
+                    </form>
+                </td>
                 </tr>
             <?php endforeach ?>
         <?php endif ?>

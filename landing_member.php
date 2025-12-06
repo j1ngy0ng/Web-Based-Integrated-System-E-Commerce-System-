@@ -154,7 +154,7 @@ include 'navbar.php';
 .product-ranking { position: absolute; top: 10px; left: 10px; background: #f39c12; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 15; }
 
 .badge-top-left { position: absolute; top: 10px; left: 10px; z-index: 10; width: auto; display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: white; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); pointer-events: none; }
-.bg-green { background-color: #27ae60; }
+.bg-green { background-color: #006989; }
 .bg-red { background-color: #e74c3c; }
 .bg-gray { background-color: #718096; } /* New: Grey Badge */
 
