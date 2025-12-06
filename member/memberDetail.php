@@ -232,9 +232,7 @@ form button[type="reset"] { background-color:#6c757d; }
 </style>
 
 <div id="drop-area">
-    <p>Drag & Drop photo here OR click to choose</p>
-
-    <!-- Existing photo preview (edit mode) -->
+    <p>Drag & Drop photo here OR click to choose OR take a photo</p>
     <img 
         id="preview-img"
         src="<?= $member->photo ? '../photos/'.$member->photo : '' ?>" 
@@ -242,7 +240,19 @@ form button[type="reset"] { background-color:#6c757d; }
     >
 </div>
 
-<input type="file" name="photo" id="fileElem" accept="image/*" style="display:none;">
+<button type="button" id="capture-btn">Capture Photo</button>
+<video id="camera-stream" autoplay style="display:none; width:300px; margin-top:10px;"></video>
+<canvas id="camera-canvas" style="display:none;"></canvas>
+
+
+
+<input type="file" 
+       name="photo" 
+       id="fileElem" 
+       accept="image/*" 
+       capture="environment" 
+       style="display:none;">
+
 
  
     <?php if($member->photo): ?>
@@ -309,6 +319,54 @@ function showPreview(file) {
     };
     reader.readAsDataURL(file);
 }
+
+const captureBtn = document.getElementById("capture-btn");
+const video = document.getElementById("camera-stream");
+const canvas = document.getElementById("camera-canvas");
+
+// Click button to start camera
+captureBtn.addEventListener("click", async () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert("Camera not supported on this device.");
+        return;
+    }
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.style.display = "block";
+        captureBtn.textContent = "Take Snapshot";
+        captureBtn.onclick = () => takeSnapshot(stream);
+    } catch (err) {
+        alert("Unable to access camera: " + err);
+    }
+});
+
+// Take snapshot
+function takeSnapshot(stream) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0);
+    const dataUrl = canvas.toDataURL("image/png");
+
+    // Stop camera
+    stream.getTracks().forEach(track => track.stop());
+    video.style.display = "none";
+
+    // Show preview
+    previewImg.src = dataUrl;
+    previewImg.style.display = "block";
+
+    // Convert dataURL to file and assign to file input
+    fetch(dataUrl)
+        .then(res => res.blob())
+        .then(blob => {
+            const file = new File([blob], "capture.png", { type: "image/png" });
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+        });
+}
+
 </script>
 
 </form>
