@@ -201,10 +201,6 @@ include '../navbar.php';
                     $stock_class = 'out-of-stock'; 
                     $stock_alert_class = 'out-of-stock'; 
                     $stock_message = 'Out of Stock';
-                } elseif ($p->stock <= 5) {
-                    $stock_alert_class = 'low-stock'; 
-                    $stock_message = 'Only ' . $p->stock . ' left!';
-                    $badgeHTML = '<div class="badge-top-left bg-red">Hot</div>';
                 } else {
                     $stock_alert_class = 'in-stock'; 
                     $stock_message = 'In Stock';

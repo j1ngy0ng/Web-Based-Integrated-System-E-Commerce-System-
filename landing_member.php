@@ -365,8 +365,6 @@ include 'navbar.php';
                     } else {
                         $stock_status = ($p->stock <= 5) ? 'low-stock' : 'in-stock';
                         $stock_text = ($p->stock <= 5) ? "Only {$p->stock} left!" : "In Stock";
-                        if ($p->stock <= 5) $badgeHTML = '<div class="badge-top-left bg-red">Hot</div>';
-                        else $badgeHTML = '';
                     }
                     
                     $cardClass = $isDisabled ? 'disabled-card' : '';
