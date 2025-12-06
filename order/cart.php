@@ -10,6 +10,7 @@ $cart = get_cart();
 $cart_products = [];
 $subtotal = 0;
 $count = 0;
+$has_unavailable_items = false;
 
 if ($cart) {
     foreach ($cart as $id => $unit) {
@@ -18,11 +19,20 @@ if ($cart) {
         $p = $stm->fetch();
         
         if ($p) {
+            // Check if product is active (not disabled) and has stock
+            // Note: Using is_active (1 = active, 0 = inactive) instead of is_disabled
+            $p->is_available = ($p->is_active == 1 && $p->stock > 0);
             $p->unit = $unit;
             $p->line_total = $p->price * $unit;
             $cart_products[] = $p;
-            $subtotal += $p->line_total;
-            $count += $unit;
+            
+            // Only add to subtotal if product is available
+            if ($p->is_available) {
+                $subtotal += $p->line_total;
+                $count += $unit;
+            } else {
+                $has_unavailable_items = true;
+            }
         }
     }
 }
@@ -557,13 +567,53 @@ include '../navbar.php';
     }
 }
 
+.unavailable-item {
+    background-color: #f7fafc !important;
+    opacity: 0.7;
+    border-left: 4px solid #cbd5e0 !important;
+}
+
+.unavailable-item td {
+    color: #a0aec0 !important;
+}
+
+.grayscale {
+    filter: grayscale(100%);
+    opacity: 0.6;
+}
+
+.cart-table tr.unavailable-item:hover {
+    background-color: #f1f5f9 !important;
+}
+
+.unavailable-message {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 1; }
+    100% { opacity: 0.7; }
+}
+
+/* Style for the delete button on unavailable items */
+.unavailable-item .delete-btn {
+    background-color: #fed7d7 !important;
+    border-color: #fc8181 !important;
+    color: #c53030 !important;
+}
+
+.unavailable-item .delete-btn:hover {
+    background-color: #feb2b2 !important;
+    transform: scale(1.1) !important;
+}
+
 /* Totals Area */
 .totals-box { flex: 1; min-width: 250px; text-align: right; }
 .totals-row { display: flex; justify-content: flex-end; gap: 30px; margin-bottom: 10px; color: #4a5568; font-size: 1.1em; }
 .totals-row.final { font-size: 1.5em; font-weight: 800; color: #006989; margin-top: 15px; padding-top: 15px; border-top: 1px solid #cbd5e0; }
 .discount-text { color: #e53e3e; }
 
-/* ... (Rest of existing styles) ... */
 .cart-actions { display: flex; gap: 20px; justify-content: center; margin-top: 40px; flex-wrap: wrap; }
 .btn { padding: 15px 35px; border: none; border-radius: 12px; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; text-align: center; }
 .btn-primary { background: linear-gradient(135deg, #006989, #0088aa); color: white; box-shadow: 0 4px 15px rgba(0, 105, 137, 0.3); }
@@ -605,11 +655,24 @@ include '../navbar.php';
                         $max_units = min($p->stock, 10);
                         for ($i = 1; $i <= $max_units; $i++) { $units_options[$i] = $i . ' unit' . ($i > 1 ? 's' : ''); }
                         $main_photo = get_main_photo($p->productID);
+
+                        // Determine if item is unavailable
+                        $is_inactive = ($p->is_active == 0);
+                        $is_out_of_stock = ($p->stock == 0);
+                        $is_unavailable = $is_inactive || $is_out_of_stock;
+                        $row_class = $is_unavailable ? 'unavailable-item' : '';
+                        $disabled_message = '';
+                        
+                        if ($is_inactive) {
+                            $disabled_message = 'Product no longer available';
+                        } elseif ($is_out_of_stock) {
+                            $disabled_message = 'Out of stock';
+                        }
                     ?>
-                    <tr>
+                    <tr class="<?= $row_class ?>" data-product-id="<?= $p->productID ?>">
                         <td>
                             <div style="display: flex; align-items: center; gap: 15px;">
-                                <div class="cart-item-image">
+                                <div class="cart-item-image <?= $is_unavailable ? 'grayscale' : '' ?>">
                                     <?php if (!empty($main_photo)): ?>
                                         <img src="/products/<?= $main_photo ?>" alt="<?= $p->name ?>">
                                     <?php else: ?>
@@ -619,42 +682,73 @@ include '../navbar.php';
                                 <div>
                                     <div class="cart-item-name"><?= $p->name ?></div>
                                     <div class="cart-item-category"><?= $p->categoryName ?? 'Uncategorized' ?></div>
-                                    <?php if ($p->stock < $p->unit): ?>
+                                    <?php if ($is_unavailable): ?>
+                                        <div class="stock-warning unavailable-message" style="color: #e53e3e; font-weight: bold;">
+                                            ❌ <?= $disabled_message ?>
+                                        </div>
+                                    <?php elseif ($p->stock < $p->unit): ?>
                                         <div class="stock-warning low-stock">⚠️ Only <?= $p->stock ?> in stock</div>
                                     <?php elseif ($p->stock <= 5): ?>
-                                        <div class="stock-warning">⚠️ Low stock</div>
+                                        <div class="stock-warning">⚠️ Low stock (<?= $p->stock ?> left)</div>
+                                    <?php endif; ?>
+
+                                    <?php if ($is_inactive): ?>
+                                        <div style="color: #a0aec0; font-size: 0.85em; margin-top: 2px;">
+                                            Status: Inactive
+                                        </div>
                                     <?php endif; ?>
                                 </div>
                             </div>
                         </td>
-                        <td class="cart-item-price">RM <?= number_format($p->price, 2) ?></td>
-                        <td>
-                            <div class="quantity-form">
-                                <!-- Minus button -->
-                                <form method="post" style="display:inline;">
-                                    <input type="hidden" name="btn" value="update">
-                                    <input type="hidden" name="id" value="<?= $p->productID ?>">
-                                    <input type="hidden" name="unit" value="<?= max(1, $p->unit - 1) ?>">
-                                    <button type="submit" class="qty-btn">-</button>
-                                </form>
-
-                                <div class="qty-display"><?= $p->unit ?></div>
-
-                                <!-- Plus button -->
-                                <form method="post" style="display:inline;">
-                                    <input type="hidden" name="btn" value="update">
-                                    <input type="hidden" name="id" value="<?= $p->productID ?>">
-                                    <input type="hidden" name="unit" value="<?= $p->unit + 1 ?>">
-                                    <button type="submit" class="qty-btn">+</button>
-                                </form>
-                            </div>
+                        <td class="cart-item-price">
+                            <?php if ($is_unavailable): ?>
+                                <span style="text-decoration: line-through; color: #a0aec0;">RM <?= number_format($p->price, 2) ?></span>
+                                <br><small style="color: #e53e3e;">Not included in total</small>
+                            <?php else: ?>
+                                RM <?= number_format($p->price, 2) ?>
+                            <?php endif; ?>
                         </td>
-                        <td class="cart-subtotal">RM <?= number_format($p->line_total, 2) ?></td>
+                        <td>
+                            <?php if ($is_unavailable): ?>
+                                <div style="color: #a0aec0; font-style: italic;">
+                                    Cannot update quantity
+                                </div>
+                            <?php else: ?>
+                                <div class="quantity-form">
+                                    <!-- Minus button -->
+                                    <form method="post" style="display:inline;">
+                                        <input type="hidden" name="btn" value="update">
+                                        <input type="hidden" name="id" value="<?= $p->productID ?>">
+                                        <input type="hidden" name="unit" value="<?= max(1, $p->unit - 1) ?>">
+                                        <button type="submit" class="qty-btn" <?= $is_unavailable ? 'disabled' : '' ?>>-</button>
+                                    </form>
+
+                                    <div class="qty-display"><?= $p->unit ?></div>
+
+                                    <!-- Plus button -->
+                                    <form method="post" style="display:inline;">
+                                        <input type="hidden" name="btn" value="update">
+                                        <input type="hidden" name="id" value="<?= $p->productID ?>">
+                                        <input type="hidden" name="unit" value="<?= $p->unit + 1 ?>">
+                                        <button type="submit" class="qty-btn" <?= $is_unavailable ? 'disabled' : '' ?>>+</button>
+                                    </form>
+                                </div>
+                            <?php endif; ?>
+                        </td>
+                        <td class="cart-subtotal">
+                            <?php if ($is_unavailable): ?>
+                                <span style="text-decoration: line-through; color: #a0aec0;">RM <?= number_format($p->line_total, 2) ?></span>
+                            <?php else: ?>
+                                RM <?= number_format($p->line_total, 2) ?>
+                            <?php endif; ?>
+                        </td>
                         <td>
                             <form method="POST" class="delete-cart-form" style="display:inline;">
                                 <input type="hidden" name="id" value="<?= $p->productID ?>">
                                 <input type="hidden" name="btn" value="delete">
-                                <button type="submit" class="delete-btn" data-product-name="<?= htmlspecialchars($p->name) ?>">
+                                <button type="submit" class="delete-btn" 
+                                        data-product-name="<?= htmlspecialchars($p->name) ?>"
+                                        style="<?= $is_unavailable ? 'background-color: #e53e3e;' : '' ?>">
                                     🗑️
                                 </button>
                             </form>
@@ -663,9 +757,21 @@ include '../navbar.php';
                     <?php endforeach; ?>
                 </tbody>
             </table>
+
+            <?php if ($has_unavailable_items): ?>
+            <div class="unavailable-warning-banner" style="background: linear-gradient(135deg, #fed7d7, #feb2b2); border: 1px solid #fc8181; padding: 15px; border-radius: 8px; margin: 20px 0; display: flex; align-items: center; gap: 10px;">
+                <div style="font-size: 24px;">⚠️</div>
+                <div style="flex: 1;">
+                    <strong style="color: #c53030;">Some items in your cart are unavailable!</strong>
+                    <p style="margin: 5px 0 0 0; color: #742a2a;">
+                        You have items that are out of stock or disabled. These items are greyed out and not included in the total.
+                        Please remove them before proceeding to checkout.
+                    </p>
+                </div>
+            </div>
+            <?php endif; ?>
             
             <div class="totals-section">
-                
                 <div class="voucher-box">
                     <span class="voucher-header">Available Vouchers</span>
                     
@@ -820,6 +926,25 @@ include '../navbar.php';
                         <span>RM <?= number_format($grand_total, 2) ?></span>
                     </div>
                 </div>
+
+                <?php
+                $can_checkout = true;
+                $block_checkout_reasons = [];
+
+                // Check each product in cart
+                foreach ($cart_products as $p) {
+                    if ($p->is_active == 0) {
+                        $can_checkout = false;
+                        $block_checkout_reasons[] = "Product '{$p->name}' is inactive";
+                    } elseif ($p->stock == 0) {
+                        $can_checkout = false;
+                        $block_checkout_reasons[] = "Product '{$p->name}' is out of stock";
+                    } elseif ($p->stock < $p->unit) {
+                        $can_checkout = false;
+                        $block_checkout_reasons[] = "Product '{$p->name}' has insufficient stock (only {$p->stock} available)";
+                    }
+                }
+                ?>
             </div>
         </div>
         
@@ -828,7 +953,21 @@ include '../navbar.php';
             <a href="../product/list.php" class="btn btn-outline">← Continue Shopping</a>
             <?php if ($_user?->role == 'Member'): ?>
                 <?php if (isset($_SESSION['selected_address']) || !empty($saved_addresses)): ?>
-                    <button class="btn btn-primary" data-get="../payment/payment.php">🛒 Proceed to Checkout</button>
+                    <?php if (!empty($cart_products)): ?>
+                        <div class="checkout-section">
+                            <button id="checkout-btn" 
+                                    class="btn btn-primary" 
+                                    onclick="return validateCheckout()" 
+                                    <?= !$can_checkout ? 'disabled' : '' ?>
+                                    style="<?= !$can_checkout ? 'opacity: 0.5; cursor: not-allowed; background-color: #cbd5e0 !important;' : '' ?>">
+                                <?php if ($can_checkout): ?>
+                                    Proceed to Checkout (RM <?= number_format($subtotal, 2) ?>)
+                                <?php else: ?>
+                                    ❌ Cannot Checkout - Fix Issues Above
+                                <?php endif; ?>
+                            </button>
+                        </div>
+                    <?php endif; ?>
                 <?php else: ?>
                     <button class="btn btn-primary" onclick="alert('Please select or add a delivery address first.'); return false;">🛒 Proceed to Checkout</button>
                 <?php endif; ?>
@@ -1076,6 +1215,115 @@ include '../navbar.php';
     }
     
     $(document).ready(function() {
+        function checkUnavailableItems() {
+                const unavailableItems = $('.unavailable-item');
+                const checkoutBtn = $('#checkout-btn'); // Assuming you have a checkout button with this ID
+                
+                if (unavailableItems.length > 0) {
+                    // Disable checkout button if it exists
+                    if (checkoutBtn.length) {
+                        checkoutBtn.prop('disabled', true);
+                        checkoutBtn.css({
+                            'opacity': '0.5',
+                            'cursor': 'not-allowed',
+                            'background-color': '#cbd5e0'
+                        });
+                        
+                        // Add tooltip
+                        checkoutBtn.attr('title', 'Remove unavailable items before checkout');
+                    }
+                    
+                    // Show persistent warning
+                    showCheckoutWarning();
+                } else {
+                    // Enable checkout button
+                    if (checkoutBtn.length) {
+                        checkoutBtn.prop('disabled', false);
+                        checkoutBtn.css({
+                            'opacity': '1',
+                            'cursor': 'pointer',
+                            'background-color': '' // Reset to default
+                        });
+                        checkoutBtn.removeAttr('title');
+                    }
+                    
+                    // Hide warning
+                    hideCheckoutWarning();
+                }
+            }
+            
+            // Show checkout warning
+            function showCheckoutWarning() {
+                if (!$('#checkout-warning').length) {
+                    const warning = $(`
+                        <div id="checkout-warning" style="
+                            position: fixed;
+                            bottom: 20px;
+                            right: 20px;
+                            background: linear-gradient(135deg, #fed7d7, #feb2b2);
+                            border: 2px solid #fc8181;
+                            padding: 15px 20px;
+                            border-radius: 10px;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                            z-index: 1000;
+                            max-width: 300px;
+                            animation: slideUp 0.3s ease-out;
+                        ">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="font-size: 24px;">⚠️</div>
+                                <div>
+                                    <strong style="color: #c53030;">Checkout Blocked</strong>
+                                    <p style="margin: 5px 0 0 0; color: #742a2a; font-size: 14px;">
+                                        Remove unavailable items to proceed with checkout.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                    $('body').append(warning);
+                }
+            }
+            
+            // Hide checkout warning
+            function hideCheckoutWarning() {
+                $('#checkout-warning').remove();
+            }
+            
+            // Add CSS animation for the warning
+            $('<style>')
+                .text('@keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }')
+                .appendTo('head');
+            
+            // Auto-delete unavailable items on page load (optional - if you want to force removal)
+            function autoDeleteUnavailableItems() {
+                const unavailableItems = $('.unavailable-item');
+                if (unavailableItems.length > 0) {
+                    // Optional: Auto-remove after 5 seconds with confirmation
+                    setTimeout(() => {
+                        if (confirm(`You have ${unavailableItems.length} unavailable item(s) in your cart. Remove them now?`)) {
+                            // Delete all unavailable items
+                            unavailableItems.each(function() {
+                                const productId = $(this).data('product-id');
+                                const deleteForm = $(`form.delete-cart-form input[name="id"][value="${productId}"]`).closest('form');
+                                deleteForm.find('input[name="btn"]').val('delete');
+                                deleteForm.submit();
+                            });
+                        }
+                    }, 5000);
+                }
+            }
+            
+            // Initialize checks
+            checkUnavailableItems();
+            
+            // Optional: Uncomment if you want auto-delete feature
+            // autoDeleteUnavailableItems();
+            
+            // Re-check after any cart updates (you might need to trigger this after AJAX calls)
+            $(document).on('cartUpdated', function() {
+                checkUnavailableItems();
+            });
+
         $('.quantity-update-form select[name="unit"]').on('change', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -1146,6 +1394,34 @@ include '../navbar.php';
             }
         });
     });
+
+    function validateCheckout() {
+        const unavailableItems = $('.unavailable-item');
+        const checkoutBlocked = <?= !$can_checkout ? 'true' : 'false' ?>;
+        
+        if (unavailableItems.length > 0 || checkoutBlocked) {
+            alert('❌ Please fix the following issues before checkout:\n\n' + 
+                <?= json_encode(implode("\n", $block_checkout_reasons)) ?>);
+            
+            // Scroll to first unavailable item
+            const firstUnavailable = unavailableItems.first();
+            if (firstUnavailable.length) {
+                $('html, body').animate({
+                    scrollTop: firstUnavailable.offset().top - 100
+                }, 500);
+                
+                // Highlight unavailable items
+                firstUnavailable.css('background-color', '#fee');
+                setTimeout(() => {
+                    firstUnavailable.css('background-color', '');
+                }, 2000);
+            }
+            
+            return false;
+        }
+        
+        return true;
+    }
 </script>
 
 <?php
