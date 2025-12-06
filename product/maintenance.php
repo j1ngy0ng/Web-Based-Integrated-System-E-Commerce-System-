@@ -6,27 +6,40 @@ include '../_base.php';
 auth("Admin");
 
 // ====================================================================
-// ENABLE/DISABLE LOGIC HERE
+// ENABLE/DISABLE LOGIC
 // ====================================================================
 if (is_post()) {
     $action = req('action_type');
     $pid    = req('productID');
 
     if ($action === 'toggle_status' && $pid) {
-        // Toggle the is_active status (0 -> 1, or 1 -> 0)
-        $stm = $_db->prepare("UPDATE product SET is_active = NOT is_active WHERE productID = ?");
-        $stm->execute([$pid]);
+        try {
+            // 1. Check current status
+            $check = $_db->prepare("SELECT is_active FROM product WHERE productID = ?");
+            $check->execute([$pid]);
+            $current = $check->fetchColumn();
+
+            // 2. Calculate new status (Toggle)
+            $newStatus = ($current == 1) ? 0 : 1;
+
+            // 3. Update
+            $stm = $_db->prepare("UPDATE product SET is_active = ? WHERE productID = ?");
+            $stm->execute([$newStatus, $pid]);
+            
+            // 4. Feedback
+            $msg = ($newStatus == 1) ? 'Product Activated.' : 'Product Disabled.';
+            temp('info', $msg);
+            
+        } catch (PDOException $e) {
+            temp('error', 'Database Error: ' . $e->getMessage());
+        }
         
-        temp('info', 'Product status updated successfully.');
-        redirect('maintenance.php'); // Reload page
+        redirect('maintenance.php');
     }
 }
 // ====================================================================
-
-// ... (Rest of your existing Sorting/Search logic) ...
-
+// Sorting logic
 // --------------------------------------------------------------------
-// Sorting
 $sort = req('sort', 'productID');
 $dir  = req('dir', 'asc');
 $dir  = ($dir === 'desc') ? 'desc' : 'asc';
@@ -258,19 +271,19 @@ tr.disabled-row .action-btns {
                         <?php endif; ?>
                     </td>
                     <td class="action-btns">
-                        <a class="edit-btn" href="detail_admin.php?productID=<?= $p->productID ?>">Edit</a>
+                    <a class="edit-btn" href="detail_admin.php?productID=<?= $p->productID ?>">Edit</a>
 
-                        <form class="delete-form" method="post">
-                            <input type="hidden" name="productID" value="<?= $p->productID ?>">
-                            <input type="hidden" name="action_type" value="toggle_status">
-                            
-                            <?php if ($p->is_active == 1): ?>
-                                <button type="submit" class="btn-disable" onclick="return confirm('Disable this product?');">Disable</button>
-                            <?php else: ?>
-                                <button type="submit" class="btn-enable" onclick="return confirm('Activate this product?');">Enable</button>
-                            <?php endif; ?>
-                        </form>
-                    </td>
+                    <form class="delete-form" method="post">
+                        <input type="hidden" name="productID" value="<?= $p->productID ?>">
+                        <input type="hidden" name="action_type" value="toggle_status">
+                        
+                        <?php if ($p->is_active == 1): ?>
+                            <button type="submit" class="btn-disable" onclick="return confirm('Disable this product?');">Disable</button>
+                        <?php else: ?>
+                            <button type="submit" class="btn-enable" onclick="return confirm('Activate this product?');">Enable</button>
+                        <?php endif; ?>
+                    </form>
+                </td>
                 </tr>
             <?php endforeach ?>
         <?php endif ?>

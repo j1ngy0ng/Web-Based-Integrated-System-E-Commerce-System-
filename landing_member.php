@@ -39,16 +39,23 @@ if ($_user) {
     $user_favorites = $fav_stm->fetchAll(PDO::FETCH_COLUMN);
 }
 
-// Data Queries (Same as before)
+// Banners
 $banners = [
     ['image' => '/photos/ad1.jpg', 'title' => 'Summer Sale', 'subtitle' => 'Up to 50% Off', 'link' => '/product/list.php'],
     ['image' => '/photos/ad2.jpg', 'title' => 'New Arrivals', 'subtitle' => 'Check Out Latest Products', 'link' => '/product/list.php'],
     ['image' => '/photos/ad3.jpg', 'title' => 'Special Deals', 'subtitle' => 'Limited Time Offers', 'link' => '/product/list.php']
 ];
 
-$topSelling = $_db->query('SELECT p.*, COALESCE(SUM(od.quantity), 0) as total_sold, c.categoryName FROM product p LEFT JOIN order_item od ON p.productID = od.productID LEFT JOIN productcategory c ON p.categoryID = c.categoryID WHERE p.stock > 0 GROUP BY p.productID ORDER BY total_sold DESC LIMIT 10')->fetchAll();
-$newArrivals = $_db->query('SELECT p.*, c.categoryName FROM product p LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID WHERE p.stock > 0 ORDER BY p.productID DESC LIMIT 8')->fetchAll();
-$featured = $_db->query('SELECT p.*, c.categoryName FROM product p LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID WHERE p.stock > 0 ORDER BY RAND() LIMIT 8')->fetchAll();
+// Note: Removed "p.is_active = 1" so we can fetch disabled items and show them as grayed out
+$topSellingStm = $_db->query('SELECT p.*, COALESCE(SUM(od.quantity), 0) as total_sold, c.categoryName FROM product p LEFT JOIN order_item od ON p.productID = od.productID LEFT JOIN productcategory c ON p.categoryID = c.categoryID WHERE p.stock > 0 GROUP BY p.productID ORDER BY total_sold DESC LIMIT 10');
+$topSelling = $topSellingStm->fetchAll();
+
+$newArrivalsStm = $_db->query('SELECT p.*, c.categoryName FROM product p LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID WHERE p.stock > 0 ORDER BY p.productID DESC LIMIT 8');
+$newArrivals = $newArrivalsStm->fetchAll();
+
+$featuredStm = $_db->query('SELECT p.*, c.categoryName FROM product p LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID WHERE p.stock > 0 ORDER BY RAND() LIMIT 8');
+$featured = $featuredStm->fetchAll();
+
 $categories = $_db->query('SELECT * FROM ProductCategory ORDER BY categoryName')->fetchAll();
 
 $_title = 'Home - Welcome';
@@ -56,7 +63,7 @@ include 'navbar.php';
 ?>
 
 <style>
-/* --- HERO SLIDER --- */
+/* ... (Your existing CSS) ... */
 .hero-slider { position: relative; width: 100%; height: 500px; overflow: hidden; margin-bottom: 40px; }
 .hero-slide { display: none; width: 100%; height: 100%; position: relative; animation: fadeIn 0.5s; }
 .hero-slide.active { display: block; }
@@ -75,7 +82,7 @@ include 'navbar.php';
 .slider-arrow.prev { left: 20px; }
 .slider-arrow.next { right: 20px; }
 
-/* --- SECTIONS --- */
+/* Sections */
 .container { margin: 0 200px; }
 .section { margin: 60px 0; }
 .section-header { justify-content: space-between; align-items: center; margin-bottom: 30px; padding-right: 45px; padding-bottom: 15px; border-bottom: 2px solid #006989; }
@@ -86,7 +93,7 @@ include 'navbar.php';
 .filter-btn.active { background: #006989; color: white; }
 .filter-btn:hover { background: #006989; color: white; }
 
-/* --- PRODUCT CARDS --- */
+/* Product Cards */
 .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
 .product-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; position: relative; }
 .product-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
@@ -101,9 +108,12 @@ include 'navbar.php';
 .product-card-stock { font-size: 0.85rem; padding: 5px 10px; border-radius: 5px; display: inline-block; }
 .product-card-stock.in-stock { background: #e8f8f0; color: #27ae60; }
 .product-card-stock.low-stock { background: #fef5e7; color: #f39c12; }
+/* NEW: Unavailable Style */
+.product-card-stock.unavailable { background: #e2e8f0; color: #718096; }
+
 .product-sales-info { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 0.85rem; color: #666; }
 
-/* --- SLIDER --- */
+/* Slider */
 .product-slider-container { position: relative; overflow: hidden; }
 .product-slider { display: flex; gap: 25px; overflow-x: auto; scroll-behavior: smooth; padding: 10px 0; scrollbar-width: none; }
 .product-slider::-webkit-scrollbar { display: none; }
@@ -113,85 +123,35 @@ include 'navbar.php';
 .slider-nav.prev-slide { left: -1px; }
 .slider-nav.next-slide { right: -1px; }
 
-/* --- BADGES & ICONS (RESTORED) --- */
+/* Badges */
+.product-ranking { position: absolute; top: 10px; left: 10px; background: #f39c12; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 15; }
 
-/* 1. RESTORED: Ranking Badge (#1, #2) - Orange */
-.product-ranking {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: #f39c12; /* Original Orange */
-    color: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    font-weight: 700;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    z-index: 15;
-}
+.badge-top-left { position: absolute; top: 10px; left: 10px; z-index: 10; width: auto; display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: white; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); pointer-events: none; }
+.bg-green { background-color: #27ae60; }
+.bg-red   { background-color: #e74c3c; }
+.bg-gray  { background-color: #718096; } /* NEW: For unavailable badge */
 
-/* 2. Top Left Badge (New/Hot) */
-.badge-top-left {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 10;
-    width: auto;
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: white;
-    background-color: #006989;
-    text-transform: uppercase;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    pointer-events: none;
-}
-
-/* 3. Top Right Heart */
-.fav-btn-floating {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
-    border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-    transition: transform 0.2s, background 0.2s;
-}
+.fav-btn-floating { position: absolute; top: 10px; right: 10px; z-index: 10; background: rgba(255, 255, 255, 0.9); border: none; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: transform 0.2s, background 0.2s; }
 .fav-btn-floating:hover { transform: scale(1.15); background: #fff; }
 .fav-btn-floating i.fa-heart { color: #dc3545; }
 .fav-btn-floating i.fa-heart-o { color: #ccc; }
 .fav-btn-floating:hover i.fa-heart-o { color: #dc3545; }
 
-/* Animation / Responsive */
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* Disabled Style for Card */
+.product-card.disabled-card { opacity: 0.75; background: #f8f9fa; }
+.product-card.disabled-card .product-card-image img { filter: grayscale(100%); opacity: 0.7; }
+
 @media (max-width: 768px) {
     .hero-slider { height: 300px; }
     .hero-content h1 { font-size: 2rem; }
-    .hero-content p { font-size: 1rem; }
-    .hero-overlay { padding: 0 20px; }
     .products-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
-    .section-header { flex-direction: column; align-items: flex-start; gap: 15px; }
 }
 </style>
 
 <div class="hero-slider">
     <?php foreach ($banners as $index => $banner): ?>
         <div class="hero-slide <?= $index === 0 ? 'active' : '' ?>">
-            <img src="<?= $banner['image'] ?>" alt="<?= $banner['title'] ?>" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22800%22 height=%22500%22%3E%3Crect fill=%22%23ddd%22 width=%22800%22 height=%22500%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2230%22%3EBanner Image%3C/text%3E%3C/svg%3E'">
+            <img src="<?= $banner['image'] ?>" alt="<?= $banner['title'] ?>">
             <div class="hero-overlay">
                 <div class="hero-content">
                     <h1><?= $banner['title'] ?></h1>
@@ -211,9 +171,10 @@ include 'navbar.php';
 </div>
 
 <div class="container">
+    
     <div class="section">
         <div class="section-header">
-            <h2>Top 8 Selling Products</h2>
+            <h2>🏆 Top Selling Products</h2>
             <div class="section-controls">
                 <button class="filter-btn active" onclick="filterTopSelling('all')">All</button>
                 <?php foreach ($categories as $cat): ?>
@@ -225,19 +186,38 @@ include 'navbar.php';
             <?php foreach ($topSelling as $index => $p): ?>
                 <?php
                 $main_photo = get_main_photo($p->productID);
-                $stock_status = $p->stock <= 5 ? 'low-stock' : 'in-stock';
-                $stock_text = $p->stock <= 5 ? "Only {$p->stock} left!" : "In Stock";
                 $isFav = in_array($p->productID, $user_favorites);
+                $isDisabled = ($p->is_active == 0);
+                
+                // Status Logic
+                if ($isDisabled) {
+                    $stock_status = 'unavailable'; $stock_text = 'Unavailable';
+                } else {
+                    $stock_status = ($p->stock <= 5) ? 'low-stock' : 'in-stock';
+                    $stock_text = ($p->stock <= 5) ? "Only {$p->stock} left!" : "In Stock";
+                }
+                
+                $cardClass = $isDisabled ? 'disabled-card' : '';
                 ?>
-                <div class="product-card" data-category="<?= $p->categoryID ?>">
+                <div class="product-card <?= $cardClass ?>" data-category="<?= $p->categoryID ?>">
                     <div class="product-card-image">
-                        <a href="/product/detail.php?id=<?= $p->productID ?>" style="display:block; width:100%; height:100%;">
+                        <?php if ($isDisabled): ?>
+                            <div style="display:block; width:100%; height:100%;">
+                        <?php else: ?>
+                            <a href="/product/detail.php?id=<?= $p->productID ?>" style="display:block; width:100%; height:100%;">
+                        <?php endif; ?>
+                        
                             <?php if (!empty($main_photo)): ?>
                                 <img src="/products/<?= $main_photo ?>" alt="<?= $p->name ?>">
                             <?php else: ?>
-                                <div style="width: 100%; height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">No Image</div>
+                                <div style="width: 100%; height: 100%; background: #f0f0f0;"></div>
                             <?php endif; ?>
-                        </a>
+                        
+                        <?php if ($isDisabled): ?>
+                            </div>
+                        <?php else: ?>
+                            </a>
+                        <?php endif; ?>
 
                         <div class="product-ranking">#<?= $index + 1 ?></div>
 
@@ -250,7 +230,7 @@ include 'navbar.php';
                         </form>
                     </div>
                     
-                    <div class="product-card-content" onclick="window.location.href='/product/detail.php?id=<?= $p->productID ?>'">
+                    <div class="product-card-content">
                         <div class="product-card-title"><?= $p->name ?></div>
                         <div class="product-card-category"><?= $p->categoryName ?></div>
                         <div class="product-card-price">RM <?= number_format($p->price, 2) ?></div>
@@ -273,35 +253,52 @@ include 'navbar.php';
                 <?php foreach ($newArrivals as $p): ?>
                     <?php
                     $main_photo = get_main_photo($p->productID);
-                    $stock_status = $p->stock <= 5 ? 'low-stock' : 'in-stock';
-                    $stock_text = $p->stock <= 5 ? "Only {$p->stock} left!" : "In Stock";
                     $isFav = in_array($p->productID, $user_favorites);
+                    $isDisabled = ($p->is_active == 0);
                     
-                    // Show NEW Badge
-                    $badgeHTML = '<div class="badge-top-left">New</div>';
+                    if ($isDisabled) {
+                        $stock_status = 'unavailable'; $stock_text = 'Unavailable';
+                        $badgeHTML = '<div class="badge-top-left bg-gray">Unavailable</div>';
+                    } else {
+                        $stock_status = ($p->stock <= 5) ? 'low-stock' : 'in-stock';
+                        $stock_text = ($p->stock <= 5) ? "Only {$p->stock} left!" : "In Stock";
+                        $badgeHTML = '<div class="badge-top-left bg-green">New</div>';
+                    }
+                    
+                    $cardClass = $isDisabled ? 'disabled-card' : '';
                     ?>
                     <div class="product-slide">
-                        <div class="product-card">
+                        <div class="product-card <?= $cardClass ?>">
                             <div class="product-card-image">
-                                <a href="/product/detail.php?id=<?= $p->productID ?>" style="display:block; width:100%; height:100%;">
+                                <?php if ($isDisabled): ?>
+                                    <div style="display:block; width:100%; height:100%;">
+                                <?php else: ?>
+                                    <a href="/product/detail.php?id=<?= $p->productID ?>" style="display:block; width:100%; height:100%;">
+                                <?php endif; ?>
+                                
                                     <?php if (!empty($main_photo)): ?>
                                         <img src="/products/<?= $main_photo ?>" alt="<?= $p->name ?>">
                                     <?php else: ?>
-                                        <div style="width: 100%; height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">No Image</div>
+                                        <div style="width: 100%; height: 100%; background: #f0f0f0;"></div>
                                     <?php endif; ?>
-                                </a>
+                                
+                                <?php if ($isDisabled): ?>
+                                    </div>
+                                <?php else: ?>
+                                    </a>
+                                <?php endif; ?>
                                 
                                 <?= $badgeHTML ?>
 
                                 <form method="post" style="margin:0;">
                                     <input type="hidden" name="id" value="<?= $p->productID ?>">
                                     <input type="hidden" name="action" value="toggle_fav">
-                                    <button type="submit" class="fav-btn-floating" title="<?= $isFav ? 'Remove Fav' : 'Add Fav' ?>">
+                                    <button type="submit" class="fav-btn-floating">
                                         <i class="fa <?= $isFav ? 'fa-heart' : 'fa-heart-o' ?>"></i>
                                     </button>
                                 </form>
                             </div>
-                            <div class="product-card-content" onclick="window.location.href='/product/detail.php?id=<?= $p->productID ?>'">
+                            <div class="product-card-content">
                                 <div class="product-card-title"><?= $p->name ?></div>
                                 <div class="product-card-category"><?= $p->categoryName ?></div>
                                 <div class="product-card-price">RM <?= number_format($p->price, 2) ?></div>
@@ -326,35 +323,53 @@ include 'navbar.php';
                 <?php foreach ($featured as $p): ?>
                     <?php
                     $main_photo = get_main_photo($p->productID);
-                    $stock_status = $p->stock <= 5 ? 'low-stock' : 'in-stock';
-                    $stock_text = $p->stock <= 5 ? "Only {$p->stock} left!" : "In Stock";
                     $isFav = in_array($p->productID, $user_favorites);
+                    $isDisabled = ($p->is_active == 0);
                     
-                    $badgeHTML = '';
-                    if ($p->stock <= 5 && $p->stock > 0) $badgeHTML = '<div class="badge-top-left">Featured</div>';
+                    if ($isDisabled) {
+                        $stock_status = 'unavailable'; $stock_text = 'Unavailable';
+                        $badgeHTML = '<div class="badge-top-left bg-gray">Unavailable</div>';
+                    } else {
+                        $stock_status = ($p->stock <= 5) ? 'low-stock' : 'in-stock';
+                        $stock_text = ($p->stock <= 5) ? "Only {$p->stock} left!" : "In Stock";
+                        if ($p->stock <= 5 && $p->stock > 0) $badgeHTML = '<div class="badge-top-left bg-red">Hot</div>';
+                        else $badgeHTML = '';
+                    }
+                    
+                    $cardClass = $isDisabled ? 'disabled-card' : '';
                     ?>
                     <div class="product-slide">
-                        <div class="product-card">
+                        <div class="product-card <?= $cardClass ?>">
                             <div class="product-card-image">
-                                <a href="/product/detail.php?id=<?= $p->productID ?>" style="display:block; width:100%; height:100%;">
+                                <?php if ($isDisabled): ?>
+                                    <div style="display:block; width:100%; height:100%;">
+                                <?php else: ?>
+                                    <a href="/product/detail.php?id=<?= $p->productID ?>" style="display:block; width:100%; height:100%;">
+                                <?php endif; ?>
+                                
                                     <?php if (!empty($main_photo)): ?>
                                         <img src="/products/<?= $main_photo ?>" alt="<?= $p->name ?>">
                                     <?php else: ?>
-                                        <div style="width: 100%; height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">No Image</div>
+                                        <div style="width: 100%; height: 100%; background: #f0f0f0;"></div>
                                     <?php endif; ?>
-                                </a>
+                                
+                                <?php if ($isDisabled): ?>
+                                    </div>
+                                <?php else: ?>
+                                    </a>
+                                <?php endif; ?>
                                 
                                 <?= $badgeHTML ?>
 
                                 <form method="post" style="margin:0;">
                                     <input type="hidden" name="id" value="<?= $p->productID ?>">
                                     <input type="hidden" name="action" value="toggle_fav">
-                                    <button type="submit" class="fav-btn-floating" title="<?= $isFav ? 'Remove Fav' : 'Add Fav' ?>">
+                                    <button type="submit" class="fav-btn-floating">
                                         <i class="fa <?= $isFav ? 'fa-heart' : 'fa-heart-o' ?>"></i>
                                     </button>
                                 </form>
                             </div>
-                            <div class="product-card-content" onclick="window.location.href='/product/detail.php?id=<?= $p->productID ?>'">
+                            <div class="product-card-content">
                                 <div class="product-card-title"><?= $p->name ?></div>
                                 <div class="product-card-category"><?= $p->categoryName ?></div>
                                 <div class="product-card-price">RM <?= number_format($p->price, 2) ?></div>
@@ -370,7 +385,7 @@ include 'navbar.php';
 </div>
 
 <script>
-// Hero Slider
+// Hero Slider Logic (Keep existing)
 let currentSlide = 0;
 const slides = document.querySelectorAll('.hero-slide');
 const dots = document.querySelectorAll('.slider-dot');
@@ -378,55 +393,32 @@ const dots = document.querySelectorAll('.slider-dot');
 function showSlide(n) {
     slides.forEach(slide => slide.classList.remove('active'));
     dots.forEach(dot => dot.classList.remove('active'));
-    
     if (n >= slides.length) currentSlide = 0;
     if (n < 0) currentSlide = slides.length - 1;
-    
     slides[currentSlide].classList.add('active');
     dots[currentSlide].classList.add('active');
 }
-
 function changeSlide(n) { currentSlide += n; showSlide(currentSlide); }
 function goToSlide(n) { currentSlide = n; showSlide(currentSlide); }
-
-// Auto slide
 setInterval(() => { currentSlide++; showSlide(currentSlide); }, 5000);
 
-// Product Slider
+// Product Slider Logic
 function slideProducts(sliderId, direction) {
     const slider = document.getElementById(sliderId);
-    const slideWidth = 305; // 280px + 25px gap
+    const slideWidth = 305;
     slider.scrollLeft += slideWidth * direction;
 }
 
-// Filter Top Selling Products
+// Filter Logic
 function filterTopSelling(category) {
     const products = document.querySelectorAll('#topSellingGrid .product-card');
     const buttons = document.querySelectorAll('.section-controls .filter-btn');
-    const grid = document.getElementById('topSellingGrid');
-    
     buttons.forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
-
-    let hasVisibleProducts = false;
     products.forEach(product => {
-        if (category === 'all' || product.dataset.category === category) {
-            product.style.display = 'block';
-            hasVisibleProducts = true;
-        } else {
-            product.style.display = 'none';
-        }
+        if (category === 'all' || product.dataset.category === category) product.style.display = 'block';
+        else product.style.display = 'none';
     });
-
-    const existingMessage = grid.querySelector('.no-results-message');
-    if (existingMessage) { existingMessage.remove(); }
-    
-    if (!hasVisibleProducts && category !== 'all') {
-        const message = document.createElement('div');
-        message.className = 'no-results-message';
-        message.innerHTML = `<div style="padding: 40px 20px; color: #661; grid-column: 1 / -1; text-align: center;"><div style="font-size: 3rem; margin-bottom: 15px;">😔</div><h3 style="margin-bottom: 10px; color: #555;">No Products Found in this Category</h3></div>`;
-        grid.appendChild(message);
-    }
 }
 </script>
 
