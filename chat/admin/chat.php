@@ -4,6 +4,7 @@ auth("Admin");
 
 $roomID = req('roomID');
 
+// Fetch room info
 $stm = $_db->prepare("
     SELECT cr.roomID, u.name 
     FROM chat_room cr
@@ -17,15 +18,19 @@ if (!$room) redirect('chat_list.php');
 
 $_title = "Chat with " . $room->name;
 include '../../navbar.php';
+
+// --- Mark as read for all admins ---
+$stm = $_db->prepare("
+    UPDATE chat_room
+    SET last_read_at = NOW()
+    WHERE roomID = ?
+");
+$stm->execute([$roomID]);
 ?>
 
 <style>
 /* Container */
-.chat-wrapper {
-    width: 90%;
-    max-width: 900px;
-    margin: 30px auto;
-}
+.chat-wrapper { width: 90%; max-width: 900px; margin: 30px auto; }
 
 /* Chat Box */
 .chat-container {
@@ -150,9 +155,7 @@ function loadMessages() {
     fetch("../fetch_messages.php?roomID=" + roomID)
         .then(r => r.json())
         .then(messages => {
-
-            // No new messages → skip refresh (NO BLINK)
-            if (messages.length === lastCount) return;
+            if (messages.length === lastCount) return; // No new messages
             lastCount = messages.length;
 
             let box = document.getElementById("chat-box");
@@ -178,7 +181,7 @@ function sendMsg() {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: "roomID=" + roomID + "&message=" + encodeURIComponent(text)
-    });
+    }).then(() => loadMessages()); // refresh immediately
 
     document.getElementById("msg").value = "";
 }

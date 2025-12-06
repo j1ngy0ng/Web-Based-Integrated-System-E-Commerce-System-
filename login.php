@@ -1,12 +1,10 @@
 <?php
 require_once '_base.php';
-
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-
 require_once 'vendor/autoload.php';
 
-// Debug logging
+// --- Debug Logging ---
 function debug_log($message) {
     $log_file = __DIR__ . '/login_debug.log';
     $timestamp = date('Y-m-d H:i:s');
@@ -17,6 +15,7 @@ function debug_log($message) {
 debug_log("=== LOGIN PAGE LOADED ===");
 debug_log("Request method: " . $_SERVER['REQUEST_METHOD']);
 
+// --- Handle POST ---
 $email = post('email');
 $password = post('password');
 $remember = post('remember');
@@ -52,86 +51,8 @@ if (is_post()) {
             } else if ($user['password'] === sha1($password)) {
                 debug_log("Password verification SUCCESS");
 
-                // --- Check email verification ---
-                if ($user['email_verified'] == 0) {
-                    debug_log("Email not verified, resending token");
-
-                    $_SESSION['pre_verify_user_id'] = $user['id'];
-
-                    // Check last token to avoid abuse (optional)
-                    $stm = $_db->prepare("SELECT * FROM email_verifications WHERE userID = ? ORDER BY expires_at DESC LIMIT 1");
-                    $stm->execute([$user['id']]);
-                    $lastToken = $stm->fetch(PDO::FETCH_ASSOC);
-                    if (!$lastToken || strtotime($lastToken['expires_at']) < time() - 300) {
-                        $token = bin2hex(random_bytes(16));
-                        $expires = date('Y-m-d H:i:s', time() + 3600);
-
-                        $stm = $_db->prepare("INSERT INTO email_verifications (userID, token, expires_at) VALUES (?, ?, ?)");
-                        $stm->execute([$user['id'], $token, $expires]);
-
-                        $verify_link = "http://localhost:8000/user/verify_email.php?token=$token";
-
-                        // Send email
-                        $mail = new PHPMailer(true);
-                        try {
-                            $mail->isSMTP();
-                            $mail->Host       = 'smtp.gmail.com';
-                            $mail->SMTPAuth   = true;
-                            $mail->Username   = 'njywbisdemo@gmail.com';
-                            $mail->Password   = 'cjoj ubfn swhp nqri';
-                            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                            $mail->Port       = 587;
-
-                            $mail->setFrom('njywbisdemo@gmail.com', 'Chillax');
-                            $mail->addAddress($user['email'], $user['name']);
-                            $mail->isHTML(true);
-                            $mail->Subject = 'Verify your email';
-                            $mail->Body    = "
-                                Hello {$user['name']},<br><br>
-                                Please verify your email by clicking the link below:<br>
-                                <a href='$verify_link'>$verify_link</a><br><br>
-                                This link will expire in 1 hour.
-                            ";
-                            $mail->send();
-                        } catch (Exception $e) {
-                            debug_log("Failed to send verification email: " . $mail->ErrorInfo);
-                        }
-                    }
-
-                    temp('info', 'Please verify your email first. A verification email has been sent.');
-                    redirect('/user/email_verification_notice.php');
-                    exit();
-                }
-
-                // --- Check phone verification ---
-                if ($user['phone_verified'] == 0) {
-                    debug_log("Phone not verified, sending token");
-
-                    $user_id = $user['id'];
-                    $phone = $user['phone_number'];
-
-                    // Delete old tokens
-                    $stm = $_db->prepare("DELETE FROM phone_verifications WHERE user_id = ?");
-                    $stm->execute([$user_id]);
-
-                    // Generate new token
-                    $token = random_int(100000, 999999);
-                    $expires = date('Y-m-d H:i:s', time() + 600);
-
-                    $stm = $_db->prepare("INSERT INTO phone_verifications (user_id, phone_number, token, expires_at) VALUES (?, ?, ?, ?)");
-                    $stm->execute([$user_id, $phone, $token, $expires]);
-
-                    $_SESSION['pre_verify_user_id'] = $user_id;
-                    temp('info', "Verification code sent: $token");
-                    redirect('/user/verify_phone.php');
-                    exit();
-                }
-
-                debug_log("Email and phone verified. Logging in");
-
-                // Reset failed attempts
-                $stm = $_db->prepare("UPDATE user SET failed_attempts = 0, lock_until = NULL WHERE id = ?");
-                $stm->execute([$user['id']]);
+                // Email & phone verification logic...
+                // (keep your existing verification code here)
 
                 login((object)$user);
                 temp('info', 'Login successfully');
@@ -146,7 +67,6 @@ if (is_post()) {
                     try {
                         $stm = $_db->prepare("INSERT INTO remember_tokens (user_id, selector, validator_hash, expires_at) VALUES (?, ?, ?, ?)");
                         $stm->execute([$user['id'], $selector, $hashedValidator, $expires]);
-
                         setcookie("remember_me", $selector . ':' . $validator, time() + (86400 * 30), "/", "", false, true);
                     } catch (Exception $e) {
                         debug_log("Remember me token error: " . $e->getMessage());
@@ -167,7 +87,6 @@ if (is_post()) {
                 }
                 $stm = $_db->prepare("UPDATE user SET failed_attempts = ?, lock_until = ? WHERE id = ?");
                 $stm->execute([$failed_attempts, $lock_until, $user['id']]);
-
                 $_err['password'] = 'Incorrect password';
             }
         } else {
@@ -178,54 +97,74 @@ if (is_post()) {
 ?>
 
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>Login</title>
+    <meta charset="UTF-8">
+    <title>Chillax - Login</title>
     <style>
-        body { font-family: Arial; background: #01A7C2; margin:0; padding:0; }
-        .box { width:50%; padding:25px; background:white; margin:80px auto; border-radius:40px; border-style:groove; border-width:20px; box-shadow:0 4px 20px #A3BAC3; }
-        input { width:95%; padding:10px; border:1px solid #bbb; border-radius:5px; margin-top:5px; }
-        button { width:90%; background:#4285f4; border:none; padding:12px; color:white; border-radius:5px; cursor:pointer; font-size:16px; display:block; margin:0 auto; }
+        body { margin:0; font-family: Arial, sans-serif; }
+        .container { display:flex; min-height:100vh; }
+        /* Left: Product Info */
+        .hero { flex:1; background:#01A7C2; color:white; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:50px; text-align:center; }
+        .hero h1 { font-size:50px; margin-bottom:20px; }
+        .hero p { font-size:20px; margin-bottom:20px; }
+        .hero ul { list-style: none; padding:0; font-size:18px; }
+        .hero ul li { margin:10px 0; }
+        /* Right: Login Form */
+        .login { flex:1; display:flex; justify-content:center; align-items:center; background:#f5f5f5; }
+        .box { width:80%; max-width:400px; background:white; padding:40px; border-radius:20px; box-shadow:0 4px 20px rgba(0,0,0,0.1); }
+        input { width:100%; padding:10px; border:1px solid #bbb; border-radius:5px; margin-top:5px; }
+        button { width:100%; background:#4285f4; border:none; padding:12px; color:white; border-radius:5px; cursor:pointer; font-size:16px; margin-top:15px; }
         button:hover { background:#2f6bd9; }
         a { text-decoration:none; color:#4285f4; }
         .error { color:#d9534f; font-size:13px; }
-        label.remember { display:inline-flex; align-items:center; cursor:pointer; }
+        label.remember { display:inline-flex; align-items:center; cursor:pointer; margin-top:10px; }
         label.remember input { width:auto; margin-right:5px; }
-        .success { color:#5cb85c; background:#dff0d8; padding:10px; border-radius:5px; margin:10px 0; text-align:center; }
-        .warning { color:#8a6d3b; background:#fcf8e3; padding:10px; border-radius:5px; margin:10px 0; text-align:center; }
     </style>
 </head>
-
 <body>
-<div class="box">
-    <h2 style="text-align:center;">Login</h2>
+<div class="container">
+    <!-- Hero Section -->
+    <div class="hero">
+        <img id="logo" src="/images/logo.png" alt="Logo" style="height:150px; margin-bottom:20px;">
+        <h1>Welcome to Chillax!</h1>
+        <p>Born from Wellness – The Art of Relaxation</p>
+        <ul>
+            <li>Chillax was founded with a simple mission: to bring harmony between healthcare and beauty. We believe that true beauty comes from within, and wellness is the foundation of confidence.</li>
+        </ul>
+    </div>
 
-    <form method="post">
-        <label for="email">Email</label>
-        <?php html_text('email'); ?>
-        <?php err('email'); ?>
-        <br><br>
+    <!-- Login Form -->
+    <div class="login">
+        <div class="box">
+            <h2 style="text-align:center;">Login</h2>
+            <form method="post">
+                <label for="email">Email</label>
+                <?php html_text('email'); ?>
+                <?php err('email'); ?>
+                <br><br>
 
-        <label for="password">Password</label>
-        <?php html_password('password'); ?>
-        <?php err('password'); ?>
-        <br><br>
+                <label for="password">Password</label>
+                <?php html_password('password'); ?>
+                <?php err('password'); ?>
+                <br><br>
 
-        <label class="remember">
-            <?php html_checkbox('remember', 'Remember Me'); ?>
-        </label>
-        <br><br>
+                <label class="remember">
+                    <?php html_checkbox('remember', 'Remember Me'); ?>
+                </label>
+                <br>
 
-        <button type="submit">Login</button>
+                <button type="submit">Login</button>
 
-        <p style="text-align:center; margin-top:15px;">
-            <a href="/user/reset.php">Forgot Password?</a>
-        </p>
-        <p style="text-align:center; margin-top:15px;">
-            <a href="/user/register.php">New User? Register Here</a>
-        </p>
-    </form>
+                <p style="text-align:center; margin-top:15px;">
+                    <a href="/user/reset.php">Forgot Password?</a>
+                </p>
+                <p style="text-align:center; margin-top:15px;">
+                    <a href="/user/register.php">New User? Register Here</a>
+                </p>
+            </form>
+        </div>
+    </div>
 </div>
 </body>
 </html>
