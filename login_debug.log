@@ -2818,3 +2818,15 @@
 [2025-12-06 10:01:10] User found: 2@gmail.com (ID: 2)
 [2025-12-06 10:01:10] Password verification SUCCESS
 [2025-12-06 10:01:10] Email and phone verified. Logging in
+[2025-12-06 10:25:59] === LOGIN PAGE LOADED ===
+[2025-12-06 10:25:59] Request method: GET
+[2025-12-06 10:25:59] Email received: empty
+[2025-12-06 10:25:59] Remember received: NO
+[2025-12-06 10:26:04] === LOGIN PAGE LOADED ===
+[2025-12-06 10:26:04] Request method: POST
+[2025-12-06 10:26:04] Email received: mailleejx@gmail.com
+[2025-12-06 10:26:04] Remember received: NO
+[2025-12-06 10:26:04] Form submitted via POST
+[2025-12-06 10:26:04] User found: mailleejx@gmail.com (ID: 3)
+[2025-12-06 10:26:04] Password verification SUCCESS
+[2025-12-06 10:26:04] Email and phone verified. Logging in

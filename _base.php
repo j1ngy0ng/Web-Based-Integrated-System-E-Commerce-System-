@@ -190,7 +190,7 @@ function encode($value) {
 
 // Generate <input type='hidden'>
 function html_hidden($key, $attr = '') {
-    $value ??= encode($GLOBALS[$key] ?? '');
+    $value = encode($GLOBALS[$key] ?? '');
     echo "<input type='hidden' id='$key' name='$key' value='$value' $attr>";
 }
 
@@ -473,113 +473,34 @@ function get_user_cart($userID) {
 }
 
 function get_cart() {
-    global $_user, $_db;
-    
-    if (!$_user) {
-        return []; // Return empty array if no user logged in
-    }
-    
-    $cartID = get_user_cart($_user->id);
-    
-    $stm = $_db->prepare('
-        SELECT ci.productID, ci.quantity 
-        FROM cart_item ci 
-        WHERE ci.cartID = ?
-    ');
-    $stm->execute([$cartID]);
-    
-    $cart = [];
-    while ($row = $stm->fetch()) {
-        $cart[$row->productID] = $row->quantity;
-    }
-    
-    return $cart;
+    return $_SESSION['cart'] ?? [];
 }
 
 function update_cart($id, $unit) {
-    global $_user, $_db;
-    
-    if (!$_user) {
-        return;
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
     }
-    
-    $cartID = get_user_cart($_user->id);
     
     if ($unit >= 1 && $unit <= 10 && is_exists($id, 'product', 'productID')) {
-        $stm = $_db->prepare('
-            SELECT cart_item_id FROM cart_item 
-            WHERE cartID = ? AND productID = ?
-        ');
-        $stm->execute([$cartID, $id]);
-        $exists = $stm->fetchColumn();
-        
-        if ($exists) {
-            // Update
-            $stm = $_db->prepare('
-                UPDATE cart_item SET quantity = ? 
-                WHERE cartID = ? AND productID = ?
-            ');
-            $stm->execute([$unit, $cartID, $id]);
-        } else {
-            // Insert
-            $stm = $_db->prepare('
-                INSERT INTO cart_item (cartID, productID, quantity) 
-                VALUES (?, ?, ?)
-            ');
-            $stm->execute([$cartID, $id, $unit]);
-        }
+        $_SESSION['cart'][$id] = $unit;
     } else {
-        // Remove
-        $stm = $_db->prepare('
-            DELETE FROM cart_item 
-            WHERE cartID = ? AND productID = ?
-        ');
-        $stm->execute([$cartID, $id]);
+        // Remove item if unit is 0 or invalid
+        unset($_SESSION['cart'][$id]);
     }
-    
-    $stm = $_db->prepare('UPDATE cart SET updated_at = NOW() WHERE cartID = ?');
-    $stm->execute([$cartID]);
 }
 
 function clear_cart() {
-    global $_user, $_db;
-    
-    if (!$_user) {
-        return;
-    }
-    
-    $cartID = get_user_cart($_user->id);
-    
-    $stm = $_db->prepare('DELETE FROM cart_item WHERE cartID = ?');
-    $stm->execute([$cartID]);
+    $_SESSION['cart'] = [];
 }
 
 function set_cart($cart = []) {
-    global $_user, $_db;
+    $_SESSION['cart'] = [];
     
-    if (!$_user) {
-        return;
-    }
-    
-    $cartID = get_user_cart($_user->id);
-    
-    // Clear
-    $stm = $_db->prepare('DELETE FROM cart_item WHERE cartID = ?');
-    $stm->execute([$cartID]);
-    
-    // Add
     foreach ($cart as $id => $unit) {
         if ($unit >= 1 && $unit <= 10 && is_exists($id, 'product', 'productID')) {
-            $stm = $_db->prepare('
-                INSERT INTO cart_item (cartID, productID, quantity) 
-                VALUES (?, ?, ?)
-            ');
-            $stm->execute([$cartID, $id, $unit]);
+            $_SESSION['cart'][$id] = $unit;
         }
     }
-    
-    $stm = $_db->prepare('UPDATE cart SET updated_at = NOW() WHERE cartID = ?');
-    $stm->execute([$cartID]);
 }
 
 // ============================================================================
