@@ -21,6 +21,8 @@ $member->lock_until = null;
 $member->is_active = 1;
 $member->phone_number = '';
 $member->phone_verified = 0;
+$member->reward_points = 0;
+
 
 
 // --------------------------------------------------------------------
@@ -90,10 +92,10 @@ if (is_post()) {
             } else {
             $stm = $_db->prepare('
                 UPDATE user 
-                SET email=?, name=?, role=?, photo=?, phone_number=?, is_active=? 
+                SET email=?, name=?, role=?, photo=?, phone_number=?, is_active=?, reward_points=?
                 WHERE id=?
             ');
-            $stm->execute([$email, $name, $role, $photoName, $phone_number, $is_active, $memberID]);
+            $stm->execute([$email, $name, $role, $photoName, $phone_number, $is_active, $reward_points, $memberID]);
 
             }
             temp('info', 'Member updated');
@@ -103,9 +105,11 @@ if (is_post()) {
                 $_err['password'] = 'Password is required';
             } else {
                 $pwdHash = password_hash($password, PASSWORD_DEFAULT);
-                $stm = $_db->prepare('INSERT INTO user 
-                (email, name, role, password, photo, phone_number, is_active, failed_attempts, lock_until, phone_verified)
-                VALUES (?,?,?,?,?,?,?,?,?,?)');
+                $stm = $_db->prepare(
+                    'INSERT INTO user 
+                    (email, name, role, password, photo, phone_number, is_active, failed_attempts, lock_until, phone_verified, reward_points)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                    ');
                 $stm->execute([
                     $email,
                     $name,
@@ -116,7 +120,8 @@ if (is_post()) {
                     $is_active,
                     0,       // failed_attempts
                     null,    // lock_until
-                    0        // phone_verified
+                    0,        // phone_verified
+                    0   // reward_points default
                 ]);
 
                 temp('info', 'Member added');
@@ -184,6 +189,9 @@ form button[type="reset"] { background-color:#6c757d; }
 
     <label for="phone_number">Phone Number</label>
     <?= html_text('phone_number', 'maxlength="20"') ?>
+    
+    <label for="reward_points">Reward Points</label>
+    <input type="number" name="reward_points" value="<?= $member->reward_points ?>" min="0">
 
     <label for="is_active">Status</label>
     <select name="is_active">
