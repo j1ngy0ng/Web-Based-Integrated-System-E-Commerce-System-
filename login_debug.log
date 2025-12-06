@@ -2644,3 +2644,27 @@
 [2025-12-06 08:47:01] User found: shannellwong@gmail.com (ID: 3)
 [2025-12-06 08:47:01] Password verification SUCCESS
 [2025-12-06 08:47:01] Email and phone verified. Logging in
+[2025-12-06 09:17:25] === LOGIN PAGE LOADED ===
+[2025-12-06 09:17:25] Request method: GET
+[2025-12-06 09:17:25] Email received: empty
+[2025-12-06 09:17:25] Remember received: NO
+[2025-12-06 09:17:35] === LOGIN PAGE LOADED ===
+[2025-12-06 09:17:35] Request method: POST
+[2025-12-06 09:17:35] Email received: 1@gmail.com
+[2025-12-06 09:17:35] Remember received: NO
+[2025-12-06 09:17:35] Form submitted via POST
+[2025-12-06 09:17:35] User found: 1@gmail.com (ID: 1)
+[2025-12-06 09:17:35] Password verification SUCCESS
+[2025-12-06 09:17:35] Email and phone verified. Logging in
+[2025-12-06 09:17:46] === LOGIN PAGE LOADED ===
+[2025-12-06 09:17:46] Request method: GET
+[2025-12-06 09:17:46] Email received: empty
+[2025-12-06 09:17:46] Remember received: NO
+[2025-12-06 09:17:50] === LOGIN PAGE LOADED ===
+[2025-12-06 09:17:50] Request method: POST
+[2025-12-06 09:17:50] Email received: shannellwong@gmail.com
+[2025-12-06 09:17:50] Remember received: NO
+[2025-12-06 09:17:50] Form submitted via POST
+[2025-12-06 09:17:50] User found: shannellwong@gmail.com (ID: 3)
+[2025-12-06 09:17:50] Password verification SUCCESS
+[2025-12-06 09:17:50] Email and phone verified. Logging in

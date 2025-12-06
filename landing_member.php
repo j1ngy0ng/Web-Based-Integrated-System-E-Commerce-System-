@@ -63,7 +63,6 @@ include 'navbar.php';
 ?>
 
 <style>
-/* ... (Your existing CSS) ... */
 .hero-slider { position: relative; width: 100%; height: 500px; overflow: hidden; margin-bottom: 40px; }
 .hero-slide { display: none; width: 100%; height: 100%; position: relative; animation: fadeIn 0.5s; }
 .hero-slide.active { display: block; }
@@ -108,7 +107,7 @@ include 'navbar.php';
 .product-card-stock { font-size: 0.85rem; padding: 5px 10px; border-radius: 5px; display: inline-block; }
 .product-card-stock.in-stock { background: #e8f8f0; color: #27ae60; }
 .product-card-stock.low-stock { background: #fef5e7; color: #f39c12; }
-/* NEW: Unavailable Style */
+/* Unavailable Style */
 .product-card-stock.unavailable { background: #e2e8f0; color: #718096; }
 
 .product-sales-info { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 0.85rem; color: #666; }
@@ -127,7 +126,7 @@ include 'navbar.php';
 .product-ranking { position: absolute; top: 10px; left: 10px; background: #f39c12; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 15; }
 
 .badge-top-left { position: absolute; top: 10px; left: 10px; z-index: 10; width: auto; display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: white; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); pointer-events: none; }
-.bg-green { background-color: #27ae60; }
+.bg-green { background-color: #006989; }
 .bg-red   { background-color: #e74c3c; }
 .bg-gray  { background-color: #718096; } /* NEW: For unavailable badge */
 
