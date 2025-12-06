@@ -2620,3 +2620,15 @@
 [2025-12-06 08:31:18] User found: 1@gmail.com (ID: 1)
 [2025-12-06 08:31:18] Password verification SUCCESS
 [2025-12-06 08:31:18] Email and phone verified. Logging in
+[2025-12-06 08:46:34] === LOGIN PAGE LOADED ===
+[2025-12-06 08:46:34] Request method: GET
+[2025-12-06 08:46:34] Email received: empty
+[2025-12-06 08:46:34] Remember received: NO
+[2025-12-06 08:46:39] === LOGIN PAGE LOADED ===
+[2025-12-06 08:46:39] Request method: POST
+[2025-12-06 08:46:39] Email received: 1@gmail.com
+[2025-12-06 08:46:39] Remember received: NO
+[2025-12-06 08:46:39] Form submitted via POST
+[2025-12-06 08:46:39] User found: 1@gmail.com (ID: 1)
+[2025-12-06 08:46:39] Password verification SUCCESS
+[2025-12-06 08:46:39] Email and phone verified. Logging in

@@ -189,7 +189,7 @@ form button[type="reset"] { background-color:#6c757d; }
 
     <label for="phone_number">Phone Number</label>
     <?= html_text('phone_number', 'maxlength="20"') ?>
-    
+
     <label for="reward_points">Reward Points</label>
     <input type="number" name="reward_points" value="<?= $member->reward_points ?>" min="0">
 
@@ -206,8 +206,45 @@ form button[type="reset"] { background-color:#6c757d; }
     <?= html_text('password', 'type="password" maxlength="100"') ?>
     <?= err('password') ?>
 
-    <label for="photo">Photo</label>
-    <input type="file" name="photo" accept="image/*">
+<label for="photo">Photo</label>
+
+<style>
+#drop-area {
+    border: 2px dashed #aaa;
+    padding: 30px;
+    text-align: center;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: 0.2s;
+}
+#drop-area.highlight {
+    border-color: #007bff;
+    background: #eef5ff;
+}
+#preview-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-top: 10px;
+    display: none;
+}
+</style>
+
+<div id="drop-area">
+    <p>Drag & Drop photo here OR click to choose</p>
+
+    <!-- Existing photo preview (edit mode) -->
+    <img 
+        id="preview-img"
+        src="<?= $member->photo ? '../photos/'.$member->photo : '' ?>" 
+        style="<?= $member->photo ? '' : 'display:none;' ?>"
+    >
+</div>
+
+<input type="file" name="photo" id="fileElem" accept="image/*" style="display:none;">
+
+ 
     <?php if($member->photo): ?>
         <div style="margin-top:10px;">
             <img src="../photos/<?= htmlspecialchars($member->photo) ?>" alt="Photo" style="width:80px;height:80px;border-radius:50%;">
@@ -218,6 +255,63 @@ form button[type="reset"] { background-color:#6c757d; }
         <button><?= $memberID ? 'Update' : 'Add' ?></button>
         <button type="reset">Reset</button>
     </section>
+
+<script>
+const dropArea = document.getElementById("drop-area");
+const fileInput = document.getElementById("fileElem");
+const previewImg = document.getElementById("preview-img");
+
+// --- highlight on drag ---
+["dragenter", "dragover"].forEach(evt => {
+    dropArea.addEventListener(evt, e => {
+        e.preventDefault();
+        dropArea.classList.add("highlight");
+    });
+});
+
+// --- remove highlight ---
+["dragleave", "drop"].forEach(evt => {
+    dropArea.addEventListener(evt, e => {
+        e.preventDefault();
+        dropArea.classList.remove("highlight");
+    });
+});
+
+// --- drop file ---
+dropArea.addEventListener("drop", e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    fileInput.files = dt.files;
+
+    showPreview(file);
+});
+
+// --- click to choose ---
+dropArea.addEventListener("click", () => fileInput.click());
+
+// --- choose file normally ---
+fileInput.addEventListener("change", () => {
+    if (fileInput.files.length > 0) {
+        showPreview(fileInput.files[0]);
+    }
+});
+
+// --- show preview ---
+function showPreview(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        previewImg.src = e.target.result;
+        previewImg.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+
 </form>
+
 
 <?php include '../footer.php'; ?>

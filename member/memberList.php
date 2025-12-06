@@ -45,10 +45,26 @@ if ($q) {
 }
 
 // --------------------------------------------------------------------
+// Pagination
+$page = max(1, intval(req('page', 1))); // default page 1
+$limit = 10; // how many rows per page
+$offset = ($page - 1) * $limit;
+
+// --------------------------------------------------------------------
 // Build final SQL
+$countSql = "SELECT COUNT(*) FROM user";
+if ($where) $countSql .= " WHERE " . implode(" AND ", $where);
+
+$stmCount = $_db->prepare($countSql);
+$stmCount->execute($params);
+$totalRows = $stmCount->fetchColumn();
+
+$totalPages = ceil($totalRows / $limit);
+
+
 $sql = "SELECT * FROM user";
 if ($where) $sql .= " WHERE " . implode(" AND ", $where);
-$sql .= " ORDER BY $sort $dir";
+$sql .= " ORDER BY $sort $dir LIMIT $limit OFFSET $offset";
 
 $stm = $_db->prepare($sql);
 $stm->execute($params);
@@ -103,6 +119,8 @@ tr:hover { background: #fafafa; }
 
 th select { margin-left: 5px; padding: 2px 5px; font-size: 0.85rem; }
 </style>
+
+
 
 <h2 style="text-align:center; margin-top:30px;">Member List</h2>
 
@@ -248,5 +266,41 @@ th select { margin-left: 5px; padding: 2px 5px; font-size: 0.85rem; }
 <?php endif ?>
 </tbody>
 </table>
+
+<div style="width:90%; margin:20px auto; text-align:center;">
+
+    <?php if ($totalPages > 1): ?>
+        <div style="display:flex; justify-content:center; gap:8px;">
+
+            <!-- Previous Button -->
+            <?php if ($page > 1): ?>
+                <a href="?page=<?= $page-1 ?>&sort=<?= $sort ?>&dir=<?= $dir ?>&q=<?= htmlspecialchars($q) ?>"
+                   style="padding:6px 12px; background:#007bff; color:white; border-radius:6px; text-decoration:none;">
+                    ◀ Prev
+                </a>
+            <?php endif; ?>
+
+            <!-- Page Numbers -->
+            <?php for ($i=1; $i <= $totalPages; $i++): ?>
+                <a href="?page=<?= $i ?>&sort=<?= $sort ?>&dir=<?= $dir ?>&q=<?= htmlspecialchars($q) ?>"
+                   style="padding:6px 12px; border-radius:6px; text-decoration:none;
+                          <?= $i == $page ? 'background:#333; color:white;' : 'background:#f0f0f0; color:#333;' ?>">
+                    <?= $i ?>
+                </a>
+            <?php endfor; ?>
+
+            <!-- Next Button -->
+            <?php if ($page < $totalPages): ?>
+                <a href="?page=<?= $page+1 ?>&sort=<?= $sort ?>&dir=<?= $dir ?>&q=<?= htmlspecialchars($q) ?>"
+                   style="padding:6px 12px; background:#007bff; color:white; border-radius:6px; text-decoration:none;">
+                    Next ▶
+                </a>
+            <?php endif; ?>
+
+        </div>
+    <?php endif; ?>
+
+</div>
+
 
 <?php include '../footer.php'; ?>
