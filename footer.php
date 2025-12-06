@@ -6,7 +6,7 @@
     <div class="footer-section">
       <h4>About</h4>
       <ul class="footer-links">
-        <li><a href="about.html">About Us</a></li>
+        <li><a href="/about_us.php">About Us</a></li>
       </ul>
     </div>
 
