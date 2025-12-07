@@ -113,13 +113,69 @@ if (is_post()) {
                 $video_filename = $v_fname;
             } 
 
+            // --- HANDLE 3D MODEL UPLOAD ---
+            // Initialize from existing product data
+            $model3d_filename = $product->model3d ?? null;
+
+            // A. Delete old model if user clicked "delete 3d model"
+            if (!empty($_POST['delete_model3d_check'])) {
+                if ($model3d_filename && file_exists("../products/" . $model3d_filename)) {
+                    unlink("../products/" . $model3d_filename);
+                }
+                $model3d_filename = null;
+            }
+
+            // B. Upload new 3D model file
+            if (!empty($_FILES['model3d']['tmp_name'])) {
+                $ext = strtolower(pathinfo($_FILES['model3d']['name'], PATHINFO_EXTENSION));
+                if (!in_array($ext, ['glb', 'gltf'])) {
+                    $_err['model3d'] = 'Invalid 3D model format. Only .glb or .gltf allowed.';
+                } else {
+                    // Delete old file if exists
+                    if ($model3d_filename && file_exists("../products/" . $model3d_filename)) {
+                        unlink("../products/" . $model3d_filename);
+                    }
+
+                    $productSlug = slugify($name);
+                    $model3d_filename = $productSlug . "_3d_" . time() . "." . $ext;
+                    move_uploaded_file($_FILES['model3d']['tmp_name'], "../products/$model3d_filename");
+                }
+            }
+
+
             if ($productID) {
-                $_db->prepare("UPDATE product SET name=?, price=?, stock=?, categoryID=?, description=?, video_url=? WHERE productID=?")
-                    ->execute([$name, $price, $stock, $categoryID, $description, $video_filename, $productID]);
+            $_db->prepare("
+                UPDATE product 
+                SET name=?, price=?, stock=?, categoryID=?, description=?, video_url=?, model3d=? 
+                WHERE productID=?
+            ")->execute([
+                $name,
+                $price,
+                $stock,
+                $categoryID,
+                $description,
+                $video_filename,
+                $model3d_filename,  // now correctly set
+                $productID
+            ]);
+
                 temp('info', 'Product updated');
+
             } else {
-                $_db->prepare("INSERT INTO product (name, price, stock, categoryID, description, video_url) VALUES (?, ?, ?, ?, ?, ?)")
-                    ->execute([$name, $price, $stock, $categoryID, $description, $video_filename]);
+
+            $_db->prepare("
+                INSERT INTO product (name, price, stock, categoryID, description, video_url, model3d)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ")->execute([
+                $name,
+                $price,
+                $stock,
+                $categoryID,
+                $description,
+                $video_filename,
+                $model3d_filename  // now correctly set
+            ]);
+
                 $productID = $_db->lastInsertId();
                 temp('info', 'Product added');
             }
@@ -249,6 +305,16 @@ include '../navbar.php';
     .add-photo-card { height: 110px; border: 2px dashed var(--gray-border); border-radius: 10px; display: flex; justify-content: center; align-items: center; flex-direction: column; cursor: pointer; background: var(--gray-bg); color: var(--primary-color); font-weight: 600; transition: all 0.3s; text-align: center; font-size: 0.9rem; font-family: inherit; }
 </style>
 
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+
+<model-viewer src="products/<?= $product->model3d ?>"
+              alt="3D Model"
+              auto-rotate
+              camera-controls
+              style="width:100%; height:400px;">
+</model-viewer>
+
 <form method="post" class="form" enctype="multipart/form-data" id="productForm">
     
     <div class="form-header">
@@ -293,6 +359,18 @@ include '../navbar.php';
             <div class="placeholder"><i class="fa fa-cloud-upload" aria-hidden="true"></i><span>Click to upload main image</span></div>
         <?php endif ?>
     </label>
+
+    <label class="field-label">3D Model File (.glb only )</label>
+
+    <input type="file" name="model3d" accept=".glb">
+
+    <?php if (!empty($product->model3d)): ?>
+        <model-viewer src="../products/<?= $product->model3d ?>" 
+                    camera-controls auto-rotate
+                    style="width:100%; height:300px;">
+        </model-viewer>
+    <?php endif; ?>
+
 
     <label class="field-label">Product Video (Optional)</label>
     
@@ -344,6 +422,7 @@ include '../navbar.php';
         <label for="triggerAddInput" class="add-photo-card">
             <i class="fa fa-plus" aria-hidden="true"></i> Add Photos
         </label>
+
     </div>
 
     <section class="actions">

@@ -60,6 +60,7 @@ $stm = $_db->prepare('SELECT * FROM product WHERE productID = ?');
 $stm->execute([$id]);
 $p = $stm->fetch();
 
+
 if (!$p) {
     temp('info', 'Product not found.');
     redirect('list.php');
@@ -215,7 +216,18 @@ include '../navbar.php';
             <?php else: ?>
                 <div class="photo-placeholder">No Image Available</div>
             <?php endif; ?>
-            
+
+            <?php if (!empty($p->model3d) && file_exists("../products/".$p->model3d)): ?>
+            <div class="product-3d-model" style="margin:20px 0;">
+                <model-viewer src="/products/<?= $p->model3d ?>"
+                            alt="<?= htmlspecialchars($p->name) ?>"
+                            auto-rotate
+                            camera-controls
+                            style="width:100%; height:400px;">
+                </model-viewer>
+            </div>
+            <?php endif; ?>
+           
             <?php if ($additional_photos): ?>
                 <div class="additional-photos">
                     <?php foreach ($additional_photos as $index => $photo): ?>
@@ -380,6 +392,9 @@ $(document).ready(function() {
 });
 </script>
 
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+
 <style>
 .btn-fav { background: none; border: none; cursor: pointer; font-size: 1.8rem; color: #dc3545; transition: transform 0.2s; padding: 5px; line-height:1; }
 .btn-fav:hover { transform: scale(1.15); }
@@ -393,5 +408,10 @@ $(document).ready(function() {
 .btn-outline { background-color: #006989; min-width: 120px; border-radius: 30px; color: white; border: none; padding: 12px 20px; cursor: pointer; font-size: 14px; transition: background-color 0.3s; display: inline-block; }
 .btn-outline:hover { background-color: #005a73; }
 </style>
+
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+
+
 
 <?php include '../footer.php'; ?>

@@ -56,6 +56,7 @@ $sql = "
         p.*,
         c.categoryName,
         ph.photoURL AS mainPhoto,
+        p.model3d,  -- ADD THIS
         AVG(pr.rating) AS rating_avg
     FROM product p
     LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID
@@ -210,7 +211,6 @@ tr.disabled-row .action-btns {
     <thead>
         <tr>
             <?php
-            $extraParams = $search ? "&search=" . urlencode($search) : "";
             table_headers(
                 [
                     'productID'   => 'ID',
@@ -225,6 +225,7 @@ tr.disabled-row .action-btns {
             ?>
             <th>Main Photo</th>
             <th>Video</th>
+            <th>3D Model</th> <!-- NEW COLUMN -->
             <th>Action</th>
         </tr>
     </thead>
@@ -272,6 +273,14 @@ tr.disabled-row .action-btns {
                             <span style="color:#888; font-size:0.8rem;">No Video</span>
                         <?php endif; ?>
                     </td>
+                    <td>
+                        <?php if (!empty($p->model3d) && file_exists("../products/" . $p->model3d)): ?>
+                            <i class="fa fa-check" style="color: #28a745;"></i> Yes
+                        <?php else: ?>
+                            <span style="color:#888; font-size:0.8rem;">No</span>
+                        <?php endif; ?>
+                    </td>
+
                     <td class="action-btns">
                     <a class="edit-btn" href="detail_admin.php?productID=<?= $p->productID ?>">Edit</a>
 
