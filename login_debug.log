@@ -3269,3 +3269,46 @@
 [2025-12-07 15:03:00] Form submitted via POST
 [2025-12-07 15:03:00] User found: 2@gmail.com (ID: 2)
 [2025-12-07 15:03:00] Password verification SUCCESS
+[2025-12-08 10:02:10] === LOGIN PAGE LOADED ===
+[2025-12-08 10:02:10] Request method: GET
+[2025-12-08 10:02:10] Email received: empty
+[2025-12-08 10:02:10] Remember received: NO
+[2025-12-08 10:02:19] === LOGIN PAGE LOADED ===
+[2025-12-08 10:02:19] Request method: POST
+[2025-12-08 10:02:19] Email received: 1@gmial.com
+[2025-12-08 10:02:19] Remember received: NO
+[2025-12-08 10:02:19] Form submitted via POST
+[2025-12-08 10:02:26] === LOGIN PAGE LOADED ===
+[2025-12-08 10:02:26] Request method: POST
+[2025-12-08 10:02:26] Email received: 1@gmail.com
+[2025-12-08 10:02:26] Remember received: NO
+[2025-12-08 10:02:26] Form submitted via POST
+[2025-12-08 10:02:26] User found: 1@gmail.com (ID: 1)
+[2025-12-08 10:02:26] Password verification SUCCESS
+[2025-12-08 10:07:32] === LOGIN PAGE LOADED ===
+[2025-12-08 10:07:32] Request method: GET
+[2025-12-08 10:07:32] Email received: empty
+[2025-12-08 10:07:32] Remember received: NO
+[2025-12-08 10:07:42] === LOGIN PAGE LOADED ===
+[2025-12-08 10:07:42] Request method: POST
+[2025-12-08 10:07:42] Email received: 2@gmail.com
+[2025-12-08 10:07:42] Remember received: NO
+[2025-12-08 10:07:42] Form submitted via POST
+[2025-12-08 10:07:42] User found: 2@gmail.com (ID: 2)
+[2025-12-08 10:07:42] Password verification SUCCESS
+[2025-12-08 10:08:15] === LOGIN PAGE LOADED ===
+[2025-12-08 10:08:15] Request method: GET
+[2025-12-08 10:08:15] Email received: empty
+[2025-12-08 10:08:15] Remember received: NO
+[2025-12-08 10:10:12] === LOGIN PAGE LOADED ===
+[2025-12-08 10:10:12] Request method: POST
+[2025-12-08 10:10:12] Email received: 1@gmial.com
+[2025-12-08 10:10:12] Remember received: NO
+[2025-12-08 10:10:12] Form submitted via POST
+[2025-12-08 10:10:18] === LOGIN PAGE LOADED ===
+[2025-12-08 10:10:18] Request method: POST
+[2025-12-08 10:10:18] Email received: 1@gmail.com
+[2025-12-08 10:10:18] Remember received: NO
+[2025-12-08 10:10:18] Form submitted via POST
+[2025-12-08 10:10:18] User found: 1@gmail.com (ID: 1)
+[2025-12-08 10:10:18] Password verification SUCCESS

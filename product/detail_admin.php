@@ -360,16 +360,36 @@ include '../navbar.php';
         <?php endif ?>
     </label>
 
-    <label class="field-label">3D Model File (.glb only )</label>
-
-    <input type="file" name="model3d" accept=".glb">
-
-    <?php if (!empty($product->model3d)): ?>
-        <model-viewer src="../products/<?= $product->model3d ?>" 
-                    camera-controls auto-rotate
-                    style="width:100%; height:300px;">
-        </model-viewer>
-    <?php endif; ?>
+<label class="field-label">3D Model (GLB / GLTF)</label>
+    
+    <input type="checkbox" name="delete_model3d_check" id="delete_model3d_check" value="1" class="hidden-file-input">
+    
+    <input type="file" name="model3d" id="model3dInput" class="hidden-file-input" accept=".glb,.gltf" onchange="previewModel3d(this)">
+    
+    <label for="model3dInput" class="upload-zone" id="model3dZone" style="height: 200px;">
+        <?php 
+            $hasModel = !empty($product->model3d) && file_exists("../products/" . $product->model3d);
+            if ($hasModel): 
+        ?>
+            <div class="video-container" style="width:100%; height:100%;">
+                <model-viewer src="../products/<?= $product->model3d ?>" 
+                              camera-controls 
+                              auto-rotate 
+                              style="width: 100%; height: 100%;">
+                </model-viewer>
+                
+                <div class="photo-action-overlay" onclick="removeExistingModel3d(event)" title="Delete Model">
+                    <i class="fa fa-trash"></i>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="placeholder">
+                <i class="fa fa-cube" aria-hidden="true"></i>
+                <span>Click to upload 3D Model</span>
+            </div>
+        <?php endif ?>
+    </label>
+    <?= err('model3d') ?>
 
 
     <label class="field-label">Product Video (Optional)</label>
@@ -432,6 +452,59 @@ include '../navbar.php';
 </form>
 
 <script>
+    // --- 3D MODEL FUNCTIONS ---
+
+// 1. Preview 3D Model
+function previewModel3d(input) {
+    const zone = document.getElementById('model3dZone');
+    
+    // Uncheck delete flag because we are uploading a new one
+    document.getElementById('delete_model3d_check').checked = false;
+
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const url = URL.createObjectURL(file);
+
+        zone.innerHTML = `
+            <div class="video-container" style="width:100%; height:100%;">
+                <model-viewer src="${url}" camera-controls auto-rotate style="width:100%; height:100%;"></model-viewer>
+                <div class="photo-action-overlay" onclick="removeNewModel3d(event)" title="Remove this upload">
+                    <i class="fa fa-trash"></i>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// 2. Remove NEWLY uploaded model
+function removeNewModel3d(event) {
+    event.preventDefault(); 
+    event.stopPropagation();
+    
+    document.getElementById('model3dInput').value = ''; // Clear input
+    resetModel3dPlaceholder();
+}
+
+// 3. Remove EXISTING model (Database delete)
+function removeExistingModel3d(event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Mark for deletion in backend
+    document.getElementById('delete_model3d_check').checked = true;
+    resetModel3dPlaceholder();
+}
+
+// Helper to restore the "Click to upload" view
+function resetModel3dPlaceholder() {
+    const zone = document.getElementById('model3dZone');
+    zone.innerHTML = `
+        <div class="placeholder">
+            <i class="fa fa-cube" aria-hidden="true"></i>
+            <span>Click to upload 3D Model (.glb)</span>
+        </div>
+    `;
+}
 // 1. Main Photo Preview
 function previewMainPhoto(input) {
     const zone = document.getElementById('mainPhotoZone');
