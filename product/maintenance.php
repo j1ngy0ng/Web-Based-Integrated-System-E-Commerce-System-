@@ -23,8 +23,6 @@ if (is_post()) {
 }
 // ====================================================================
 
-// ... (Rest of your existing Sorting/Search logic) ...
-
 // --------------------------------------------------------------------
 // Sorting
 $sort = req('sort', 'productID');
@@ -49,6 +47,17 @@ if ($search) {
     $params = [$pattern, $pattern, $pattern];
 }
 
+// ====================================================================
+// FIX: Initialize $extraParams for table_headers()
+// ====================================================================
+$extraParams = [];
+if ($search) {
+    // If a search is active, pass the search term as an extra parameter
+    // so it is preserved when sorting is changed.
+    $extraParams['search'] = $search;
+}
+// ====================================================================
+
 // --------------------------------------------------------------------
 // Fetch Products with Average Rating
 $sql = "
@@ -56,7 +65,7 @@ $sql = "
         p.*,
         c.categoryName,
         ph.photoURL AS mainPhoto,
-        p.model3d,  -- ADD THIS
+        p.model3d, 
         AVG(pr.rating) AS rating_avg
     FROM product p
     LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID
@@ -225,7 +234,7 @@ tr.disabled-row .action-btns {
             ?>
             <th>Main Photo</th>
             <th>Video</th>
-            <th>3D Model</th> <!-- NEW COLUMN -->
+            <th>3D Model</th> 
             <th>Action</th>
         </tr>
     </thead>

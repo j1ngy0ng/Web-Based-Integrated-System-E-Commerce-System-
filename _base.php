@@ -306,7 +306,16 @@ function html_file($key, $accept = '', $attr = '') {
 }
 
 // Generate table headers <th>
-function table_headers($fields, $sort, $dir, $href = '') {
+function table_headers($fields, $sort, $dir, $extraParams = []) {
+    // 1. Convert $extraParams array into a URL query string
+    $href = '';
+    if (!empty($extraParams)) {
+        // Iterate through the array and build the string like 'search=keyword&'
+        foreach ($extraParams as $key => $value) {
+            $href .= urlencode($key) . '=' . urlencode($value) . '&';
+        }
+    }
+
     foreach ($fields as $k => $v) {
         $d = 'asc'; // Default direction
         $c = '';    // Default class
@@ -316,6 +325,7 @@ function table_headers($fields, $sort, $dir, $href = '') {
             $c = $dir;
         }
 
+        // 2. Use the generated $href string in the link
         echo "<th><a href='?sort=$k&dir=$d&$href' class='$c'>$v</a></th>";
     }
 }
