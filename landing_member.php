@@ -46,17 +46,16 @@ $banners = [
     ['image' => '/photos/ad3.jpg', 'title' => 'Special Deals', 'subtitle' => 'Limited Time Offers', 'link' => '/product/list.php']
 ];
 
-// Top Selling (Showing Inactive Items too)
-// NOTE: I removed "AND p.is_active = 1" here
+// Top 8 Selling Products (RESTRICTED TO TOP 8)
 $topSellingStm = $_db->query('
-    SELECT p.*, COALESCE(SUM(od.quantity), 0) as total_sold, c.categoryName
+    SELECT p.*, COALESCE(SUM(oi.quantity), 0) as total_sold, c.categoryName
     FROM product p
-    LEFT JOIN order_item od ON p.productID = od.productID
+    LEFT JOIN order_item oi ON p.productID = oi.productID
     LEFT JOIN productcategory c ON p.categoryID = c.categoryID
     WHERE p.stock > 0 
     GROUP BY p.productID
     ORDER BY total_sold DESC
-    LIMIT 10
+    LIMIT 8
 ');
 $topSelling = $topSellingStm->fetchAll();
 
@@ -71,16 +70,118 @@ $newArrivalsStm = $_db->query('
 ');
 $newArrivals = $newArrivalsStm->fetchAll();
 
-// Featured
-$featuredStm = $_db->query('
-    SELECT p.*, c.categoryName
-    FROM product p
-    LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID
-    WHERE p.stock > 0
-    ORDER BY RAND()
-    LIMIT 8
-');
-$featured = $featuredStm->fetchAll();
+// "You May Like" - Based on User's Order History
+if ($_user) {
+    // Get categories from user's previous orders (ALL order items)
+    $userCategoriesStm = $_db->prepare('
+        SELECT DISTINCT p.categoryID
+        FROM order_item oi
+        INNER JOIN product p ON oi.productID = p.productID
+        INNER JOIN `order` o ON oi.orderID = o.orderID
+        WHERE o.userID = ?
+    ');
+    $userCategoriesStm->execute([$_user->id]);
+    $userCategories = $userCategoriesStm->fetchAll(PDO::FETCH_COLUMN);
+    
+    // Get ALL products the user has ordered (from all order items)
+    $orderedProductsStm = $_db->prepare('
+        SELECT DISTINCT oi.productID
+        FROM order_item oi
+        INNER JOIN `order` o ON oi.orderID = o.orderID
+        WHERE o.userID = ?
+    ');
+    $orderedProductsStm->execute([$_user->id]);
+    $orderedProducts = $orderedProductsStm->fetchAll(PDO::FETCH_COLUMN);
+    
+    if (!empty($userCategories)) {
+        // Check what products exist in these categories
+        $placeholders = str_repeat('?,', count($userCategories) - 1) . '?';
+        $checkStm = $_db->prepare("
+            SELECT p.productID, p.name, p.categoryID, p.stock, p.is_active
+            FROM product p
+            WHERE p.categoryID IN ($placeholders)
+        ");
+        $checkStm->execute($userCategories);
+        $allInCategory = $checkStm->fetchAll();
+        
+        // FIRST TRY: Get products from same categories, excluding ordered ones
+        $query = "
+            SELECT p.*, c.categoryName
+            FROM product p
+            LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID
+            WHERE p.stock > 0 
+            AND p.is_active = 1
+            AND p.categoryID IN ($placeholders)
+        ";
+        
+        $params = $userCategories;
+        
+        if (!empty($orderedProducts)) {
+            $excludePlaceholders = str_repeat('?,', count($orderedProducts) - 1) . '?';
+            $query .= " AND p.productID NOT IN ($excludePlaceholders)";
+            $params = array_merge($userCategories, $orderedProducts);
+        }
+        
+        $query .= " ORDER BY RAND() LIMIT 8";
+        
+        $recommendedStm = $_db->prepare($query);
+        $recommendedStm->execute($params);
+        $recommended = $recommendedStm->fetchAll();
+        
+        // FALLBACK 1: If no products found, include already ordered products
+        if (empty($recommended)) {
+            $query = "
+                SELECT p.*, c.categoryName
+                FROM product p
+                LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID
+                WHERE p.stock > 0 
+                AND p.is_active = 1
+                AND p.categoryID IN ($placeholders)
+                ORDER BY RAND() 
+                LIMIT 8
+            ";
+            $recommendedStm = $_db->prepare($query);
+            $recommendedStm->execute($userCategories);
+            $recommended = $recommendedStm->fetchAll();
+        }
+        
+        if (empty($recommended)) {
+            $recommendedStm = $_db->query('
+                SELECT p.*, c.categoryName
+                FROM product p
+                LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID
+                WHERE p.stock > 0
+                AND p.is_active = 1
+                ORDER BY RAND()
+                LIMIT 8
+            ');
+            $recommended = $recommendedStm->fetchAll();
+        }
+    } else {
+        $recommendedStm = $_db->query('
+            SELECT p.*, c.categoryName
+            FROM product p
+            LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID
+            WHERE p.stock > 0
+            AND p.is_active = 1
+            ORDER BY RAND()
+            LIMIT 8
+        ');
+        $recommended = $recommendedStm->fetchAll();
+    }
+} else {
+    // For guests, show random products
+    $recommendedStm = $_db->query('
+        SELECT p.*, c.categoryName
+        FROM product p
+        LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID
+        WHERE p.stock > 0
+        AND p.is_active = 1
+        ORDER BY RAND()
+        LIMIT 8
+    ');
+    $recommended = $recommendedStm->fetchAll();
+}
 
 // Categories
 $categoriesStm = $_db->query('SELECT * FROM ProductCategory ORDER BY categoryName');
@@ -135,7 +236,6 @@ include 'navbar.php';
 .product-card-stock { font-size: 0.85rem; padding: 5px 10px; border-radius: 5px; display: inline-block; }
 .product-card-stock.in-stock { background: #e8f8f0; color: #27ae60; }
 .product-card-stock.low-stock { background: #fef5e7; color: #f39c12; }
-/* New: Unavailable Stock Badge */
 .product-card-stock.unavailable { background: #e2e8f0; color: #718096; }
 
 .product-sales-info { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; font-size: 0.85rem; color: #666; }
@@ -156,9 +256,9 @@ include 'navbar.php';
 .badge-top-left { position: absolute; top: 10px; left: 10px; z-index: 10; width: auto; display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; color: white; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); pointer-events: none; }
 .bg-green { background-color: #006989; }
 .bg-red { background-color: #e74c3c; }
-.bg-gray { background-color: #718096; } /* New: Grey Badge */
+.bg-gray { background-color: #718096; }
+.bg-purple { background-color: #9b59b6; }
 
-/* New: Disabled Style */
 .product-card.disabled-card { opacity: 0.75; background: #f8f9fa; }
 .product-card.disabled-card .product-card-image img { filter: grayscale(100%); opacity: 0.7; }
 
@@ -169,6 +269,44 @@ include 'navbar.php';
     .hero-overlay { padding: 0 20px; }
     .products-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
     .section-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+.empty-state h2 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+.empty-state-actions {
+    margin-top: 25px;
+}
+.btn {
+    padding: 12px 30px;
+    text-decoration: none;
+    border-radius: 5px;
+    display: inline-block;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+.btn-primary {
+    background: #006989;
+    color: white;
+}
+.btn-primary:hover {
+    background: #005a73;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,105,137,0.3);
 }
 </style>
 
@@ -195,10 +333,80 @@ include 'navbar.php';
 </div>
 
 <div class="container">
-    
+
+    <div class="section">
+        <div class="section-header" id="section-flex">
+            <h2>You May Like It</h2>
+            <a href="/product/list.php" style="color: #006989; text-decoration: none;">View All →</a>
+        </div>
+        <div class="product-slider-container">
+            <button class="slider-nav prev-slide" onclick="slideProducts('recommended', -1)">‹</button>
+            <div class="product-slider" id="recommended">
+                <?php foreach ($recommended as $p): ?>
+                    <?php
+                    $main_photo = get_main_photo($p->productID);
+                    $isFav = in_array($p->productID, $user_favorites);
+                    
+                    $isDisabled = ($p->is_active == 0);
+                    
+                    if ($isDisabled) {
+                        $stock_status = 'unavailable'; $stock_text = 'Unavailable';
+                        $badgeHTML = '<div class="badge-top-left bg-gray">Unavailable</div>';
+                    } else {
+                        $stock_status = ($p->stock <= 5) ? 'low-stock' : 'in-stock';
+                        $stock_text = ($p->stock <= 5) ? "Only {$p->stock} left!" : "In Stock";
+                        $badgeHTML = '<div class="badge-top-left bg-purple">For You</div>';
+                    }
+                    
+                    $cardClass = $isDisabled ? 'disabled-card' : '';
+                    ?>
+                    <div class="product-slide">
+                        <div class="product-card <?= $cardClass ?>">
+                            <div class="product-card-image">
+                                <?php if ($isDisabled): ?>
+                                    <div style="display:block; width:100%; height:100%;">
+                                <?php else: ?>
+                                    <a href="/product/detail.php?id=<?= $p->productID ?>" style="display:block; width:100%; height:100%;">
+                                <?php endif; ?>
+                                
+                                    <?php if (!empty($main_photo)): ?>
+                                        <img src="/products/<?= $main_photo ?>" alt="<?= $p->name ?>">
+                                    <?php else: ?>
+                                        <div style="width: 100%; height: 100%; background: #f0f0f0;"></div>
+                                    <?php endif; ?>
+                                
+                                <?php if ($isDisabled): ?>
+                                    </div>
+                                <?php else: ?>
+                                    </a>
+                                <?php endif; ?>
+                                
+                                <?= $badgeHTML ?>
+
+                                <form method="post" style="margin:0;">
+                                    <input type="hidden" name="id" value="<?= $p->productID ?>">
+                                    <input type="hidden" name="action" value="toggle_fav">
+                                    <button type="submit" class="fav-btn-floating">
+                                        <i class="fa <?= $isFav ? 'fa-heart' : 'fa-heart-o' ?>"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            <div class="product-card-content">
+                                <div class="product-card-title" style="<?= $isDisabled ? 'color:#999' : '' ?>"><?= $p->name ?></div>
+                                <div class="product-card-category"><?= $p->categoryName ?></div>
+                                <div class="product-card-price" style="<?= $isDisabled ? 'color:#999' : '' ?>">RM <?= number_format($p->price, 2) ?></div>
+                                <div class="product-card-stock <?= $stock_status ?>"><?= $stock_text ?></div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <button class="slider-nav next-slide" onclick="slideProducts('recommended', 1)">›</button>
+        </div>
+    </div>
     <div class="section">
         <div class="section-header">
-            <h2>🏆 Top Selling Products</h2>
+            <h2>Top 8 Selling Products</h2>
             <div class="section-controls">
                 <button class="filter-btn active" onclick="filterTopSelling('all')">All</button>
                 <?php foreach ($categories as $cat): ?>
@@ -206,13 +414,16 @@ include 'navbar.php';
                 <?php endforeach; ?>
             </div>
         </div>
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">😔</div>
+            <h2>No Products Available</h2>
+        </div>
         <div class="products-grid" id="topSellingGrid">
             <?php foreach ($topSelling as $index => $p): ?>
                 <?php
                 $main_photo = get_main_photo($p->productID);
                 $isFav = in_array($p->productID, $user_favorites);
                 
-                // Status Logic
                 $isDisabled = ($p->is_active == 0);
                 
                 if ($isDisabled) {
@@ -269,11 +480,11 @@ include 'navbar.php';
 
     <div class="section">
         <div class="section-header" id="section-flex">
-            <h2>✨ New Arrivals</h2>
+            <h2>New Arrivals</h2>
             <a href="/product/list.php" style="color: #006989; text-decoration: none;">View All →</a>
         </div>
         <div class="product-slider-container">
-            <button class="slider-nav prev-slide" onclick="slideProducts('newArrivals', -1)">❮</button>
+            <button class="slider-nav prev-slide" onclick="slideProducts('newArrivals', -1)">‹</button>
             <div class="product-slider" id="newArrivals">
                 <?php foreach ($newArrivals as $p): ?>
                     <?php
@@ -334,77 +545,7 @@ include 'navbar.php';
                     </div>
                 <?php endforeach; ?>
             </div>
-            <button class="slider-nav next-slide" onclick="slideProducts('newArrivals', 1)">❯</button>
-        </div>
-    </div>
-
-    <div class="section">
-        <div class="section-header" id="section-flex">
-            <h2>🔥 Featured Products</h2>
-            <a href="/product/list.php" style="color: #006989; text-decoration: none;">View All →</a>
-        </div>
-        <div class="product-slider-container">
-            <button class="slider-nav prev-slide" onclick="slideProducts('featured', -1)">‹</button>
-            <div class="product-slider" id="featured">
-                <?php foreach ($featured as $p): ?>
-                    <?php
-                    $main_photo = get_main_photo($p->productID);
-                    $isFav = in_array($p->productID, $user_favorites);
-                    
-                    $isDisabled = ($p->is_active == 0);
-                    
-                    if ($isDisabled) {
-                        $stock_status = 'unavailable'; $stock_text = 'Unavailable';
-                        $badgeHTML = '<div class="badge-top-left bg-gray">Unavailable</div>';
-                    } else {
-                        $stock_status = ($p->stock <= 5) ? 'low-stock' : 'in-stock';
-                        $stock_text = ($p->stock <= 5) ? "Only {$p->stock} left!" : "In Stock";
-                    }
-                    
-                    $cardClass = $isDisabled ? 'disabled-card' : '';
-                    ?>
-                    <div class="product-slide">
-                        <div class="product-card <?= $cardClass ?>">
-                            <div class="product-card-image">
-                                <?php if ($isDisabled): ?>
-                                    <div style="display:block; width:100%; height:100%;">
-                                <?php else: ?>
-                                    <a href="/product/detail.php?id=<?= $p->productID ?>" style="display:block; width:100%; height:100%;">
-                                <?php endif; ?>
-                                
-                                    <?php if (!empty($main_photo)): ?>
-                                        <img src="/products/<?= $main_photo ?>" alt="<?= $p->name ?>">
-                                    <?php else: ?>
-                                        <div style="width: 100%; height: 100%; background: #f0f0f0;"></div>
-                                    <?php endif; ?>
-                                
-                                <?php if ($isDisabled): ?>
-                                    </div>
-                                <?php else: ?>
-                                    </a>
-                                <?php endif; ?>
-                                
-                                <?= $badgeHTML ?>
-
-                                <form method="post" style="margin:0;">
-                                    <input type="hidden" name="id" value="<?= $p->productID ?>">
-                                    <input type="hidden" name="action" value="toggle_fav">
-                                    <button type="submit" class="fav-btn-floating">
-                                        <i class="fa <?= $isFav ? 'fa-heart' : 'fa-heart-o' ?>"></i>
-                                    </button>
-                                </form>
-                            </div>
-                            <div class="product-card-content">
-                                <div class="product-card-title" style="<?= $isDisabled ? 'color:#999' : '' ?>"><?= $p->name ?></div>
-                                <div class="product-card-category"><?= $p->categoryName ?></div>
-                                <div class="product-card-price" style="<?= $isDisabled ? 'color:#999' : '' ?>">RM <?= number_format($p->price, 2) ?></div>
-                                <div class="product-card-stock <?= $stock_status ?>"><?= $stock_text ?></div>
-                            </div>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-            <button class="slider-nav next-slide" onclick="slideProducts('featured', 1)">›</button>
+            <button class="slider-nav next-slide" onclick="slideProducts('newArrivals', 1)">›</button>
         </div>
     </div>
 </div>
@@ -438,12 +579,28 @@ function slideProducts(sliderId, direction) {
 function filterTopSelling(category) {
     const products = document.querySelectorAll('#topSellingGrid .product-card');
     const buttons = document.querySelectorAll('.section-controls .filter-btn');
+    const emptyState = document.getElementById('emptyState');
+    
     buttons.forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
+    
+    let visibleCount = 0;
+    
     products.forEach(product => {
-        if (category === 'all' || product.dataset.category === category) product.style.display = 'block';
-        else product.style.display = 'none';
+        if (category === 'all' || product.dataset.category === category) {
+            product.style.display = 'block';
+            visibleCount++;
+        } else {
+            product.style.display = 'none';
+        }
     });
+    
+    // Show/hide empty state based on visible products
+    if (visibleCount === 0) {
+        emptyState.style.display = 'block';
+    } else {
+        emptyState.style.display = 'none';
+    }
 }
 </script>
 
