@@ -109,9 +109,405 @@ include '../navbar.php';
 ?>
 
 <style>
-/* ... (Your Existing Styles) ... */
+/* ===== PRODUCT DETAIL STYLES ===== */
+.product-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    min-height: 70vh;
+}
 
-/* --- NEW RATINGS UI --- */
+.product-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+.product-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.main-photo {
+    width: 100%;
+    height: 400px;
+    border-radius: 15px;
+    overflow: hidden;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-placeholder {
+    width: 100%;
+    height: 400px;
+    background: linear-gradient(135deg, #f8fafc, #e8f4f8);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #006989;
+    font-size: 1.1em;
+}
+
+.additional-photos {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 10px 3px;
+}
+
+.additional-photos img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.additional-photos img:hover {
+    border-color: #01A7C2;
+}
+
+.product-info-detail {
+    padding: 20px 0;
+}
+
+.product-title {
+    font-size: 2em;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 15px;
+}
+
+.product-id {
+    color: #718096;
+    font-size: 0.9em;
+    margin-bottom: 20px;
+}
+
+.product-description {
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    font-size: 1.05em;
+    margin-right: 80px;
+}
+
+.price-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.current-price {
+    font-size: 2em;
+    font-weight: 700;
+    color: #006989;
+}
+
+.stock-status {
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.cart-section {
+    background: linear-gradient(135deg, #f8fafc 0%, #e8f4f8 100%);
+    padding: 20px 30px 30px;
+    border-radius: 15px;
+    margin-top: 30px;
+    border: 2px solid #e2e8f0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.cart-section h3 {
+    margin-bottom: 20px;
+    color: #006989;
+    font-size: 1.3em;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cart-section h3 i {
+    font-size: 1.2em;
+}
+
+.disabled-notice {
+    text-align: center;
+    padding: 30px;
+    background: #fff;
+    border-radius: 10px;
+    border: 2px dashed #cbd5e0;
+}
+
+.disabled-notice i {
+    font-size: 3em;
+    color: #a0aec0;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.disabled-notice p {
+    color: #718096;
+    font-size: 1.05em;
+    margin: 0;
+    font-weight: 500;
+}
+
+.quantity-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.quantity-wrapper label {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 1em;
+    min-width: 80px;
+}
+
+.quantity-selector {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.quantity-selector select {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid #cbd5e0;
+    border-radius: 10px;
+    background: white;
+    font-size: 1em;
+    color: #2d3748;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.quantity-selector select:hover {
+    border-color: #01A7C2;
+}
+
+.quantity-selector select:focus {
+    outline: none;
+    border-color: #006989;
+    box-shadow: 0 0 0 3px rgba(1, 167, 194, 0.1);
+}
+
+.cart-message {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 20px;
+    background: white;
+    border-radius: 10px;
+    border: 2px solid #48bb78;
+    animation: slideIn 0.3s ease;
+}
+
+.cart-message i.fa-check-circle {
+    color: #48bb78;
+    font-size: 1.2em;
+}
+
+.cart-message span {
+    color: #2d3748;
+    font-weight: 600;
+    flex: 1;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Image Modal Styles */
+.image-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+    animation: fadeIn 0.3s;
+    padding: 0;
+    margin: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    max-height: 80vh;
+    object-fit: contain;
+    animation: zoom 0.3s;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes zoom {
+    from { transform: scale(0.8); }
+    to { transform: scale(1); }
+}
+
+.product-modal-close {
+    position: fixed;
+    top: 15px;
+    right: 35px;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    z-index: 9999;
+    pointer-events: auto;
+}
+
+.product-modal-close:hover {
+    color: #01A7C2;
+    transform: scale(1.1);
+}
+
+/* Navigation Arrows */
+.modal-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.nav-arrow {
+    pointer-events: auto;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    font-size: 24px;
+    padding: 15px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    z-index: 1001;
+    pointer-events: auto;
+}
+
+.nav-arrow:hover {
+    background: rgba(0, 0, 0, 0.8);
+    color: #01A7C2;
+}
+
+.prev-arrow {
+    left: 20px;
+}
+
+.next-arrow {
+    right: 20px;
+}
+
+/* Image Counter */
+.image-counter {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 16px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 16px;
+    border-radius: 20px;
+    z-index: 1001;
+}
+
+.modal-caption {
+    position: absolute;
+    bottom: 60px; /* Position above the counter */
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ccc;
+    text-align: center;
+    padding: 10px 0;
+    width: 80%;
+    max-width: 700px;
+    z-index: 1001;
+}
+
+/* Make main image clickable */
+.clickable-main {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.clickable-main:hover {
+    transform: scale(1.02);
+}
+
+.thumbnail {
+    cursor: pointer;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.thumbnail:hover {
+    transform: scale(1.05);
+    border-color: #01A7C2 !important;
+}
+
+.thumbnail.active-thumbnail {
+    border-color: #01A7C2 !important;
+    border-width: 3px;
+}
+
+/* Make main image clickable too */
+.main-photo img {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.main-photo img:hover {
+    transform: scale(1.02);
+}
+
 .ratings-container {
     max-width: 900px;
     margin: 60px auto;
@@ -227,18 +623,23 @@ include '../navbar.php';
                 </model-viewer>
             </div>
             <?php endif; ?>
-           
-            <?php if ($additional_photos): ?>
-                <div class="additional-photos">
+        
+            <!-- Show all photos as thumbnails (main + additional) -->
+            <div class="additional-photos">
+                <?php if (!empty($main_photo)): ?>
+                    <img src="/products/<?= $main_photo ?>" alt="Main Photo" class="thumbnail active-thumbnail" data-fullsize="/products/<?= $main_photo ?>" data-index="0">
+                <?php endif; ?>
+                
+                <?php if ($additional_photos): ?>
                     <?php foreach ($additional_photos as $index => $photo): ?>
                         <img src="/products/<?= $photo->photoURL ?>" alt="<?= $photo->photoURL ?>" class="thumbnail" data-fullsize="/products/<?= $photo->photoURL ?>" data-index="<?= $index + 1 ?>">
                     <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+                <?php endif; ?>
+            </div>
         </div>
         
         <div class="product-info-detail">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; position:relative;">
                 <h1 class="product-title" style="margin: 0; line-height: 1.2;">
                     <?= $p->name ?>
                     <?php if ($isDisabled): ?>
@@ -249,7 +650,7 @@ include '../navbar.php';
                 <form method="post" style="margin: 0;">
                     <input type="hidden" name="id" value="<?= $p->productID ?>">
                     <input type="hidden" name="action" value="toggle_fav">
-                    <button type="submit" class="btn-fav" title="<?= $isFav ? 'Remove from Favorites' : 'Add to Favorites' ?>">
+                    <button type="submit" class="fav-btn-floating" title="<?= $isFav ? 'Remove from Favorites' : 'Add to Favorites' ?>">
                         <i class="fa <?= $isFav ? 'fa-heart' : 'fa-heart-o' ?>"></i>
                     </button>
                 </form>
@@ -281,11 +682,12 @@ include '../navbar.php';
             
             <div class="cart-section">
                 <?php if ($isDisabled): ?>
-                    <div style="padding: 20px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 8px; text-align: center; color: #6c757d;">
-                        This product is currently disabled and cannot be purchased.
+                    <div class="disabled-notice">
+                        <i class="fa fa-ban"></i>
+                        <p>This product is currently unavailable and cannot be purchased.</p>
                     </div>
                 <?php else: ?>
-                    <h3>Add to Cart</h3>
+                    <h3><i class="fa fa-shopping-cart"></i> Add to Cart</h3>
                     <form method="post" class="quantity-selector" id="cartForm">
                         <input type="hidden" name="id" value="<?= $p->productID ?>">
                         <input type="hidden" name="action" value="">
@@ -301,13 +703,15 @@ include '../navbar.php';
                         }
                         ?>
                         
-                        <div class="select-group">
+                        <div class="quantity-wrapper">
+                            <label for="unit-select">Quantity:</label>
                             <?= html_select('unit', $stock_options, '', $unit, $p->stock) ?>
                         </div>
                         
                         <?php if ($unit): ?>
                             <div class="cart-message">
-                                ✅ <?= $unit ?> unit<?= $unit > 1 ? 's' : '' ?> in cart
+                                <i class="fa fa-check-circle"></i>
+                                <span><?= $unit ?> unit<?= $unit > 1 ? 's' : '' ?> in cart</span>
                             </div>
                         <?php endif; ?>
                     </form>
@@ -356,7 +760,7 @@ include '../navbar.php';
 </div>
 
 <div id="imageModal" class="image-modal">
-    <span class="modal-close">&times;</span>
+    <button class="product-modal-close">&times;</button>
     <div class="modal-nav">
         <button class="nav-arrow prev-arrow" id="prevBtn">&#10094;</button>
         <button class="nav-arrow next-arrow" id="nextBtn">&#10095;</button>
@@ -390,28 +794,87 @@ $(document).ready(function() {
         initImageModal(); 
     }
 });
+
+// Change main photo when clicking thumbnails
+$('.thumbnail').on('click', function() {
+    const newSrc = $(this).attr('src');
+    const fullsizeSrc = $(this).data('fullsize');
+    const newIndex = $(this).data('index');
+    
+    $('#mainProductImage').attr('src', newSrc);
+    $('#mainProductImage').data('fullsize', fullsizeSrc);
+    $('#mainProductImage').data('index', newIndex);
+    
+    $('.thumbnail').removeClass('active-thumbnail');
+    $(this).addClass('active-thumbnail');
+});
+
+function initImageModal() {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const closeBtn = document.querySelector('.product-modal-close');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    let images = [];
+    let currentIndex = 0;
+    
+    // Collect all images (main + thumbnails)
+    $('.thumbnail').each(function() {
+        images.push($(this).data('fullsize'));
+    });
+    
+    // Open modal when clicking main photo
+    $('#mainProductImage').on('click', function() {
+        const mainIndex = parseInt($(this).data('index')); // Get current displayed image index
+        currentIndex = mainIndex;
+        showImage();
+        modal.style.display = 'block';
+    });
+    
+    function showImage() {
+        modalImg.src = images[currentIndex];
+        $('#imageCounter').text((currentIndex + 1) + ' / ' + images.length);
+    }
+    
+    // Close button
+    closeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        modal.style.display = 'none';
+    });
+    
+    // Click outside to close
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    // Previous button
+    prevBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        showImage();
+    });
+    
+    // Next button
+    nextBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        currentIndex = (currentIndex + 1) % images.length;
+        showImage();
+    });
+    
+    // Keyboard controls
+    document.addEventListener('keydown', function(e) {
+        if (modal.style.display === 'block') {
+            if (e.key === 'Escape') modal.style.display = 'none';
+            if (e.key === 'ArrowLeft') prevBtn.click();
+            if (e.key === 'ArrowRight') nextBtn.click();
+        }
+    });
+}
 </script>
 
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
-
-<style>
-.btn-fav { background: none; border: none; cursor: pointer; font-size: 1.8rem; color: #dc3545; transition: transform 0.2s; padding: 5px; line-height:1; }
-.btn-fav:hover { transform: scale(1.15); }
-.btn-fav i.fa-heart-o { color: #ccc; }
-.btn-fav:hover i.fa-heart-o { color: #dc3545; }
-
-.btn-danger { background-color: #e74c3c; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 14px; transition: background-color 0.3s; }
-.btn-danger:hover { background-color: #c0392b; }
-.cart-buttons { display: flex; gap: 10px; margin-top: 10px; }
-
-.btn-outline { background-color: #006989; min-width: 120px; border-radius: 30px; color: white; border: none; padding: 12px 20px; cursor: pointer; font-size: 14px; transition: background-color 0.3s; display: inline-block; }
-.btn-outline:hover { background-color: #005a73; }
-</style>
-
-<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
-
-
-
 
 <?php include '../footer.php'; ?>

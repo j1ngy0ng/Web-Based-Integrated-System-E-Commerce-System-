@@ -121,6 +121,134 @@ include '../navbar.php';
 
 <style>
 /* --- PRODUCT STYLES --- */
+#products {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* Force 4 columns side by side */
+    gap: 25px;
+    padding: 20px;
+    min-height: 60vh;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.product_container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.product {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 105, 137, 0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #e8f4f8;
+}
+
+.product:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 105, 137, 0.15);
+}
+
+.product-image {
+    width: 100%;
+    height: 200px;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product:hover .product-image img {
+    transform: scale(1.05);
+}
+
+.product-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #01A7C2;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.product-info {
+    padding: 20px;
+}
+
+.product-name {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.product-price {
+    font-size: 1.3em;
+    font-weight: 700;
+    color: #006989;
+    margin-bottom: 12px;
+}
+
+.product-stock {
+    font-size: 0.9em;
+    margin-bottom: 15px;
+}
+
+.in-stock {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.out-of-stock {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.product-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.product-form select {
+    flex: 1;
+    padding: 8px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    font-size: 0.9em;
+    transition: border-color 0.3s ease;
+}
+
+.product-form select:focus {
+    outline: none;
+    border-color: #01A7C2;
+}
+
+.cart-indicator {
+    color: #28a745;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
 /* Disabled Style: Gray Background & Grayscale Image */
 .product.unavailable { opacity: 0.75; background-color: #f9f9f9; }
 .product.unavailable .product-image img { filter: grayscale(100%); opacity: 0.6; }
@@ -146,19 +274,6 @@ include '../navbar.php';
 .btn-primary:hover { background: #005a73; transform: translateY(-2px); }
 
 .product-image { position: relative; }
-
-/* Heart Button */
-.fav-btn-floating {
-    position: absolute; top: 10px; right: 10px; z-index: 10;
-    background: rgba(255, 255, 255, 0.9); border: none; border-radius: 50%;
-    width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-    transition: transform 0.2s, background 0.2s;
-}
-.fav-btn-floating:hover { transform: scale(1.15); background: #fff; }
-.fav-btn-floating i.fa-heart { color: #dc3545; }
-.fav-btn-floating i.fa-heart-o { color: #ccc; }
-.fav-btn-floating:hover i.fa-heart-o { color: #dc3545; }
 
 /* Badges */
 .badge-top-left {

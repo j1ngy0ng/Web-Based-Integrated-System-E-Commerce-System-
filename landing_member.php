@@ -158,12 +158,6 @@ include 'navbar.php';
 .bg-red { background-color: #e74c3c; }
 .bg-gray { background-color: #718096; } /* New: Grey Badge */
 
-.fav-btn-floating { position: absolute; top: 10px; right: 10px; z-index: 10; background: rgba(255, 255, 255, 0.9); border: none; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.15); transition: transform 0.2s, background 0.2s; }
-.fav-btn-floating:hover { transform: scale(1.15); background: #fff; }
-.fav-btn-floating i.fa-heart { color: #dc3545; }
-.fav-btn-floating i.fa-heart-o { color: #ccc; }
-.fav-btn-floating:hover i.fa-heart-o { color: #dc3545; }
-
 /* New: Disabled Style */
 .product-card.disabled-card { opacity: 0.75; background: #f8f9fa; }
 .product-card.disabled-card .product-card-image img { filter: grayscale(100%); opacity: 0.7; }
