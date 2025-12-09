@@ -10,7 +10,14 @@ $productID = req('productID');
 $is_new_product_page_load = empty($productID);
 
 $product = new stdClass();
-$product->name = ''; $product->price = ''; $product->stock = ''; $product->categoryID = ''; $product->description = ''; $product->mainPhoto = ''; $product->video_url = '';
+$product->name = ''; 
+$product->price = ''; 
+$product->stock = ''; 
+$product->categoryID = ''; 
+$product->description = ''; 
+$product->mainPhoto = ''; 
+$product->video_url = ''; 
+$product->model3d = ''; 
 
 if ($productID) {
     $sql = "SELECT p.*, ph.photoURL AS mainPhoto FROM product p LEFT JOIN productPhoto ph ON p.productID = ph.productID AND ph.is_main = 1 WHERE p.productID = ?";
@@ -31,6 +38,87 @@ function slugify($text) {
     return $text;
 }
 
+// ====================================================================
+// IMAGE CROPPING HELPER (Center Crop to Fixed Size - Used for ALL Photos)
+// ====================================================================
+function resize_and_crop_center($source_path, $destination_path, $target_width = 500, $target_height = 500, $quality = 85) { 
+    if (!function_exists('gd_info')) {
+        return move_uploaded_file($source_path, $destination_path); // Fallback
+    }
+
+    $info = getimagesize($source_path);
+    $original_width = $info[0];
+    $original_height = $info[1];
+    $mime = $info['mime'];
+
+    // 1. Load image resource
+    if ($mime == 'image/jpeg' || $mime == 'image/jpg') {
+        $image = imagecreatefromjpeg($source_path);
+    } elseif ($mime == 'image/gif') {
+        $image = imagecreatefromgif($source_path);
+    } elseif ($mime == 'image/png') {
+        $image = imagecreatefrompng($source_path);
+        // Preserve transparency
+        imagealphablending($image, true);
+        imagesavealpha($image, true);
+    } else {
+        // This case should ideally be caught by the new validation check before calling this function
+        return move_uploaded_file($source_path, $destination_path); 
+    }
+    
+    // 2. Calculate the scaling factor to cover the target area (using MAX ratio)
+    $scale = max($target_width / $original_width, $target_height / $original_height);
+    
+    $scaled_width = (int)($original_width * $scale);
+    $scaled_height = (int)($original_height * $scale);
+    
+    // 3. Determine crop position (centering the image)
+    $crop_x = (int) (($scaled_width - $target_width) / 2);
+    $crop_y = (int) (($scaled_height - $target_height) / 2);
+    
+    // 4. Create an intermediate image (resized to cover the target)
+    $intermediate_image = imagecreatetruecolor($scaled_width, $scaled_height);
+
+    if ($mime == 'image/png') {
+        imagealphablending($intermediate_image, false);
+        imagesavealpha($intermediate_image, true);
+        $transparent = imagecolorallocatealpha($intermediate_image, 255, 255, 255, 127);
+        imagefilledrectangle($intermediate_image, 0, 0, $scaled_width, $scaled_height, $transparent);
+    }
+
+    imagecopyresampled($intermediate_image, $image, 0, 0, 0, 0, $scaled_width, $scaled_height, $original_width, $original_height);
+    
+    // 5. Create the final cropped image resource
+    $final_image = imagecreatetruecolor($target_width, $target_height);
+    
+    if ($mime == 'image/png') {
+        imagealphablending($final_image, false);
+        imagesavealpha($final_image, true);
+        $transparent = imagecolorallocatealpha($final_image, 255, 255, 255, 127);
+        imagefilledrectangle($final_image, 0, 0, $target_width, $target_height, $transparent);
+    }
+
+    // 6. Copy the centered portion from the intermediate image to the final image
+    imagecopy($final_image, $intermediate_image, 0, 0, $crop_x, $crop_y, $target_width, $target_height);
+
+    // 7. Save the final image and apply quality
+    $success = false;
+    if ($mime == 'image/jpeg' || $mime == 'image/jpg') {
+        $success = imagejpeg($final_image, $destination_path, $quality); // <-- JPEG Quality Applied
+    } elseif ($mime == 'image/gif') {
+        $success = imagegif($final_image, $destination_path);
+    } elseif ($mime == 'image/png') {
+        $success = imagepng($final_image, $destination_path, 7); // PNG Compression (0-9)
+    }
+
+    // 8. Cleanup
+    imagedestroy($image);
+    imagedestroy($intermediate_image);
+    imagedestroy($final_image);
+
+    return $success;
+}
+
 if (is_post()) {
     // --- DELETE PRODUCT LOGIC ---
     if (req('action_type') === 'delete' && $productID) {
@@ -40,9 +128,9 @@ if (is_post()) {
             $stm_photos->execute([$productID]);
             $photos_to_delete = $stm_photos->fetchAll();
 
-            $stm_vid = $_db->prepare("SELECT video_url FROM product WHERE productID = ?");
+            $stm_vid = $_db->prepare("SELECT video_url, model3d FROM product WHERE productID = ?");
             $stm_vid->execute([$productID]);
-            $vid_row = $stm_vid->fetch();
+            $media_row = $stm_vid->fetch();
 
             $stm_delete_photos_db = $_db->prepare("DELETE FROM productPhoto WHERE productID = ?");
             $stm_delete_photos_db->execute([$productID]);
@@ -56,8 +144,12 @@ if (is_post()) {
                 if (file_exists("../products/" . $photo->photoURL)) unlink("../products/" . $photo->photoURL);
             }
             // Delete video file
-            if ($vid_row && $vid_row->video_url && file_exists("../products/" . $vid_row->video_url)) {
-                unlink("../products/" . $vid_row->video_url);
+            if ($media_row && $media_row->video_url && file_exists("../products/" . $media_row->video_url)) {
+                unlink("../products/" . $media_row->video_url);
+            }
+            // Delete 3D model file
+            if ($media_row && $media_row->model3d && file_exists("../products/" . $media_row->model3d)) {
+                unlink("../products/" . $media_row->model3d);
             }
 
             temp('info', 'Product deleted successfully.');
@@ -71,6 +163,7 @@ if (is_post()) {
         // --- ADD/UPDATE LOGIC ---
         $name = req('name'); $price = req('price'); $stock = req('stock'); $categoryID = req('categoryID'); $description = req('description');
 
+        // --- Validation ---
         if ($name == '') $_err['name'] = 'Required';
         if ($price == '' || $price < 0) $_err['price'] = 'Invalid';
         if ($stock == '' || $stock < 0) $_err['stock'] = 'Invalid';
@@ -84,140 +177,167 @@ if (is_post()) {
             }
         }
 
+        // 3D Model Validation
+        if (!empty($_FILES['model3d']['tmp_name'])) {
+            $ext = strtolower(pathinfo($_FILES['model3d']['name'], PATHINFO_EXTENSION));
+            if (!in_array($ext, ['glb', 'gltf'])) {
+                $_err['model3d'] = 'Invalid 3D model format. Only .glb or .gltf allowed.';
+            }
+        }
+        
+        // --- IMAGE VALIDATION ---
+        $allowed_images = ['image/jpeg', 'image/png', 'image/gif'];
+        
+        // Main Photo Validation
+        if (!empty($_FILES['mainPhoto']['tmp_name'])) {
+            $info = getimagesize($_FILES['mainPhoto']['tmp_name']);
+            if (!$info || !in_array($info['mime'], $allowed_images)) {
+                $_err['mainPhoto'] = 'Invalid main photo format. Only JPG, PNG, or GIF allowed.';
+            }
+        }
+        
+        // Additional Photos Validation
+        if (!empty($_FILES['finalAdditionalPhotos']['tmp_name']) && is_array($_FILES['finalAdditionalPhotos']['tmp_name'])) {
+            $files = $_FILES['finalAdditionalPhotos'];
+            foreach($files['tmp_name'] as $tmp_name) {
+                if ($tmp_name) {
+                    $info = getimagesize($tmp_name);
+                    if (!$info || !in_array($info['mime'], $allowed_images)) {
+                         $_err['additionalPhotos'] = 'One or more additional photos have an invalid format. Only JPG, PNG, or GIF allowed.';
+                         break; // Stop checking further files
+                    }
+                }
+            }
+        }
+        // --- END IMAGE VALIDATION ---
+        
         if (!$_err) {
             $was_newly_added = $is_new_product_page_load;
             $productSlug = slugify($name);
             if ($productSlug === 'n-a') $productSlug = 'product';
 
-            // --- 1. HANDLE VIDEO ---
-            $video_filename = $product->video_url; 
+            $_db->beginTransaction();
+            try {
+                // Initialize filenames from existing values
+                $video_filename = $product->video_url; 
+                $model3d_filename = $product->model3d ?? null;
 
-            // A. Check Delete Flag (User clicked trash can on existing video)
-            if (!empty($_POST['delete_video_check'])) {
-                if ($video_filename && file_exists("../products/" . $video_filename)) {
-                    unlink("../products/" . $video_filename);
+                // --- 1. HANDLE VIDEO UPLOAD/DELETE ---
+                if (!empty($_POST['delete_video_check'])) { // Delete existing
+                    if ($video_filename && file_exists("../products/" . $video_filename)) { unlink("../products/" . $video_filename); }
+                    $video_filename = null;
                 }
-                $video_filename = null; // Clear from DB
-            }
+                if (!empty($_FILES['productVideo']['tmp_name'])) { // Upload new
+                    if ($video_filename && file_exists("../products/" . $video_filename)) { unlink("../products/" . $video_filename); } // Delete old one if replacing
+                    $v_ext = pathinfo($_FILES['productVideo']['name'], PATHINFO_EXTENSION);
+                    $v_fname = $productSlug . '_video_' . time() . '_' . rand(1000, 9999) . '.' . $v_ext;
+                    move_uploaded_file($_FILES['productVideo']['tmp_name'], "../products/$v_fname");
+                    $video_filename = $v_fname;
+                }
 
-            // B. Check File Upload (User uploaded a new one)
-            if (!empty($_FILES['productVideo']['tmp_name'])) {
-                // If there was an old file, delete it
-                if ($video_filename && file_exists("../products/" . $video_filename)) {
-                    unlink("../products/" . $video_filename);
+                // --- 2. HANDLE 3D MODEL UPLOAD/DELETE ---
+                if (!empty($_POST['delete_model3d_check'])) { // Delete existing
+                    if ($model3d_filename && file_exists("../products/" . $model3d_filename)) { unlink("../products/" . $model3d_filename); }
+                    $model3d_filename = null;
+                }
+                if (!empty($_FILES['model3d']['tmp_name'])) { // Upload new
+                    if ($model3d_filename && file_exists("../products/" . $model3d_filename)) { unlink("../products/" . $model3d_filename); } // Delete old one if replacing
+                    $m_ext = pathinfo($_FILES['model3d']['name'], PATHINFO_EXTENSION);
+                    $m_fname = $productSlug . "_3d_" . time() . "." . $m_ext;
+                    move_uploaded_file($_FILES['model3d']['tmp_name'], "../products/$m_fname");
+                    $model3d_filename = $m_fname;
+                }
+
+                // --- 3. SAVE PRODUCT DATA (DB) ---
+                if ($productID) {
+                    $_db->prepare("
+                        UPDATE product 
+                        SET name=?, price=?, stock=?, categoryID=?, description=?, video_url=?, model3d=? 
+                        WHERE productID=?
+                    ")->execute([
+                        $name, $price, $stock, $categoryID, $description, $video_filename, $model3d_filename, $productID
+                    ]);
+                    temp('info', 'Product updated');
+                } else {
+                    $_db->prepare("
+                        INSERT INTO product (name, price, stock, categoryID, description, video_url, model3d)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ")->execute([
+                        $name, $price, $stock, $categoryID, $description, $video_filename, $model3d_filename
+                    ]);
+                    $productID = $_db->lastInsertId();
+                    temp('info', 'Product added');
+                }
+
+                // --- 4. HANDLE MAIN PHOTO ---
+                if (!empty($_FILES['mainPhoto']['tmp_name'])) {
+                    $ext = pathinfo($_FILES['mainPhoto']['name'], PATHINFO_EXTENSION);
+                    $fname = $productSlug . '_main_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+                    
+                    $source_path = $_FILES['mainPhoto']['tmp_name'];
+                    $destination_path = "../products/$fname";
+
+                    // The main photo is processed and saved as a fixed 500x500 center-cropped square.
+                    resize_and_crop_center($source_path, $destination_path, 500, 500); 
+                    
+                    // Delete old file if updating
+                    if (!$was_newly_added && $product->mainPhoto && file_exists("../products/".$product->mainPhoto)) { 
+                        unlink("../products/".$product->mainPhoto); 
+                    }
+                    
+                    $exists = $_db->prepare("SELECT * FROM productPhoto WHERE productID=? AND is_main=1");
+                    $exists->execute([$productID]);
+                    if ($exists->fetch()) { 
+                        $_db->prepare("UPDATE productPhoto SET photoURL=? WHERE productID=? AND is_main=1")->execute([$fname, $productID]); 
+                    } else { 
+                        $_db->prepare("INSERT INTO productPhoto (productID, photoURL, is_main) VALUES (?, ?, 1)")->execute([$productID, $fname]); 
+                    }
+                }
+
+                // --- 5. HANDLE ADDITIONAL PHOTOS ---
+                // Deletion Logic
+                if (!empty($_POST['delete_photos'])) {
+                    foreach ($_POST['delete_photos'] as $pid) {
+                        $old = $_db->prepare("SELECT photoURL FROM productPhoto WHERE photoID=?");
+                        $old->execute([$pid]);
+                        $row = $old->fetch();
+                        if($row && file_exists("../products/".$row->photoURL)) { unlink("../products/".$row->photoURL); }
+                        $_db->prepare("DELETE FROM productPhoto WHERE photoID=?")->execute([$pid]);
+                    }
                 }
                 
-                $v_ext = pathinfo($_FILES['productVideo']['name'], PATHINFO_EXTENSION);
-                $v_fname = $productSlug . '_video_' . time() . '_' . rand(1000, 9999) . '.' . $v_ext;
-                move_uploaded_file($_FILES['productVideo']['tmp_name'], "../products/$v_fname");
-                $video_filename = $v_fname;
-            } 
+                // Upload/Resize Logic
+                if(!empty($_FILES['finalAdditionalPhotos']['tmp_name'])) {
+                    $files = $_FILES['finalAdditionalPhotos'];
+                    if (is_array($files['tmp_name']) && !empty($files['tmp_name'][0])) {
+                        for($i=0; $i<count($files['tmp_name']); $i++) {
+                            if($files['tmp_name'][$i]) {
+                                $ext = pathinfo($files['name'][$i], PATHINFO_EXTENSION);
+                                $fname = $productSlug . '_add_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
+                                
+                                $source_path = $files['tmp_name'][$i];
+                                $destination_path = "../products/$fname";
+                                
+                                // Additional photos are processed and saved as fixed 500x500 center-cropped squares.
+                                resize_and_crop_center($source_path, $destination_path, 500, 500);
 
-            // --- HANDLE 3D MODEL UPLOAD ---
-            // Initialize from existing product data
-            $model3d_filename = $product->model3d ?? null;
-
-            // A. Delete old model if user clicked "delete 3d model"
-            if (!empty($_POST['delete_model3d_check'])) {
-                if ($model3d_filename && file_exists("../products/" . $model3d_filename)) {
-                    unlink("../products/" . $model3d_filename);
-                }
-                $model3d_filename = null;
-            }
-
-            // B. Upload new 3D model file
-            if (!empty($_FILES['model3d']['tmp_name'])) {
-                $ext = strtolower(pathinfo($_FILES['model3d']['name'], PATHINFO_EXTENSION));
-                if (!in_array($ext, ['glb', 'gltf'])) {
-                    $_err['model3d'] = 'Invalid 3D model format. Only .glb or .gltf allowed.';
-                } else {
-                    // Delete old file if exists
-                    if ($model3d_filename && file_exists("../products/" . $model3d_filename)) {
-                        unlink("../products/" . $model3d_filename);
-                    }
-
-                    $productSlug = slugify($name);
-                    $model3d_filename = $productSlug . "_3d_" . time() . "." . $ext;
-                    move_uploaded_file($_FILES['model3d']['tmp_name'], "../products/$model3d_filename");
-                }
-            }
-
-
-            if ($productID) {
-            $_db->prepare("
-                UPDATE product 
-                SET name=?, price=?, stock=?, categoryID=?, description=?, video_url=?, model3d=? 
-                WHERE productID=?
-            ")->execute([
-                $name,
-                $price,
-                $stock,
-                $categoryID,
-                $description,
-                $video_filename,
-                $model3d_filename,  // now correctly set
-                $productID
-            ]);
-
-                temp('info', 'Product updated');
-
-            } else {
-
-            $_db->prepare("
-                INSERT INTO product (name, price, stock, categoryID, description, video_url, model3d)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ")->execute([
-                $name,
-                $price,
-                $stock,
-                $categoryID,
-                $description,
-                $video_filename,
-                $model3d_filename  // now correctly set
-            ]);
-
-                $productID = $_db->lastInsertId();
-                temp('info', 'Product added');
-            }
-
-            // --- 2. HANDLE MAIN PHOTO ---
-            if (!empty($_FILES['mainPhoto']['tmp_name'])) {
-                $ext = pathinfo($_FILES['mainPhoto']['name'], PATHINFO_EXTENSION);
-                $fname = $productSlug . '_main_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-                move_uploaded_file($_FILES['mainPhoto']['tmp_name'], "../products/$fname");
-                if (!$was_newly_added && $product->mainPhoto && file_exists("../products/".$product->mainPhoto)) { unlink("../products/".$product->mainPhoto); }
-                $exists = $_db->prepare("SELECT * FROM productPhoto WHERE productID=? AND is_main=1");
-                $exists->execute([$productID]);
-                if ($exists->fetch()) { $_db->prepare("UPDATE productPhoto SET photoURL=? WHERE productID=? AND is_main=1")->execute([$fname, $productID]); }
-                else { $_db->prepare("INSERT INTO productPhoto (productID, photoURL, is_main) VALUES (?, ?, 1)")->execute([$productID, $fname]); }
-            }
-
-            // --- 3. HANDLE ADDITIONAL PHOTOS ---
-            if (!empty($_POST['delete_photos'])) {
-                foreach ($_POST['delete_photos'] as $pid) {
-                    $old = $_db->prepare("SELECT photoURL FROM productPhoto WHERE photoID=?");
-                    $old->execute([$pid]);
-                    $row = $old->fetch();
-                    if($row && file_exists("../products/".$row->photoURL)) { unlink("../products/".$row->photoURL); }
-                    $_db->prepare("DELETE FROM productPhoto WHERE photoID=?")->execute([$pid]);
-                }
-            }
-            if(!empty($_FILES['finalAdditionalPhotos']['tmp_name'])) {
-                $files = $_FILES['finalAdditionalPhotos'];
-                if (is_array($files['tmp_name']) && !empty($files['tmp_name'][0])) {
-                    for($i=0; $i<count($files['tmp_name']); $i++) {
-                        if($files['tmp_name'][$i]) {
-                            $ext = pathinfo($files['name'][$i], PATHINFO_EXTENSION);
-                            $fname = $productSlug . '_add_' . time() . '_' . rand(1000, 9999) . '.' . $ext;
-                            move_uploaded_file($files['tmp_name'][$i], "../products/$fname");
-                            $_db->prepare("INSERT INTO productPhoto (productID, photoURL, is_main) VALUES (?, ?, 0)")->execute([$productID, $fname]);
+                                $_db->prepare("INSERT INTO productPhoto (productID, photoURL, is_main) VALUES (?, ?, 0)")->execute([$productID, $fname]);
+                            }
                         }
                     }
-                }
-            }
+                } 
 
-            if ($was_newly_added) { redirect('maintenance.php'); } 
-            else { redirect("detail_admin.php?productID=$productID"); }
+                $_db->commit();
+                
+                if ($was_newly_added) { redirect('maintenance.php'); } 
+                else { redirect("detail_admin.php?productID=$productID"); }
+
+            } catch (Exception $e) {
+                $_db->rollBack();
+                temp('error', 'Database or File Save Error: ' . $e->getMessage());
+                // Redirect user back to the form with error
+                redirect($productID ? "detail_admin.php?productID=$productID" : 'detail_admin.php');
+            }
         }
     }
 }
@@ -309,10 +429,10 @@ include '../navbar.php';
 
 
 <model-viewer src="products/<?= $product->model3d ?>"
-              alt="3D Model"
-              auto-rotate
-              camera-controls
-              style="width:100%; height:400px;">
+             alt="3D Model"
+             auto-rotate
+             camera-controls
+             style="width:100%; height:400px;">
 </model-viewer>
 
 <form method="post" class="form" enctype="multipart/form-data" id="productForm">
@@ -351,7 +471,8 @@ include '../navbar.php';
     <?= html_textarea('description','maxlength="500" rows="4"') ?> <?= err('description') ?>
 
     <label class="field-label">Main Photo</label>
-    <input type="file" name="mainPhoto" id="mainPhotoInput" class="hidden-file-input" accept="image/*" onchange="previewMainPhoto(this)">
+    <div style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">(Image output size: **500x500px square**, center-cropped.)</div>
+    <input type="file" name="mainPhoto" id="mainPhotoInput" class="hidden-file-input" accept="image/jpeg,image/png,image/gif" onchange="previewMainPhoto(this)">
     <label for="mainPhotoInput" class="upload-zone" id="mainPhotoZone">
         <?php if($product->mainPhoto && file_exists("../products/".$product->mainPhoto)): ?>
             <img src="../products/<?= $product->mainPhoto ?>" class="preview">
@@ -359,6 +480,7 @@ include '../navbar.php';
             <div class="placeholder"><i class="fa fa-cloud-upload" aria-hidden="true"></i><span>Click to upload main image</span></div>
         <?php endif ?>
     </label>
+    <?= err('mainPhoto') ?>
 
 <label class="field-label">3D Model (GLB / GLTF)</label>
     
@@ -373,9 +495,9 @@ include '../navbar.php';
         ?>
             <div class="video-container" style="width:100%; height:100%;">
                 <model-viewer src="../products/<?= $product->model3d ?>" 
-                              camera-controls 
-                              auto-rotate 
-                              style="width: 100%; height: 100%;">
+                             camera-controls 
+                             auto-rotate 
+                             style="width: 100%; height: 100%;">
                 </model-viewer>
                 
                 <div class="photo-action-overlay" onclick="removeExistingModel3d(event)" title="Delete Model">
@@ -420,7 +542,7 @@ include '../navbar.php';
     <?= err('productVideo') ?>
 
     <label class="field-label">Additional Photos Gallery</label>
-    <div style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Mark existing photos to delete.</div>
+    <div style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">(Image output size: **500x500px square**, center-cropped.)</div>
 
     <div class="photo-grid" id="additionalPhotoGrid">
         <?php if($productID){
@@ -436,7 +558,7 @@ include '../navbar.php';
             </div>
         <?php endif; endforeach; } ?>
 
-        <input type="file" id="triggerAddInput" class="hidden-file-input" accept="image/*" multiple onchange="handleNewFilesSelect(this)">
+        <input type="file" id="triggerAddInput" class="hidden-file-input" accept="image/jpeg,image/png,image/gif" multiple onchange="handleNewFilesSelect(this)">
         <input type="file" name="finalAdditionalPhotos[]" id="finalSubmissionInput" class="hidden-file-input" multiple>
 
         <label for="triggerAddInput" class="add-photo-card">
@@ -444,6 +566,7 @@ include '../navbar.php';
         </label>
 
     </div>
+    <?= err('additionalPhotos') ?>
 
     <section class="actions">
         <button type="submit"><?= $productID ? 'Update Product' : 'Add Product' ?></button>
@@ -452,8 +575,6 @@ include '../navbar.php';
 </form>
 
 <script>
-    // --- 3D MODEL FUNCTIONS ---
-
 // 1. Preview 3D Model
 function previewModel3d(input) {
     const zone = document.getElementById('model3dZone');
@@ -501,10 +622,11 @@ function resetModel3dPlaceholder() {
     zone.innerHTML = `
         <div class="placeholder">
             <i class="fa fa-cube" aria-hidden="true"></i>
-            <span>Click to upload 3D Model (.glb)</span>
+            <span>Click to upload 3D Model (.glb or .gltf)</span>
         </div>
     `;
 }
+
 // 1. Main Photo Preview
 function previewMainPhoto(input) {
     const zone = document.getElementById('mainPhotoZone');
@@ -591,8 +713,17 @@ function toggleDeleteExisting(photoID) {
 function handleNewFilesSelect(input) {
     const grid = document.getElementById('additionalPhotoGrid');
     const addBtnLabel = grid.querySelector('label.add-photo-card');
+    
     if(input.files) {
+        // Simple client-side check to improve UX, server-side is the definitive check
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        
         Array.from(input.files).forEach(file => {
+            if (!allowedTypes.includes(file.type)) {
+                alert(`File "${file.name}" has an invalid format (${file.type}). Only JPG, PNG, or GIF are allowed.`);
+                return; // Skip this file
+            }
+            
             const reader = new FileReader();
             reader.onload = function(e) {
                 const card = document.createElement('div');
@@ -625,9 +756,10 @@ document.getElementById('productForm').addEventListener('submit', function(e) {
 
     const deleteCheckboxes = document.querySelectorAll('input[name="delete_photos[]"]:checked');
     const deleteVideo = document.getElementById('delete_video_check').checked;
+    const deleteModel = document.getElementById('delete_model3d_check').checked;
     
-    if (deleteCheckboxes.length > 0 || deleteVideo) {
-        if(!confirm(`Warning: You are about to delete items. Continue?`)){
+    if (deleteCheckboxes.length > 0 || deleteVideo || deleteModel) {
+        if(!confirm(`Warning: You are about to delete ${deleteCheckboxes.length} photo(s), ${deleteVideo ? 'a video, ' : ''} ${deleteModel ? 'a 3D model, ' : ''} . Continue?`)){
             e.preventDefault();
         }
     }
