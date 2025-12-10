@@ -71,6 +71,8 @@ $isDisabled = ($p->is_active == 0);
 $main_photo = get_main_photo($id);
 $additional_photos = get_additional_photos($id);
 
+$video_url = $p->video_url;
+
 // Cart Data
 $cart = get_cart();
 $unit = $cart[$id] ?? 0;
@@ -136,15 +138,12 @@ include '../navbar.php';
     border-radius: 15px;
     overflow: hidden;
     background: #f8fafc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .main-photo img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 .photo-placeholder {
@@ -166,7 +165,8 @@ include '../navbar.php';
     padding: 10px 3px;
 }
 
-.additional-photos img {
+.additional-photos img,
+.additional-photos .video-thumb {
     width: 80px;
     height: 80px;
     object-fit: cover;
@@ -176,8 +176,27 @@ include '../navbar.php';
     transition: border-color 0.3s ease;
 }
 
+.additional-photos .video-thumb video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .additional-photos img:hover {
     border-color: #01A7C2;
+}
+
+.video-thumb {
+    position: relative;
+    overflow: hidden;
+}
+
+.video-thumb video {
+    pointer-events: none;
+}
+
+#modalVideo {
+    border-radius: 8px;
 }
 
 .product-info-detail {
@@ -599,6 +618,10 @@ include '../navbar.php';
     background: #f8fafc;
     border-radius: 12px;
 }
+
+#mainProductVideo {
+    cursor: pointer;
+}
 </style>
 
 <div class="product-detail-container">
@@ -607,7 +630,16 @@ include '../navbar.php';
         <div class="product-gallery">
             <?php if (!empty($main_photo)): ?>
                 <div class="main-photo">
-                    <img src="/products/<?= $main_photo ?>" alt="<?= $main_photo ?>" id="mainProductImage" class="clickable-main" data-fullsize="/products/<?= $main_photo ?>" data-index="0" style="<?= $isDisabled ? 'filter:grayscale(100%); opacity:0.8;' : '' ?>">
+                    <?php if (!empty($video_url)): ?>
+                            <video id="mainProductVideo" controls controlsList="nofullscreen" style="width:100%; height:100%; object-fit:cover; <?= $isDisabled ? 'filter:grayscale(100%); opacity:0.8;' : '' ?>">
+                                <source src="/products/<?= $video_url ?>" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                    <?php elseif (!empty($main_photo)): ?>
+                        <img src="/products/<?= $main_photo ?>" alt="<?= $main_photo ?>" id="mainProductImage" class="clickable-main" data-fullsize="/products/<?= $main_photo ?>" data-index="0" style="width:100%; height:100%; object-fit:cover; <?= $isDisabled ? 'filter:grayscale(100%); opacity:0.8;' : '' ?>">
+                    <?php else: ?>
+                        <div class="photo-placeholder">No Image Available</div>
+                    <?php endif; ?>
                 </div>
             <?php else: ?>
                 <div class="photo-placeholder">No Image Available</div>
@@ -626,13 +658,28 @@ include '../navbar.php';
         
             <!-- Show all photos as thumbnails (main + additional) -->
             <div class="additional-photos">
+                <?php if (!empty($video_url)): ?>
+                    <!-- Video thumbnail -->
+                    <div class="thumbnail video-thumb active-thumbnail" data-type="video" data-src="/products/<?= $video_url ?>" data-index="0" style="position:relative; background:#000;">
+                        <video style="width:100%; height:100%; object-fit:cover;" muted>
+                            <source src="/products/<?= $video_url ?>" type="video/mp4">
+                        </video>
+                        <i class="fa fa-play-circle" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; font-size:24px; pointer-events:none;"></i>
+                    </div>
+                <?php endif; ?>
+                
                 <?php if (!empty($main_photo)): ?>
-                    <img src="/products/<?= $main_photo ?>" alt="Main Photo" class="thumbnail active-thumbnail" data-fullsize="/products/<?= $main_photo ?>" data-index="0">
+                    <img src="/products/<?= $main_photo ?>" alt="Main Photo" class="thumbnail <?= empty($video_url) ? 'active-thumbnail' : '' ?>" data-type="image" data-fullsize="/products/<?= $main_photo ?>" data-index="<?= empty($video_url) ? 0 : 1 ?>">
                 <?php endif; ?>
                 
                 <?php if ($additional_photos): ?>
+                    <?php 
+                    $photoStartIndex = 1; // Start from 1 if no video
+                    if (!empty($video_url)) $photoStartIndex = 2; // Start from 2 if video exists
+                    elseif (!empty($main_photo)) $photoStartIndex = 1; // Start from 1 if main photo exists
+                    ?>
                     <?php foreach ($additional_photos as $index => $photo): ?>
-                        <img src="/products/<?= $photo->photoURL ?>" alt="<?= $photo->photoURL ?>" class="thumbnail" data-fullsize="/products/<?= $photo->photoURL ?>" data-index="<?= $index + 1 ?>">
+                        <img src="/products/<?= $photo->photoURL ?>" alt="<?= $photo->photoURL ?>" class="thumbnail" data-type="image" data-fullsize="/products/<?= $photo->photoURL ?>" data-index="<?= $photoStartIndex + $index ?>">
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
@@ -795,15 +842,45 @@ $(document).ready(function() {
     }
 });
 
-// Change main photo when clicking thumbnails
 $('.thumbnail').on('click', function() {
-    const newSrc = $(this).attr('src');
-    const fullsizeSrc = $(this).data('fullsize');
+    const type = $(this).data('type');
     const newIndex = $(this).data('index');
     
-    $('#mainProductImage').attr('src', newSrc);
-    $('#mainProductImage').data('fullsize', fullsizeSrc);
-    $('#mainProductImage').data('index', newIndex);
+    if (type === 'video') {
+        const videoSrc = $(this).data('src');
+        $('#mainProductImage').hide();
+        
+        const mainVideo = $('#mainProductVideo').get(0);
+        if (mainVideo) {
+            $(mainVideo).show();
+        } else {
+        }
+    } else {
+        const newSrc = $(this).attr('src');
+        const fullsizeSrc = $(this).data('fullsize');
+        
+        $('#mainProductVideo').hide();
+        
+        if ($('#mainProductImage').length === 0) {
+            $('.main-photo').prepend(`<img src="${newSrc}" id="mainProductImage" class="clickable-main" data-fullsize="${fullsizeSrc}" data-index="${newIndex}" style="cursor:pointer;">`);
+        } else {
+            $('#mainProductImage')
+                .attr('src', newSrc)
+                .attr('data-fullsize', fullsizeSrc)
+                .attr('data-index', newIndex)
+                .show();
+        }
+        
+        // Re-bind click event using global modal data
+        $('#mainProductImage').off('click').on('click', function() {
+            $('#mainProductVideo').get(0)?.pause();
+            if (window.modalData) {
+                window.modalData.currentIndex = parseInt($(this).attr('data-index'));
+                window.modalData.showMedia();
+                window.modalData.modal.style.display = 'block';
+            }
+        });
+    }
     
     $('.thumbnail').removeClass('active-thumbnail');
     $(this).addClass('active-thumbnail');
@@ -816,58 +893,164 @@ function initImageModal() {
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     
-    let images = [];
+    let mediaItems = [];
     let currentIndex = 0;
+    let savedVideoTime = 0; // Track video progress globally
     
-    // Collect all images (main + thumbnails)
-    $('.thumbnail').each(function() {
-        images.push($(this).data('fullsize'));
+    // Make these available globally for thumbnail clicks
+    window.modalData = {
+        mediaItems: mediaItems,
+        get currentIndex() { return currentIndex; },
+        set currentIndex(val) { currentIndex = val; },
+        showMedia: null,
+        modal: modal
+    };
+    
+    // Collect all media (video + images)
+    if ($('.video-thumb').length > 0) {
+        mediaItems.push({
+            type: 'video',
+            src: $('.video-thumb').data('src')
+        });
+    }
+    
+    $('.thumbnail[data-type="image"]').each(function() {
+        mediaItems.push({
+            type: 'image',
+            src: $(this).data('fullsize')
+        });
     });
     
     // Open modal when clicking main photo
-    $('#mainProductImage').on('click', function() {
-        const mainIndex = parseInt($(this).data('index')); // Get current displayed image index
+    $(document).on('click', '#mainProductImage', function() {
+        const mainVideo = $('#mainProductVideo').get(0);
+        if (mainVideo) {
+            savedVideoTime = mainVideo.currentTime; // Save main video time
+            mainVideo.pause();
+        }
+        const mainIndex = parseInt($(this).attr('data-index'));
         currentIndex = mainIndex;
-        showImage();
+        showMedia();
         modal.style.display = 'block';
     });
     
-    function showImage() {
-        modalImg.src = images[currentIndex];
-        $('#imageCounter').text((currentIndex + 1) + ' / ' + images.length);
-    }
-    
-    // Close button
-    closeBtn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        modal.style.display = 'none';
+    // Open modal when clicking main video (but not controls)
+    $(document).on('click', '#mainProductVideo', function(e) {
+        // Allow normal video controls to work
+        const video = $(this).get(0);
+        const rect = video.getBoundingClientRect();
+        const clickY = e.clientY - rect.top;
+        const controlsHeight = 50; // Approximate height of controls bar
+        
+        // If clicking in controls area, don't open modal
+        if (clickY > rect.height - controlsHeight) {
+            return;
+        }
+        
+        // Otherwise open modal
+        savedVideoTime = video.currentTime;
+        video.pause();
+        currentIndex = 0;
+        showMedia();
+        modal.style.display = 'block';
     });
     
-    // Click outside to close
+    function showMedia() {
+        const currentMedia = mediaItems[currentIndex];
+        
+        if (currentMedia.type === 'video') {
+            if ($('#modalVideo').length === 0) {
+                modalImg.style.display = 'none';
+                $(modalImg).after(`
+                    <video id="modalVideo" controls style="margin: auto; display: block; width: 80%; max-width: 700px; max-height: 80vh; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                        <source src="${currentMedia.src}" type="video/mp4">
+                    </video>
+                `);
+                const modalVideo = $('#modalVideo').get(0);
+                modalVideo.currentTime = savedVideoTime;
+                modalVideo.play();
+                
+                // Sync time changes back to main video
+                modalVideo.addEventListener('timeupdate', function() {
+                    savedVideoTime = this.currentTime;
+                });
+            } else {
+                modalImg.style.display = 'none';
+                $('#modalVideo').show();
+                const modalVideo = $('#modalVideo').get(0);
+                modalVideo.play();
+            }
+        } else {
+            const modalVideo = $('#modalVideo').get(0);
+            if (modalVideo) {
+                modalVideo.pause();
+            }
+            $('#modalVideo').hide();
+            modalImg.src = currentMedia.src;
+            modalImg.style.display = 'block';
+        }
+        
+        $('#imageCounter').text((currentIndex + 1) + ' / ' + mediaItems.length);
+    }
+    
+    // Make showMedia available globally
+    window.modalData.showMedia = showMedia;
+    
+    // Close modal
+    closeBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeModal();
+    });
+    
     modal.addEventListener('click', function(e) {
         if (e.target === modal) {
-            modal.style.display = 'none';
+            closeModal();
         }
     });
     
-    // Previous button
+    function closeModal() {
+        modal.style.display = 'none';
+        const modalVideo = $('#modalVideo').get(0);
+        const mainVideo = $('#mainProductVideo').get(0);
+        
+        if (modalVideo) {
+            savedVideoTime = modalVideo.currentTime;
+            modalVideo.pause();
+        }
+        
+        // Sync time back to main video
+        if (mainVideo) {
+            mainVideo.currentTime = savedVideoTime;
+        }
+    }
+    
     prevBtn.addEventListener('click', function(e) {
         e.stopPropagation();
-        currentIndex = (currentIndex - 1 + images.length) % images.length;
-        showImage();
+        const modalVideo = $('#modalVideo').get(0);
+        if (modalVideo && currentIndex === 0) {
+            savedVideoTime = modalVideo.currentTime;
+        }
+        
+        currentIndex = (currentIndex - 1 + mediaItems.length) % mediaItems.length;
+        showMedia();
     });
     
-    // Next button
     nextBtn.addEventListener('click', function(e) {
         e.stopPropagation();
-        currentIndex = (currentIndex + 1) % images.length;
-        showImage();
+        const modalVideo = $('#modalVideo').get(0);
+        if (modalVideo && currentIndex === 0) {
+            savedVideoTime = modalVideo.currentTime;
+        }
+        
+        currentIndex = (currentIndex + 1) % mediaItems.length;
+        showMedia();
     });
     
-    // Keyboard controls
     document.addEventListener('keydown', function(e) {
         if (modal.style.display === 'block') {
-            if (e.key === 'Escape') modal.style.display = 'none';
+            if (e.key === 'Escape') {
+                closeModal();
+            }
             if (e.key === 'ArrowLeft') prevBtn.click();
             if (e.key === 'ArrowRight') nextBtn.click();
         }
