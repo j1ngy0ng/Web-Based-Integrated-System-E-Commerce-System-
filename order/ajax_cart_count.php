@@ -21,8 +21,6 @@ function get_cart_count() {
 // Get the current cart count
 $cart_count = get_cart_count();
 
-// Return as JSON
-header('Content-Type: application/json');
 echo json_encode([
     'success' => true,
     'count' => $cart_count,

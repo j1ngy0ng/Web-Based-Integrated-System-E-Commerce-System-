@@ -131,9 +131,8 @@ if (is_post()) {
         unset($_SESSION['voucher']);
         unset($_SESSION['selected_address']);
         unset($_SESSION['show_new_address_form']);
-        redirect('?');
         $_SESSION['cart_last_updated'] = time();
-        echo '<script>if(window.parent) window.parent.dispatchEvent(new CustomEvent("cartUpdate"));</script>';
+        redirect('?');
     }
     if ($btn == 'delete') {
         error_log("DELETE TRIGGERED - btn: $btn, id: " . req('id'));
@@ -1139,7 +1138,7 @@ include '../navbar.php';
         
         const form = $('<form>', {
             method: 'POST',
-            action: ''
+            action: window.location.href
         });
         
         form.append($('<input>', {
@@ -1467,17 +1466,19 @@ include '../navbar.php';
         const checkoutBlocked = <?= !$can_checkout ? 'true' : 'false' ?>;
         
         if (unavailableItems.length > 0 || checkoutBlocked) {
-            alert('❌ Please fix the following issues before checkout:\n\n' + 
-                <?= json_encode(implode("\n", $block_checkout_reasons)) ?>);
+            <?php 
+            $reasons_json = !empty($block_checkout_reasons) 
+                ? json_encode(implode("\n", $block_checkout_reasons))
+                : json_encode("Please remove unavailable items from cart");
+            ?>
+            alert('❌ Please fix the following issues before checkout:\n\n' + <?= $reasons_json ?>);
             
-            // Scroll to first unavailable item
             const firstUnavailable = unavailableItems.first();
             if (firstUnavailable.length) {
                 $('html, body').animate({
                     scrollTop: firstUnavailable.offset().top - 100
                 }, 500);
                 
-                // Highlight unavailable items
                 firstUnavailable.css('background-color', '#fee');
                 setTimeout(() => {
                     firstUnavailable.css('background-color', '');
@@ -1487,7 +1488,8 @@ include '../navbar.php';
             return false;
         }
         
-        return true;
+        window.location.href = '/payment/payment.php';
+        return false;
     }
 </script>
 

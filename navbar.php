@@ -1,3 +1,9 @@
+<?php
+if (!isset($_user)) {
+    session_start();
+    $_user = $_SESSION['user'] ?? null;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -842,7 +848,6 @@
 
 		// List of pages where we DON'T want the search-cart-section
 		$excludedPages = [
-			'cart.php',
 			'payment.php',
 			'process-payment.php',
 			'success.php',
