@@ -3603,3 +3603,18 @@
 [2025-12-09 23:39:34] Form submitted via POST
 [2025-12-09 23:39:34] User found: 1@gmail.com (ID: 1)
 [2025-12-09 23:39:34] Password verification SUCCESS
+[2025-12-10 13:30:57] === LOGIN PAGE LOADED ===
+[2025-12-10 13:30:57] Request method: GET
+[2025-12-10 13:30:57] Email received: empty
+[2025-12-10 13:30:57] Remember received: NO
+[2025-12-10 13:31:06] === LOGIN PAGE LOADED ===
+[2025-12-10 13:31:06] Request method: POST
+[2025-12-10 13:31:06] Email received: 2@gmail.com
+[2025-12-10 13:31:06] Remember received: NO
+[2025-12-10 13:31:06] Form submitted via POST
+[2025-12-10 13:31:07] User found: 2@gmail.com (ID: 2)
+[2025-12-10 13:31:07] Password verification SUCCESS
+[2025-12-10 13:35:26] === LOGIN PAGE LOADED ===
+[2025-12-10 13:35:26] Request method: GET
+[2025-12-10 13:35:26] Email received: empty
+[2025-12-10 13:35:26] Remember received: NO
