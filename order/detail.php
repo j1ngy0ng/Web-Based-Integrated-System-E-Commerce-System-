@@ -141,14 +141,18 @@ include '../navbar.php';
                 <div class="card-title">Order Information</div>
                 <input type="hidden" name="orderID" value="<?= $order->orderID ?>">
 
+                <!-- STATUS -->
                 <div class="form-group">
                     <label class="form-label">Order Status</label>
                     <?php if ($role === 'Admin'): ?>
-                        <select name="status" class="form-control">
+                        <select name="status" class="form-control" <?= $order->status === 'Completed' ? 'disabled' : '' ?>>
                             <?php foreach (['Pending','Paid','Shipped','Completed','Cancelled'] as $s): ?>
                                 <option value="<?= $s ?>" <?= $order->status == $s ? 'selected' : '' ?>><?= $s ?></option>
                             <?php endforeach; ?>
                         </select>
+                        <?php if ($order->status === 'Completed'): ?>
+                            <small style="color:#718096;">Completed orders cannot be modified.</small>
+                        <?php endif; ?>
                     <?php else: ?>
                         <span class="status-badge st-<?= strtolower($order->status) ?>">
                             <?= htmlspecialchars($order->status) ?>
@@ -156,13 +160,11 @@ include '../navbar.php';
                     <?php endif; ?>
                 </div>
 
-                <!-- --- SHIPPING ADDRESS --- -->
+                <!-- SHIPPING ADDRESS -->
                 <div class="form-group">
                     <label class="form-label">Shipping Address</label>
-
                     <?php if ($role === 'Admin' && $address): ?>
                         <input type="hidden" name="address_id" value="<?= $address->address_id ?>">
-
                         <div class="form-group">
                             <label class="form-label">Recipient Name</label>
                             <input type="text" name="recipient_name" class="form-control" value="<?= htmlspecialchars($address->recipient_name) ?>">
@@ -191,7 +193,6 @@ include '../navbar.php';
                             <label class="form-label">Postal Code</label>
                             <input type="text" name="postal_code" class="form-control" value="<?= htmlspecialchars($address->postal_code) ?>">
                         </div>
-
                     <?php elseif ($address): ?>
                         <div class="form-value" style="line-height: 1.5; background: #f8fafc; padding: 10px; border-radius: 8px;">
                             <?= htmlspecialchars($address->recipient_name) ?><br>
@@ -208,7 +209,7 @@ include '../navbar.php';
                     <?php endif; ?>
                 </div>
 
-                <?php if ($role === 'Admin'): ?>
+                <?php if ($role === 'Admin' && $order->status !== 'Completed'): ?>
                     <button type="submit" class="btn btn-primary">Update Order</button>
                 <?php endif; ?>
             </form>
@@ -274,10 +275,19 @@ include '../navbar.php';
                 </div>
 
                 <div class="total-section">
-                    <?php if (!empty($order->discount_amount) && $order->discount_amount > 0): ?>
-                        <div style="font-size: 0.95em; color: #e53e3e; margin-bottom: 5px;">
-                            Discount (<?= htmlspecialchars($order->voucher_code) ?>): <b>- RM <?= number_format($order->discount_amount, 2) ?></b>
-                        </div>
+                    <?php if ((!empty($order->discount_amount) && $order->discount_amount > 0) || (!empty($order->redeemed_points) && $order->redeemed_points > 0)): ?>
+                        <?php if (!empty($order->discount_amount) && $order->discount_amount > 0): ?>
+                            <div style="font-size: 0.95em; color: #e53e3e; margin-bottom: 5px;">
+                                Discount (Voucher: <?= htmlspecialchars($order->voucher_code) ?>): <b>- RM <?= number_format($order->discount_amount, 2) ?></b>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if (!empty($order->redeemed_points) && $order->redeemed_points > 0): ?>
+                            <div style="font-size: 0.95em; color: #e53e3e; margin-bottom: 5px;">
+                                Discount (Reward Points): <b>- RM <?= number_format($order->redeemed_points / 100, 2) ?></b>
+                                <!-- Assuming 1 point = RM0.01 -->
+                            </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                     
                     <span class="total-label">Grand Total</span>

@@ -2,7 +2,6 @@
 include '../_base.php';
 
 // ----------------------------------------------------------------------------
-
 // (1) Authorization (member)
 auth('Member');
 
@@ -20,10 +19,10 @@ $subtotal = 0;
 $productIDs = array_keys($cart);
 $placeholders = str_repeat('?,', count($productIDs) - 1) . '?';
 
-// Fetch all products in cart in one query for efficiency
+// Fetch all products in cart in one query
 $stm = $_db->prepare("
     SELECT p.productID, p.name, p.price, p.stock,
-       pp.photoURL as image
+           pp.photoURL as image
     FROM product p
     LEFT JOIN productPhoto pp ON p.productID = pp.productID AND pp.is_main = 1
     WHERE p.productID IN ($placeholders)
@@ -31,12 +30,12 @@ $stm = $_db->prepare("
 $stm->execute($productIDs);
 $products = $stm->fetchAll(PDO::FETCH_OBJ);
 
-// Create cart items array with all details
+// Build cart items array and calculate subtotal
 foreach ($products as $product) {
     $quantity = $cart[$product->productID];
     $itemTotal = $product->price * $quantity;
     $subtotal += $itemTotal;
-    
+
     $cartItems[] = [
         'id' => $product->productID,
         'name' => $product->name,
@@ -47,50 +46,65 @@ foreach ($products as $product) {
     ];
 }
 
-// Store in session for later use (optional)
 $_SESSION['cart_items'] = $cartItems;
 
 // ----------------------------------------------------------------------------
-// 2. APPLY VOUCHER DISCOUNT (Check Session)
+// 2. APPLY VOUCHER DISCOUNT
 // ----------------------------------------------------------------------------
 $discount_amount = 0;
 $voucher_code = null;
 
 if (isset($_SESSION['voucher'])) {
     $v = $_SESSION['voucher'];
-    
-    // Re-validate minimum spend to be safe
+
     if ($subtotal >= $v->min_spend) {
         $voucher_code = $v->voucher_code;
-        
+
         if ($v->discount_type == 'fixed') {
             $discount_amount = $v->discount_value;
         } else {
-            // Percent
             $discount_amount = $subtotal * ($v->discount_value / 100);
         }
-        
-        // Cap discount at subtotal (cannot be negative)
-        if ($discount_amount > $subtotal) {
-            $discount_amount = $subtotal;
-        }
+
+        if ($discount_amount > $subtotal) $discount_amount = $subtotal;
+    } else {
+        // Voucher no longer valid for this subtotal
+        unset($_SESSION['voucher']);
     }
 }
 
-// Final Total to Charge
+// ----------------------------------------------------------------------------
+// 3. APPLY REWARD POINTS
+// ----------------------------------------------------------------------------
+$redeem_discount = 0;
+$redeem_points_used = 0;
 $TotalAmount = $subtotal - $discount_amount;
 
-// Convert to cents for Stripe
-$amount_cents = round($TotalAmount * 100);
+if ($_user) {
+    $user_points = $_user->reward_points ?? 0;
+
+    if (isset($_SESSION['redeem_points'])) {
+        $redeem_points_requested = max(0, $_SESSION['redeem_points']);
+
+        // Max redeemable points based on total after voucher
+        $max_points_based_on_total = floor($TotalAmount * 100); // 100 points = RM1
+        $redeem_points_used = min($redeem_points_requested, $user_points, $max_points_based_on_total);
+
+        $redeem_discount = $redeem_points_used / 100; // RM
+        $TotalAmount = max($TotalAmount - $redeem_discount, 0);
+    }
+}
 
 // ----------------------------------------------------------------------------
-// Create PaymentIntent
+// 4. STRIPE PAYMENT
 // ----------------------------------------------------------------------------
 require_once '../vendor/autoload.php';
 
+$amount_cents = round($TotalAmount * 100);
+
 try {
     \Stripe\Stripe::setApiKey(getenv('STRIPE_SECRET_KEY'));
-    
+
     $paymentIntent = \Stripe\PaymentIntent::create([
         'amount' => $amount_cents,
         'currency' => 'myr',
@@ -98,11 +112,12 @@ try {
         'metadata' => [
             'user_id' => $_user->id,
             'order_total' => $TotalAmount,
-            'voucher_code' => $voucher_code,
+            'voucher_code' => $voucher_code ?? '',
+            'redeem_points_used' => $redeem_points_used,
             'item_count' => count($cartItems)
         ]
     ]);
-    
+
     $clientSecret = $paymentIntent->client_secret;
 } catch (Exception $e) {
     error_log("Failed to create PaymentIntent: " . $e->getMessage());
@@ -110,6 +125,7 @@ try {
     redirect('../order/cart.php');
 }
 
+// ----------------------------------------------------------------------------
 $_title = 'Payment | Checkout';
 include '../navbar.php';
 ?>
@@ -220,79 +236,83 @@ include '../navbar.php';
 <div class="container">
     <div class="payment-container">
         <h2>Payment Details</h2>
-        
+
+        <!-- Shipping info -->
         <div class="shipping-info">
-            <?php if (isset($_SESSION['selected_address'])): 
-                $address_id = $_SESSION['selected_address'];
-                $stm = $_db->prepare('SELECT recipient_name, phone_number, address_line1, address_line2, city, state, postal_code FROM shipping_addresses WHERE address_id = ?');
-                $stm->execute([$address_id]);
-                $address = $stm->fetch();
-            ?>
-                <h3>Shipping Information</h3>
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Recipient:</strong> <?= htmlspecialchars($address->recipient_name) ?></p>
-                        <p><strong>Phone:</strong> <?= htmlspecialchars($address->phone_number) ?></p>
-                    </div>
-                    <div class="col-md-6">
-                        <p><strong>Address:</strong></p>
-                        <p>
-                            <?= htmlspecialchars($address->address_line1) ?>
-                            <?= $address->address_line2 ? ', ' . htmlspecialchars($address->address_line2) : '' ?><br>
-                            <?= htmlspecialchars($address->postal_code) ?> <?= htmlspecialchars($address->city) ?><br>
-                            <?= htmlspecialchars($address->state) ?>
-                        </p>
-                    </div>
+        <?php if (isset($_SESSION['selected_address'])): 
+            $address_id = $_SESSION['selected_address'];
+            $stm = $_db->prepare('SELECT recipient_name, phone_number, address_line1, address_line2, city, state, postal_code FROM shipping_addresses WHERE address_id = ?');
+            $stm->execute([$address_id]);
+            $address = $stm->fetch();
+        ?>
+            <h3>Shipping Information</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Recipient:</strong> <?= htmlspecialchars($address->recipient_name) ?></p>
+                    <p><strong>Phone:</strong> <?= htmlspecialchars($address->phone_number) ?></p>
                 </div>
-            <?php else: ?>
-                <p class="text-danger">No shipping address selected. Please go back and select an address.</p>
-            <?php endif; ?>
+                <div class="col-md-6">
+                    <p><strong>Address:</strong></p>
+                    <p>
+                        <?= htmlspecialchars($address->address_line1) ?>
+                        <?= $address->address_line2 ? ', ' . htmlspecialchars($address->address_line2) : '' ?><br>
+                        <?= htmlspecialchars($address->postal_code) ?> <?= htmlspecialchars($address->city) ?><br>
+                        <?= htmlspecialchars($address->state) ?>
+                    </p>
+                </div>
+            </div>
+        <?php else: ?>
+            <p class="text-danger">No shipping address selected. Please go back and select an address.</p>
+        <?php endif; ?>
         </div>
 
+        <!-- Order summary -->
         <div class="order-summary">
             <h3>Order Summary</h3>
-            
             <?php if (!empty($cartItems)): ?>
                 <div class="mb-3">
-                    <?php foreach ($cartItems as $item): ?>
-                        <div class="cart-item">
-                            <?php if ($item['image']): ?>
-                                <img src="../products/<?= htmlspecialchars($item['image']) ?>" 
-                                    alt="<?= htmlspecialchars($item['name']) ?>" 
-                                    class="item-image">
-                            <?php else: ?>
-                                <div class="item-image bg-light d-flex align-items-center justify-content-center">
-                                    <span class="text-muted">No Image</span>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <div class="item-details">
-                                <h6 class="mb-1"><?= htmlspecialchars($item['name']) ?></h6>
-                                <small class="text-muted">Quantity: <?= $item['quantity'] ?></small>
-                            </div>
-                            
-                            <div class="item-price">
-                                <div>RM <?= number_format($item['price'], 2) ?> each</div>
-                                <div><strong>RM <?= number_format($item['total'], 2) ?></strong></div>
-                            </div>
+                <?php foreach ($cartItems as $item): ?>
+                    <div class="cart-item">
+                        <?php if ($item['image']): ?>
+                        <img src="../products/<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="item-image">
+                        <?php else: ?>
+                        <div class="item-image bg-light d-flex align-items-center justify-content-center">
+                            <span class="text-muted">No Image</span>
                         </div>
-                    <?php endforeach; ?>
+                        <?php endif; ?>
+                        <div class="item-details">
+                            <h6 class="mb-1"><?= htmlspecialchars($item['name']) ?></h6>
+                            <small class="text-muted">Quantity: <?= $item['quantity'] ?></small>
+                        </div>
+                        <div class="item-price">
+                            <div>RM <?= number_format($item['price'], 2) ?> each</div>
+                            <div><strong>RM <?= number_format($item['total'], 2) ?></strong></div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
                 </div>
-                
-                <!-- Order Totals -->
+
+                <!-- Totals -->
                 <div class="amount-row">
                     <div class="d-flex justify-content-between">
                         <span>Subtotal:</span>
                         <span>RM <?= number_format($subtotal, 2) ?></span>
                     </div>
-                    
+
                     <?php if ($discount_amount > 0): ?>
                     <div class="d-flex justify-content-between text-success">
-                        <span>Discount:</span>
+                        <span>Voucher Discount:</span>
                         <span>- RM <?= number_format($discount_amount, 2) ?></span>
                     </div>
                     <?php endif; ?>
-                    
+
+                    <?php if ($redeem_discount > 0): ?>
+                    <div class="d-flex justify-content-between text-success">
+                        <span>Reward Points:</span>
+                        <span>- RM <?= number_format($redeem_discount, 2) ?></span>
+                    </div>
+                    <?php endif; ?>
+
                     <div class="d-flex justify-content-between total-row">
                         <span>Total:</span>
                         <span>RM <?= number_format($TotalAmount, 2) ?></span>
@@ -303,12 +323,11 @@ include '../navbar.php';
             <?php endif; ?>
         </div>
 
+        <!-- Stripe Payment Form -->
         <form id="payment-form">
             <div class="form-group">
                 <label for="card-element">Credit or debit card</label>
-                <div id="card-element" class="form-control">
-                    <!-- Stripe Elements will create form elements here -->
-                </div>
+                <div id="card-element" class="form-control"></div>
                 <div id="card-errors" role="alert" class="error-message"></div>
             </div>
 
@@ -326,92 +345,50 @@ include '../navbar.php';
     </div>
 </div>
 
-<!-- Load Stripe.js -->
- <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<!-- Stripe.js and reCAPTCHA -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-// Initialize Stripe with your publishable key
+// --- Stripe JS remains same as your original ---
 const stripe = Stripe('<?= getenv('STRIPE_PUBLISHABLE_KEY') ?>');
 const elements = stripe.elements();
-
-// Client secret from backend
 const clientSecret = '<?= $clientSecret ?>';
-
-// Create card element
-const cardElement = elements.create('card', {
-    style: {
-        base: {
-            fontSize: '16px',
-            color: '#424770',
-            '::placeholder': {
-                color: '#aab7c4',
-            },
-        },
-    },
-});
-
+const cardElement = elements.create('card', {style: {base: {fontSize: '16px', color: '#424770', '::placeholder': {color: '#aab7c4'}}}});
 cardElement.mount('#card-element');
 
-// Handle form submission
 const form = document.getElementById('payment-form');
 const submitButton = document.getElementById('submit-button');
 const cardErrors = document.getElementById('card-errors');
 
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
-
-    //Check reCAPTCHA
     const captcha = grecaptcha.getResponse();
     const captchaError = document.getElementById('captcha-error');
+    if (!captcha) { captchaError.textContent = "Please verify that you're not a robot."; return; }
+    else captchaError.textContent = "";
 
-    if (!captcha) {
-        captchaError.textContent = "Please verify that you're not a robot.";
-        return; // stop payment!
-    } else {
-        captchaError.textContent = "";
-    }
-    
-    console.log('Form submission started...');
-    
     submitButton.disabled = true;
     submitButton.textContent = 'Processing...';
     cardErrors.textContent = '';
 
     try {
-        // Confirm payment with card element
-        const { paymentIntent, error } = await stripe.confirmCardPayment(clientSecret, {
-            payment_method: {
-                card: cardElement,
-            }
-        });
-
-        console.log('Stripe confirmCardPayment result:', { paymentIntent, error });
-
+        const { paymentIntent, error } = await stripe.confirmCardPayment(clientSecret, { payment_method: { card: cardElement } });
         if (error) {
-            console.log('Stripe error:', error);
             cardErrors.textContent = error.message;
             submitButton.disabled = false;
             submitButton.textContent = 'Pay RM <?= number_format($TotalAmount, 2) ?>';
         } else if (paymentIntent.status === 'succeeded') {
-            console.log('Payment succeeded! PaymentIntent ID:', paymentIntent.id);
-            
-            // Send to backend to create order
             const formData = new FormData();
             formData.append('payment_intent_id', paymentIntent.id);
             formData.append('amount', '<?= $amount_cents ?>');
             formData.append('order_total', '<?= $TotalAmount ?>');
+            formData.append('redeem_points_used', '<?= $redeem_points_used ?>');
             formData.append('g-recaptcha-response', captcha);
-            
-            const response = await fetch('process-payment.php', {
-                method: 'POST',
-                body: formData
-            });
-            
+
+            const response = await fetch('process-payment.php', { method: 'POST', body: formData });
             const result = await response.json();
-            console.log('Backend response:', result);
-            
+
             if (result.success) {
-                // Redirect to success page
                 window.location.href = 'success.php?id=' + result.orderID;
             } else {
                 cardErrors.textContent = result.error || 'Failed to process order. Please contact support.';
@@ -424,23 +401,15 @@ form.addEventListener('submit', async (event) => {
             submitButton.textContent = 'Pay RM <?= number_format($TotalAmount, 2) ?>';
         }
     } catch (err) {
-        console.error('Unexpected error:', err);
         cardErrors.textContent = 'An unexpected error occurred. Please try again.';
         submitButton.disabled = false;
         submitButton.textContent = 'Pay RM <?= number_format($TotalAmount, 2) ?>';
     }
 });
 
-// Real-time validation errors
 cardElement.on('change', ({ error }) => {
-    if (error) {
-        cardErrors.textContent = error.message;
-    } else {
-        cardErrors.textContent = '';
-    }
+    cardErrors.textContent = error ? error.message : '';
 });
 </script>
 
-<?php
-include '../footer.php';
-?>
+<?php include '../footer.php'; ?>
