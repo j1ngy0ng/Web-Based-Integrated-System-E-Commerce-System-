@@ -15,6 +15,52 @@ function debug_log($message) {
 debug_log("=== LOGIN PAGE LOADED ===");
 debug_log("Request method: " . $_SERVER['REQUEST_METHOD']);
 
+// --- Check Remember Me Cookie ---
+if (isset($_COOKIE['remember_me']) && !is_logged()) {
+    debug_log("Remember me cookie found: " . $_COOKIE['remember_me']);
+    
+    list($selector, $validator) = explode(':', $_COOKIE['remember_me']);
+    
+    if ($selector && $validator) {
+        $stm = $_db->prepare("SELECT * FROM remember_tokens WHERE selector = ? AND expires_at > NOW()");
+        $stm->execute([$selector]);
+        $token = $stm->fetch(PDO::FETCH_ASSOC);
+        
+        if ($token) {
+            debug_log("Token found in database for selector: $selector");
+            
+            if (hash_equals($token['validator_hash'], hash('sha256', $validator))) {
+                debug_log("Token validation SUCCESS");
+                
+                // Get user
+                $stm = $_db->prepare("SELECT * FROM user WHERE id = ?");
+                $stm->execute([$token['user_id']]);
+                $user = $stm->fetch(PDO::FETCH_ASSOC);
+                
+                if ($user && $user['is_active']) {
+                    login((object)$user);
+                    debug_log("Auto-login successful for user: {$user['email']}");
+                    redirect('/');
+                    exit();
+                } else {
+                    debug_log("User not found or inactive");
+                }
+            } else {
+                debug_log("Token validation FAILED - hash mismatch");
+            }
+            
+            // Delete invalid/used token
+            $stm = $_db->prepare("DELETE FROM remember_tokens WHERE id = ?");
+            $stm->execute([$token['id']]);
+        } else {
+            debug_log("No valid token found in database");
+        }
+        
+        // Clear invalid cookie
+        setcookie("remember_me", "", time() - 3600, "/");
+    }
+}
+
 // --- Handle POST ---
 $email = post('email');
 $password = post('password');
@@ -54,26 +100,53 @@ if (is_post()) {
                 // Email & phone verification logic...
                 // (keep your existing verification code here)
 
-                login((object)$user);
-                temp('info', 'Login successfully');
+                // Reset failed attempts on successful login
+                $stm = $_db->prepare("UPDATE user SET failed_attempts = 0, lock_until = NULL WHERE id = ?");
+                $stm->execute([$user['id']]);
 
-                // Remember Me
+                // Remember Me - BEFORE login()
                 if (!empty($remember)) {
+                    debug_log("Remember me checkbox WAS checked");
+                    
                     $selector = bin2hex(random_bytes(6));
                     $validator = bin2hex(random_bytes(32));
                     $hashedValidator = hash('sha256', $validator);
                     $expires = date('Y-m-d H:i:s', time() + (86400 * 30));
 
+                    debug_log("Generated selector: $selector");
+                    
                     try {
                         $stm = $_db->prepare("INSERT INTO remember_tokens (user_id, selector, validator_hash, expires_at) VALUES (?, ?, ?, ?)");
-                        $stm->execute([$user['id'], $selector, $hashedValidator, $expires]);
-                        setcookie("remember_me", $selector . ':' . $validator, time() + (86400 * 30), "/", "", false, true);
+                        $result = $stm->execute([$user['id'], $selector, $hashedValidator, $expires]);
+                        
+                        if ($result) {
+                            debug_log("Token INSERT successful - rows affected: " . $stm->rowCount());
+                            
+                            // Set cookie BEFORE redirect
+                            $cookieValue = $selector . ':' . $validator;
+                            $cookieSet = setcookie("remember_me", $cookieValue, [
+                                'expires' => time() + (86400 * 30),
+                                'path' => '/',
+                                'secure' => false,
+                                'httponly' => true,
+                                'samesite' => 'Lax'
+                            ]);
+                            
+                            debug_log("Cookie set attempt: " . ($cookieSet ? 'SUCCESS' : 'FAILED'));
+                            debug_log("Cookie value: $cookieValue");
+                        } else {
+                            debug_log("Token INSERT failed - no rows affected");
+                        }
                     } catch (Exception $e) {
-                        debug_log("Remember me token error: " . $e->getMessage());
+                        debug_log("Remember me ERROR: " . $e->getMessage());
                     }
+                } else {
+                    debug_log("Remember me checkbox was NOT checked");
                 }
 
-                redirect('/');
+                // Now login and redirect
+                login((object)$user);
+                temp('info', 'Login successfully');
                 exit();
 
             } else {

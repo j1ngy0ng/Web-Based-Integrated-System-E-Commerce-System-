@@ -372,6 +372,20 @@ function login($user, $url = '/') {
 
 // Logout user
 function logout($url = '/login.php') {
+    global $_db;
+    
+    // Delete remember me token if exists
+    if (isset($_COOKIE['remember_me'])) {
+        $parts = explode(':', $_COOKIE['remember_me']);
+        if (count($parts) === 2) {
+            $selector = $parts[0];
+            $stm = $_db->prepare("DELETE FROM remember_tokens WHERE selector = ?");
+            $stm->execute([$selector]);
+        }
+        // Clear cookie
+        setcookie("remember_me", "", time() - 3600, "/", "", false, true);
+    }
+    
     unset($_SESSION['user']);
     redirect($url);
 }
@@ -391,6 +405,10 @@ function auth(...$roles) {
     }
     
     redirect('/login.php');
+}
+
+function is_logged() {
+    return isset($_SESSION['user']);
 }
 
 // ============================================================================
