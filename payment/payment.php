@@ -312,6 +312,10 @@ include '../navbar.php';
                 <div id="card-errors" role="alert" class="error-message"></div>
             </div>
 
+            <div class="g-recaptcha mb-3"
+                data-sitekey="6Lc34ycsAAAAALOkGTvBCkWr8JtUbwpsOWk-k0UH"></div>
+            <div id="captcha-error" class="text-danger mb-2"></div>
+
             <div class="payment-actions">
                 <a href="../order/cart.php" class="btn btn-secondary">Back to Cart</a>
                 <button type="submit" class="btn btn-primary" id="submit-button">
@@ -323,6 +327,7 @@ include '../navbar.php';
 </div>
 
 <!-- Load Stripe.js -->
+ <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script src="https://js.stripe.com/v3/"></script>
 <script>
 // Initialize Stripe with your publishable key
@@ -354,6 +359,17 @@ const cardErrors = document.getElementById('card-errors');
 
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
+
+    //Check reCAPTCHA
+    const captcha = grecaptcha.getResponse();
+    const captchaError = document.getElementById('captcha-error');
+
+    if (!captcha) {
+        captchaError.textContent = "Please verify that you're not a robot.";
+        return; // stop payment!
+    } else {
+        captchaError.textContent = "";
+    }
     
     console.log('Form submission started...');
     
@@ -384,6 +400,7 @@ form.addEventListener('submit', async (event) => {
             formData.append('payment_intent_id', paymentIntent.id);
             formData.append('amount', '<?= $amount_cents ?>');
             formData.append('order_total', '<?= $TotalAmount ?>');
+            formData.append('g-recaptcha-response', captcha);
             
             const response = await fetch('process-payment.php', {
                 method: 'POST',

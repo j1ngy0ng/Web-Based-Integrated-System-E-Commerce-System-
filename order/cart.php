@@ -1488,7 +1488,7 @@ include '../navbar.php';
             return false;
         }
         
-        window.location.href = '/payment/payment.php';
+        window.location.href = '../payment/payment.php';
         return false;
     }
 </script>

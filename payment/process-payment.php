@@ -170,3 +170,23 @@ try {
     echo json_encode(['success' => false, 'error' => $e->getMessage()]);
     exit;
 }
+?>
+
+<?php
+$secretKey = "6Lc34ycsAAAAAOtetg4cZmZiKd6POLavp3MBadHA";
+$captcha = $_POST['g-recaptcha-response'];
+
+$response = file_get_contents(
+    "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$captcha"
+);
+
+$responseKeys = json_decode($response, true);
+
+if(!$responseKeys["success"]) {
+    echo json_encode([
+        'success' => false,
+        'error' => 'Captcha verification failed.'
+    ]);
+    exit;
+}
+?>
