@@ -11,7 +11,9 @@ $id = req('id');
 if (!$id) redirect('cart.php');
 
 $stm = $_db->prepare('
-    SELECT o.*, p.stripe_payment_intent_id, u.email, u.name as customer_name, sa.recipient_name, sa.phone_number, sa.address_line1, sa.address_line2, sa.city, sa.state, sa.postal_code
+    SELECT o.*, o.redeemed_points, p.stripe_payment_intent_id, u.email, u.name as customer_name, 
+           sa.recipient_name, sa.phone_number, sa.address_line1, sa.address_line2, 
+           sa.city, sa.state, sa.postal_code
     FROM `order` o 
     LEFT JOIN payment p ON o.orderID = p.orderID 
     LEFT JOIN user u ON o.userID = u.id
@@ -22,6 +24,8 @@ $stm->execute([$id]);
 $order = $stm->fetch();
 
 if (!$order) redirect('cart.php');
+
+// Fetch products ONCE
 $product_stm = $_db->prepare('
     SELECT p.name, oi.quantity, oi.price 
     FROM order_item oi
@@ -31,14 +35,23 @@ $product_stm = $_db->prepare('
 $product_stm->execute([$order->orderID]);
 $products = $product_stm->fetchAll(PDO::FETCH_OBJ);
 
-// Send email receipt
-sendReceiptEmail($order, $_db);
+$redeem_discount = $order->redeemed_points > 0 ? $order->redeemed_points / 100 : 0;
+
+// Calculate subtotal ONCE
+$subtotal = 0;
+foreach ($products as $product) {
+    $subtotal += $product->price * $product->quantity;
+}
+
+
+// Send email receipt (pass subtotal as parameter)
+sendReceiptEmail($order, $products, $subtotal, $_db);
 
 $_title = 'Payment Successful';
 include '../navbar.php';
 
 // Function to send email receipt using PHPMailer
-function sendReceiptEmail($order, $_db) {
+function sendReceiptEmail($order, $products, $subtotal, $_db) {
     $mail = new PHPMailer(true);
     
     try {
@@ -115,16 +128,6 @@ function sendReceiptEmail($order, $_db) {
                             </tr>
                         </thead>
                         <tbody>";
-                        
-                        // Fetch product details for the order
-                        $product_stm = $_db->prepare('
-                            SELECT p.name, oi.quantity, oi.price 
-                            FROM order_item oi
-                            JOIN product p ON oi.productID = p.productID
-                            WHERE oi.orderID = ?
-                        ');
-                        $product_stm->execute([$order->orderID]);
-                        $products = $product_stm->fetchAll();
 
                         foreach ($products as $product) {
                             $mail->Body .= "
@@ -138,6 +141,39 @@ function sendReceiptEmail($order, $_db) {
 
                         $mail->Body .= "
                         </tbody>
+                    </table>
+                    <table style='width: 100%; margin-top: 15px; border-top: 2px solid #ddd;'>
+                        <tr>
+                            <td colspan='3' style='text-align: right; padding: 8px; font-size: 0.95em;'>Subtotal:</td>
+                            <td style='text-align: left; padding: 8px; font-weight: bold;'>RM " . number_format($subtotal, 2) . "</td>
+                        </tr>";
+                        
+                        if ($order->voucher_code && $order->discount_amount > 0) {
+                            $mail->Body .= "
+                        <tr style='color: #28a745;'>
+                            <td colspan='3' style='text-align: right; padding: 8px; font-size: 0.95em;'>
+                                Discount Applied (<strong>" . htmlspecialchars($order->voucher_code) . "</strong>):
+                            </td>
+                            <td style='text-align: left; padding: 8px; font-weight: bold;'>- RM " . number_format($order->discount_amount, 2) . "</td>
+                        </tr>";
+                        }
+
+                        if ($order->redeemed_points > 0) {
+                            $redeem_discount = $order->redeemed_points / 100;
+                            $mail->Body .= "
+                            <tr style='color: #28a745;'>
+                                <td colspan='3' style='text-align: right; padding: 8px; font-size: 0.95em;'>
+                                    Reward Points Redeemed (<strong>" . number_format($order->redeemed_points) . " points</strong>):
+                                </td>
+                                <td style='text-align: left; padding: 8px; font-weight: bold;'>- RM " . number_format($redeem_discount, 2) . "</td>
+                            </tr>";
+                        }
+                        
+                        $mail->Body .= "
+                        <tr style='background: #f0f8ff; border-top: 2px solid #006989;'>
+                            <td colspan='3' style='text-align: right; padding: 12px; font-size: 1.1em;'><strong>Total Paid:</strong></td>
+                            <td style='text-align: left; padding: 12px; font-size: 1.1em;'><strong style='color: #006989;'>RM " . number_format($order->TotalAmount, 2) . "</strong></td>
+                        </tr>
                     </table>
                 </div>
 
@@ -178,18 +214,6 @@ function sendReceiptEmail($order, $_db) {
                     <p><strong>Transaction ID:</strong> <span><?= $order->stripe_payment_intent_id ?></span></p>
                 <?php endif; ?>
             </div>
-
-            <?php if ($order->recipient_name): ?>
-                <div class="shipping-address-box">
-                    <h4 class="card-subtitle">Shipping Info</h4>
-                    <address>
-                        <strong><?= htmlspecialchars($order->recipient_name) ?></strong><br>
-                        <?= htmlspecialchars($order->phone_number) ?><br>
-                        <?= htmlspecialchars($order->address_line1) ?><?= $order->address_line2 ? ', ' . htmlspecialchars($order->address_line2) : '' ?><br>
-                        <?= htmlspecialchars($order->postal_code) ?> <?= htmlspecialchars($order->city) ?>, <?= htmlspecialchars($order->state) ?>
-                    </address>
-                </div>
-            <?php endif; ?>
         </div>
 
         <div class="success-actions">
@@ -274,6 +298,36 @@ function sendReceiptEmail($order, $_db) {
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="text-align: right; padding: 10px; border-top: 2px solid #ddd;"><strong>Subtotal:</strong></td>
+                        <td style="text-align: right; padding: 10px; border-top: 2px solid #ddd;"><strong>RM <?= number_format($subtotal, 2) ?></strong></td>
+                    </tr>
+                    <?php if ($order->voucher_code && $order->discount_amount > 0): ?>
+                    <tr style="color: #28a745;">
+                        <td colspan="3" style="text-align: right; padding: 10px;">
+                            <strong>Discount (<?= htmlspecialchars($order->voucher_code) ?>):</strong>
+                        </td>
+                        <td style="text-align: right; padding: 10px;"><strong>- RM <?= number_format($order->discount_amount, 2) ?></strong></td>
+                    </tr>
+                    <?php endif; ?>
+
+                    <?php if ($order->redeemed_points > 0): 
+                        $redeem_discount = $order->redeemed_points / 100;
+                    ?>
+                    <tr style="color: #28a745;">
+                        <td colspan="3" style="text-align: right; padding: 10px;">
+                            <strong>Reward Points (<?= number_format($order->redeemed_points) ?> points):</strong>
+                        </td>
+                        <td style="text-align: right; padding: 10px;"><strong>- RM <?= number_format($redeem_discount, 2) ?></strong></td>
+                    </tr>
+                    <?php endif; ?>
+                    
+                    <tr style="background: #f0f8ff; font-size: 1.15em;">
+                        <td colspan="3" style="text-align: right; padding: 12px; border-top: 2px solid #006989;"><strong>Total Paid:</strong></td>
+                        <td style="text-align: right; padding: 12px; border-top: 2px solid #006989;"><strong>RM <?= number_format($order->TotalAmount, 2) ?></strong></td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
 
@@ -480,6 +534,81 @@ function printReceipt() {
         top: 0;
         width: 100%;
     }
+}
+
+.shipping-section, .products-section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.section-subtitle {
+    color: #005a73;
+    font-size: 1.15em;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.shipping-section address {
+    font-style: normal;
+    line-height: 1.6;
+    color: #555;
+    background: #f9f9f9;
+    padding: 12px;
+    border-radius: 5px;
+    border-left: 3px solid #006989;
+}
+
+/* Products Table */
+.products-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background: white;
+}
+
+.products-table th {
+    background: #006989;
+    color: white;
+    padding: 12px 10px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.products-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.products-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.products-table tfoot td {
+    padding: 10px;
+    border-bottom: none;
+    font-size: 0.95em;
+}
+
+.products-table .subtotal-row td {
+    padding-top: 15px;
+    border-top: 2px solid #ddd;
+}
+
+.products-table .discount-row {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.products-table .total-row {
+    background: #e6f7ff;
+    font-size: 1.1em;
+    color: #006989;
+}
+
+.products-table .total-row td {
+    padding: 15px 10px;
+    border-top: 2px solid #006989;
 }
 </style>
 
