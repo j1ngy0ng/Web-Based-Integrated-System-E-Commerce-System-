@@ -174,35 +174,6 @@ select:disabled {
 }
 
 @media (max-width : 991px) {
-	#promoImage {
-		position: relative;
-		right: -20px;
-		top: 22px;
-	}
-
-	#cardInvoicing,
-	#cardInventory,
-	#cardReports,
-	#cardPos,
-	#cardPurchasing,
-	#cardTagging,
-	#cardMulti-currency,
-	#cardTax-filing {
-		margin-right: 0px;
-	}
-
-	.feature-box {
-		margin: 0 auto;
-		margin-bottom: 15px;
-	}
-
-	#whole-feature-box {
-		padding-top: 0px !important;
-	}
-
-	#multilang {
-		padding-top: 15px;
-	}
 
 	.small-device-padding {
 		padding: 0 20px;
@@ -211,12 +182,6 @@ select:disabled {
 }
 
 @media (min-width : 992px) {
-	#promoImage {
-		width: 120%;
-		position: relative;
-		top: 40px;
-		right: 7%;
-	}
 
 	.medium-device-padding {
 		padding: 0 7.5%;
@@ -230,19 +195,8 @@ select:disabled {
 	}
 }
 
-@media (min-width : 1700px) {
-	#promoImage {
-		width: 100%;
-		position: relative;
-		right: -50px;
-		top: 35px;
-	}
-}
 
 @media (min-width : 992px) and (max-width: 1200px) {
-	div.feature-description {
-		font-size: 1.0625em;
-	}
 
 	#mainNav {
 		font-size: 0.8em;
@@ -251,54 +205,9 @@ select:disabled {
 	#normalNav {
 		font-size: 0.8em;
 	}
-
-	#goBeyond {
-		padding-bottom: 50px !important;
-	}
-
-	.standard-price-item {
-		min-height: 50px
-	}
-
-	#pricing-form-button {
-		font-size: 0.8em;
-	}
-}
-
-@media (min-width : 576px) and (max-width: 768px) {
-	#pricing-form-button {
-		font-size: 0.85em;
-	}
-}
-
-@media (min-width : 768px) and (max-width: 991px) {
-
-	#cardInventory,
-	#cardPos,
-	#cardPurchasing,
-	#cardMulti-currency {
-		min-height: 400px;
-	}
-
-	#cardInvoicing,
-	#cardInventory,
-	#cardReports,
-	#cardPos,
-	#cardPurchasing,
-	#cardTagging,
-	#cardMulti-currency,
-	#cardTax-filing {
-		min-height: 400px;
-		margin-right: 20px;
-	}
 }
 
 @media (max-width : 768px) {
-
-	#pricingPlan,
-	#freeTrial {
-		width: 100%;
-	}
 
 	#left-right-button-large {
 		display: none;
@@ -393,58 +302,6 @@ select:disabled {
     }
 }
 
-@media (max-width : 767px) {
-
-	#cardInvoicing,
-	#cardTagging,
-	#cardReports,
-	#cardTax-filing {
-		margin-bottom: 25px;
-	}
-}
-
-@media (max-width : 448px) {
-	#demo {
-		font-size: 1em;
-	}
-
-	#viewOurPlan {
-		font-size: 1em;
-	}
-
-	.add-on-box {
-		margin: 10px 0px;
-	}
-
-	#gettingMoreThanYouPayFor {
-		padding-right: 5px !important;
-	}
-
-	#get30DaysFreeTrial {
-		font-size: calc(1.5vw + 1.5vh);
-	}
-
-	.price-list {
-		padding-left: 0px;
-	}
-
-	#introduction li {
-		font-size: 1.2em;
-		margin-bottom: 10px;
-	}
-
-	.slick-slide {
-		width: 100%;
-	}
-}
-
-@media (max-width : 576px) {
-	#promoImage {
-		position: relative;
-		right: -10px;
-		top: 17px;
-	}
-}
 
 /* the slides */
 .slick-slide {

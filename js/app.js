@@ -74,3 +74,23 @@ $(() => {
     });
 
 });
+
+// ============================================================================
+// AI Insights Loader
+// ============================================================================
+function loadAIInsights(dashboardData){
+    fetch('/ai/ai_insights.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(dashboardData)
+    })
+    .then(res => res.json())
+    .then(result => {
+        const data = JSON.parse(result);
+        document.getElementById('aiSales').innerText = data.salesInsight;
+        document.getElementById('aiInventory').innerText = data.inventoryRecommendation;
+        document.getElementById('aiService').innerText = data.customerServiceInsight;
+        document.getElementById('aiMarketing').innerText = data.marketingSuggestion;
+    })
+    .catch(console.error);
+}
