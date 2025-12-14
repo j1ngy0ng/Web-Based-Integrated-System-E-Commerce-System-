@@ -427,14 +427,6 @@ include '../navbar.php';
 
 <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 
-
-<model-viewer src="products/<?= $product->model3d ?>"
-             alt="3D Model"
-             auto-rotate
-             camera-controls
-             style="width:100%; height:400px;">
-</model-viewer>
-
 <form method="post" class="form" enctype="multipart/form-data" id="productForm">
     
     <div class="form-header">
