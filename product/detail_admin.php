@@ -482,7 +482,7 @@ include '../navbar.php';
     </label>
     <?= err('mainPhoto') ?>
 
-<label class="field-label">3D Model (GLB / GLTF)</label>
+<label class="field-label">3D Model (GLB)</label>
     
     <input type="checkbox" name="delete_model3d_check" id="delete_model3d_check" value="1" class="hidden-file-input">
     

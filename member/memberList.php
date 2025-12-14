@@ -194,7 +194,7 @@ th select { margin-left: 5px; padding: 2px 5px; font-size: 0.85rem; }
                 <select name="active_filter" onchange="this.form.submit()">
                     <option value="">All</option>
                     <option value="1" <?= $activeFilter=='1'?'selected':'' ?>>Active</option>
-                    <option value="0" <?= $activeFilter=='0'?'selected':'' ?>>Blocked</option>
+                    <option value="0" <?= $activeFilter=='0'?'selected':'' ?>>Inactive</option>
                 </select>
             </form>
         </th>
@@ -244,7 +244,7 @@ th select { margin-left: 5px; padding: 2px 5px; font-size: 0.85rem; }
         </td>
 
         <td>
-            <?php $act = $row->is_active ? 'Active' : 'Blocked';
+            <?php $act = $row->is_active ? 'Active' : 'Inactive';
                   echo highlight($act, $q); ?>
         </td>
 
