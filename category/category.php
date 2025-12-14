@@ -1,28 +1,19 @@
 <?php
 include '../_base.php';
-
-// --------------------------------------------------------------------
-// Authenticated users
 auth("Admin");
 
-// --------------------------------------------------------------------
 // Sorting
-$sort = req('sort', 'categoryID');     // default column
-$dir  = req('dir', 'asc');     // default order
-$dir  = $dir == 'desc' ? 'desc' : 'asc'; // safety
-
+$sort = req('sort', 'categoryID');
+$dir  = req('dir', 'asc');
+$dir  = $dir == 'desc' ? 'desc' : 'asc';
 $allowedSort = ['categoryID', 'categoryName', 'description'];
-if (!in_array($sort, $allowedSort)) {
-    $sort = 'categoryID';
-}
+if (!in_array($sort, $allowedSort)) $sort = 'categoryID';
 
-// --------------------------------------------------------------------
 // Fetch categories
 $stm = $_db->prepare("SELECT * FROM productCategory ORDER BY $sort $dir");
 $stm->execute();
 $data = $stm->fetchAll();
 
-// --------------------------------------------------------------------
 $_title = "Category | List";
 include '../navbar.php';
 ?>
@@ -83,57 +74,113 @@ include '../navbar.php';
         background: #dc3545;
         color: #fff;
     }
+
+    .actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: #007BFF;
+    color: #fff;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: #fff;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end; /* Align all buttons to the right */
+    gap: 10px;                 /* Space between buttons */
+    margin-bottom: 20px;
+    flex-wrap: wrap;           /* Wrap on small screens */
+}
+
+.btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-success { background: #28a745; color: #fff; }
+.btn-secondary { background: #6c757d; color: #fff; }
+.btn-danger { background: #dc3545; color: #fff; }
+
+
+.btn-success { background: #28a745; color: #fff; }
+.btn-primary { background: #007BFF; color: #fff; }
+.btn-secondary { background: #6c757d; color: #fff; }
+.btn-danger { background: #dc3545; color: #fff; }
 </style>
 
 <h2 style="text-align:center; margin-top:30px;">Category List</h2>
 
-<div style="width:90%; margin: 20px auto; text-align:right;">
-    <a href="categoryDetail.php"
-        style="display:inline-block; padding:10px 20px; background:#28a745; color:white; border-radius:6px; text-decoration:none; font-weight:600;">
-        + Add Category
-    </a>
+<!-- Form wrapping everything -->
+<form method="post" action="category_delete_batch.php" id="batchDeleteForm">
+
+<div style="width:90%; margin: 20px auto; text-align:right;" class="actions">
+    <a href="categoryDetail.php" class="btn btn-success">+ Add Category</a>
+    <a href="category_batch.php" class="btn btn-secondary">⬆ Batch Insertion</a>
+    <a href="category_update_batch.php" class="btn btn-secondary">Batch Update</a>
+    <button type="submit" class="btn btn-danger"
+            onclick="return confirm('Are you sure you want to delete selected categories?');">
+        Delete Selected
+    </button>
 </div>
 
 <table>
     <thead>
         <tr>
-            <?php
-            table_headers(
-                [
-                    'categoryID'   => 'ID',
-                    'categoryName' => 'Name',
-                    'description'  => 'Description',
-                ],
-                $sort,
-                $dir
-            );
-            ?>
+            <th><input type="checkbox" id="selectAll"></th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Description</th>
             <th>Action</th>
         </tr>
     </thead>
-
     <tbody>
         <?php if (!$data): ?>
             <tr>
-                <td colspan="4" style="text-align:center; padding:20px; color:#888;">
-                    No categories found.
-                </td>
+                <td colspan="5" style="text-align:center; padding:20px; color:#888;">No categories found.</td>
             </tr>
         <?php else: ?>
+            <?php $rowNum = 1; ?>
             <?php foreach ($data as $row): ?>
-                <tr>
-                    <td><?= $row->categoryID ?></td>
-                    <td><?= htmlspecialchars($row->categoryName) ?></td>
-                    <td><?= htmlspecialchars($row->description) ?></td>
-                    <td class="action-btns">
-                        <a class="edit-btn" href="categoryDetail.php?categoryID=<?= $row->categoryID ?>">Edit</a>
-                        <a class="delete-btn" href="deleteCategory.php?categoryID=<?= $row->categoryID ?>"
-                            onclick="return confirm('Are you sure?');">Delete</a>
-                    </td>
-                </tr>
-            <?php endforeach ?>
+            <tr>
+                <td><input type="checkbox" name="deleteIDs[]" value="<?= $row->categoryID ?>"></td>
+                <td><?= $rowNum ?></td>
+                <td><?= htmlspecialchars($row->categoryName) ?></td>
+                <td><?= htmlspecialchars($row->description) ?></td>
+                <td class="action-btns">
+                    <a class="edit-btn" href="categoryDetail.php?categoryID=<?= $row->categoryID ?>">Edit</a>
+                    <a class="delete-btn" href="deleteCategory.php?categoryID=<?= $row->categoryID ?>"
+                       onclick="return confirm('Are you sure?');">Delete</a>
+                </td>
+            </tr>
+            <?php $rowNum++; endforeach; ?>
         <?php endif ?>
     </tbody>
 </table>
 
-<?php include '../footer.php';
+</form>
+
+<script>
+// Select All checkbox functionality
+document.getElementById('selectAll').addEventListener('change', function() {
+    let checkboxes = document.querySelectorAll('input[name="deleteIDs[]"]');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+});
+</script>
+
+<?php include '../footer.php'; ?>
