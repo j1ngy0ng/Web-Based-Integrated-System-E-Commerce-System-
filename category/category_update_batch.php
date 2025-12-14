@@ -35,7 +35,6 @@ if (is_post()) {
         redirect();
     }
 
-    // -------------------------------
     // Update rows in DB
     $stm = $_db->prepare('UPDATE ProductCategory SET categoryName = ?, description = ? WHERE categoryID = ?');
     $count = 0;
@@ -43,14 +42,10 @@ if (is_post()) {
 
     foreach ($rows as $index => $row) {
         if ($index === 0) continue; // skip header
-
         $id   = intval($row[0] ?? 0);
         $name = trim($row[1] ?? '');
         $desc = trim($row[2] ?? '');
-
-        // Skip invalid rows
         if ($id <= 0 || $name === '' || strlen($name) > 100 || strlen($desc) > 500) continue;
-
         $stm->execute([$name, $desc, $id]);
         $count++;
     }
@@ -63,27 +58,72 @@ if (is_post()) {
 include '../navbar.php';
 ?>
 
-<div class="actions">
-    <a href="../templates/category_update_template.xlsx"
-       class="btn btn-secondary"
-       download>
+<style>
+/* Container for form */
+.form-container {
+    max-width: 500px;
+    margin: 50px auto;
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.form-container h2 {
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    color: #333;
+}
+
+.form-container p {
+    font-size: 0.95rem;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.form-container input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.form-container .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    margin: 5px;
+    font-size: 1rem;
+}
+
+.btn-upload { background: #007BFF; color: white; }
+.btn-cancel { background: #6c757d; color: white; }
+.btn-template { background: #17a2b8; color: white; }
+</style>
+
+<div class="form-container">
+    <h2>Batch Category Update</h2>
+    
+    <a href="../templates/category_update_template.xlsx" class="btn btn-template" download>
         Download Update Template
     </a>
+    
+    <p>Please use the provided template for batch updating.<br>
+       Do not rename or remove the header row and category IDs.</p>
+    
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".xlsx,.xls,.csv" required>
+        <div>
+            <button type="submit" class="btn btn-upload">Upload</button>
+            <a href="category.php" class="btn btn-cancel">Cancel</a>
+        </div>
+    </form>
 </div>
-
-<p style="margin: 10px 0; font-size: 0.9rem; color: #555;">
-    Please use the provided template for batch updating.
-    Do not rename or remove the header row and category IDs.
-</p>
-
-<form method="post" enctype="multipart/form-data" class="form">
-    <label>Select Excel or CSV File</label>
-    <input type="file" name="file" accept=".xlsx,.xls,.csv" required>
-
-    <section>
-        <button>Upload</button>
-        <a href="category.php" class="btn">Cancel</a>
-    </section>
-</form>
 
 <?php include '../footer.php'; ?>
