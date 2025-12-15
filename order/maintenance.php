@@ -18,9 +18,25 @@ if (!in_array($sort, $allowedSort)) {
 
 // --------------------------------------------------------------------
 // Fetch Orders
-$stm = $_db->prepare("SELECT * FROM `order` ORDER BY $sort $dir");
-$stm->execute();
+// --------------------------------------------------------------------
+// Pagination setup
+$page  = max(1, intval(req('page', 1))); // Current page from GET
+$limit = 10; // Rows per page
+
+// Count total orders
+$totalRows = $_db->query("SELECT COUNT(*) FROM `order`")->fetchColumn();
+
+// Get pagination info
+$pagination = paginate($totalRows, $page, $limit);
+$limit  = (int)$pagination['limit'];
+$offset = (int)$pagination['offset'];
+
+// --------------------------------------------------------------------
+// Fetch paginated orders
+$sql = "SELECT * FROM `order` ORDER BY $sort $dir LIMIT $limit OFFSET $offset";
+$stm = $_db->query($sql); // No execute() needed
 $data = $stm->fetchAll();
+
 
 // --------------------------------------------------------------------
 $_title = "Order | List";
@@ -134,5 +150,20 @@ tr:hover {
         <?php endif ?>
     </tbody>
 </table>
+<div style="width:90%; margin:20px auto; text-align:center;">
+    <?php
+    render_pagination($pagination['page'], $pagination['totalPages'], [
+        'sort' => $sort,
+        'dir'  => $dir
+    ]);
+    $params = [
+    'sort' => $sort,
+    'dir'  => $dir,
+    'q'    => $q ?? ''
+];
+
+    ?>
+    
+</div>
 
 <?php include '../footer.php'; ?>

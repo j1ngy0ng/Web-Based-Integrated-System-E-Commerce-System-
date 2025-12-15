@@ -20,7 +20,6 @@ if (!in_array($sort, $allowedSort)) $sort = 'categoryID';
 // Pagination (DEFINE FIRST!)
 $page  = max(1, intval(req('page', 1)));
 $limit = 10;
-$offset = ($page - 1) * $limit;
 
 // --------------------------------------------------------------------
 // Count total rows
@@ -35,8 +34,10 @@ if ($q !== '') {
 $stmCount = $_db->prepare($countSql);
 $stmCount->execute($params);
 $totalRows = $stmCount->fetchColumn();
+$limit = 10;
+$pg = paginate($totalRows, $page, $limit);
+extract($pg); // creates $page, $offset, $totalPages
 
-$totalPages = ceil($totalRows / $limit);
 
 $sql = "SELECT * FROM productCategory";
 
@@ -55,7 +56,8 @@ $data = $stm->fetchAll();
 $_title = "Category | List";
 include '../navbar.php';
 
-function sort_link($label, $column, $currentSort, $currentDir, $q, $page = 1) {
+function sort_link($label, $column, $currentSort, $currentDir, $q, $page = 1)
+{
     $dir = ($currentSort === $column && $currentDir === 'asc') ? 'desc' : 'asc';
 
     $class = '';
@@ -133,23 +135,6 @@ function sort_link($label, $column, $currentSort, $currentDir, $q, $page = 1) {
         margin-bottom: 20px;
     }
 
-    .btn {
-        padding: 10px 18px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-    }
-
-    .btn-primary {
-        background: #007BFF;
-        color: #fff;
-    }
-
-    .btn-secondary {
-        background: #6c757d;
-        color: #fff;
-    }
-
     .actions {
         display: flex;
         justify-content: flex-end;
@@ -159,49 +144,6 @@ function sort_link($label, $column, $currentSort, $currentDir, $q, $page = 1) {
         margin-bottom: 20px;
         flex-wrap: wrap;
         /* Wrap on small screens */
-    }
-
-    .btn {
-        padding: 10px 18px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-    }
-
-    .btn-success {
-        background: #28a745;
-        color: #fff;
-    }
-
-    .btn-secondary {
-        background: #6c757d;
-        color: #fff;
-    }
-
-    .btn-danger {
-        background: #dc3545;
-        color: #fff;
-    }
-
-
-    .btn-success {
-        background: #28a745;
-        color: #fff;
-    }
-
-    .btn-primary {
-        background: #007BFF;
-        color: #fff;
-    }
-
-    .btn-secondary {
-        background: #6c757d;
-        color: #fff;
-    }
-
-    .btn-danger {
-        background: #dc3545;
-        color: #fff;
     }
 
     .top-bar {
@@ -235,11 +177,10 @@ function sort_link($label, $column, $currentSort, $currentDir, $q, $page = 1) {
     }
 
     mark {
-    background: #ffe066;
-    padding: 0 3px;
-    border-radius: 3px;
-}
-
+        background: #ffe066;
+        padding: 0 3px;
+        border-radius: 3px;
+    }
 </style>
 
 <h2 style="text-align:center; margin-top:30px;">Category List</h2>
@@ -272,10 +213,10 @@ function sort_link($label, $column, $currentSort, $currentDir, $q, $page = 1) {
         <thead>
             <tr>
                 <th><input type="checkbox" id="selectAll"></th>
-<th>ID</th>
-<th><?= sort_link('Name', 'categoryName', $sort, $dir, $q, $page) ?></th>
-<th><?= sort_link('Description', 'description', $sort, $dir, $q, $page) ?></th>
-<th>Action</th>
+                <th>ID</th>
+                <th><?= sort_link('Name', 'categoryName', $sort, $dir, $q, $page) ?></th>
+                <th><?= sort_link('Description', 'description', $sort, $dir, $q, $page) ?></th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -289,8 +230,8 @@ function sort_link($label, $column, $currentSort, $currentDir, $q, $page = 1) {
                     <tr>
                         <td><input type="checkbox" name="deleteIDs[]" value="<?= $row->categoryID ?>"></td>
                         <td><?= $rowNum ?></td>
-<td><?= highlight($row->categoryName, $q) ?></td>
-<td><?= highlight($row->description, $q) ?></td>
+                        <td><?= highlight($row->categoryName, $q) ?></td>
+                        <td><?= highlight($row->description, $q) ?></td>
 
                         <td class="action-btns">
                             <a class="edit-btn" href="categoryDetail.php?categoryID=<?= $row->categoryID ?>">Edit</a>
@@ -311,39 +252,7 @@ function sort_link($label, $column, $currentSort, $currentDir, $q, $page = 1) {
     </div>
 
 </form>
-<div style="width:90%; margin:20px auto; text-align:center;">
 
-    <?php if ($totalPages > 1): ?>
-        <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
-
-            <!-- Prev -->
-            <?php if ($page > 1): ?>
-                <a href="?page=<?= $page - 1 ?>&sort=<?= $sort ?>&dir=<?= $dir ?>&q=<?= urlencode($q) ?>"
-                    class="btn btn-primary">◀ Prev</a>
-            <?php endif; ?>
-
-            <!-- Page numbers -->
-            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                <a href="?page=<?= $i ?>&sort=<?= $sort ?>&dir=<?= $dir ?>&q=<?= urlencode($q) ?>"
-                    class="btn <?= $i == $page ? 'btn-secondary' : 'btn-primary' ?>">
-                    <?= $i ?>
-                </a>
-
-            <?php endfor; ?>
-
-            <!-- Next -->
-            <?php if ($page < $totalPages): ?>
-                <?php if ($page < $totalPages): ?>
-                    <a href="?page=<?= $page + 1 ?>&sort=<?= $sort ?>&dir=<?= $dir ?>&q=<?= urlencode($q) ?>"
-                        class="btn btn-primary">Next ▶</a>
-                <?php endif; ?>
-
-            <?php endif; ?>
-
-        </div>
-    <?php endif; ?>
-
-</div>
 
 <script>
     // Select All checkbox functionality
@@ -352,5 +261,16 @@ function sort_link($label, $column, $currentSort, $currentDir, $q, $page = 1) {
         checkboxes.forEach(cb => cb.checked = this.checked);
     });
 </script>
+
+<div style="width:90%; margin:20px auto; text-align:center;">
+    <?php
+    render_pagination($page, $totalPages, [
+        'sort' => $sort,
+        'dir'  => $dir,
+        'q'    => $q
+    ]);
+    ?>
+</div>
+
 
 <?php include '../footer.php'; ?>

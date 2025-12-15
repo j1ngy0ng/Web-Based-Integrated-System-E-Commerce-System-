@@ -31,7 +31,46 @@ $stm = $_db->query("
     ORDER BY last_time DESC
 ");
 
-$rooms = $stm->fetchAll(PDO::FETCH_OBJ);
+
+
+// Current page and rows per page
+$page  = max(1, intval(req('page', 1)));
+$limit = 10;
+
+// Count total chat rooms
+$totalRows = $_db->query("SELECT COUNT(*) FROM chat_room")->fetchColumn();
+
+// Get pagination details
+$pagination = paginate($totalRows, $page, $limit);
+
+$sql = "
+    SELECT 
+        cr.roomID, 
+        u.name AS member_name,
+        (SELECT message 
+         FROM chat_message 
+         WHERE roomID = cr.roomID 
+         ORDER BY msgID DESC 
+         LIMIT 1) AS last_msg,
+        (SELECT created_at 
+         FROM chat_message 
+         WHERE roomID = cr.roomID 
+         ORDER BY msgID DESC 
+         LIMIT 1) AS last_time,
+        (SELECT COUNT(*) 
+         FROM chat_message 
+         WHERE roomID = cr.roomID
+           AND senderID = cr.userID
+           AND created_at > IFNULL(cr.last_read_at, '1970-01-01')
+        ) AS unread_count
+    FROM chat_room cr
+    JOIN user u ON cr.userID = u.id
+    ORDER BY last_time DESC
+    LIMIT {$pagination['limit']} OFFSET {$pagination['offset']}
+";
+
+$rooms = $_db->query($sql)->fetchAll(PDO::FETCH_OBJ);
+
 
 $_title = "Support Chat Rooms";
 include '../../navbar.php';
@@ -74,5 +113,8 @@ tr:hover { background:#f5f5f5; }
         </tr>
     <?php endforeach; ?>
 </table>
+<div style="width:90%; margin:20px auto; text-align:center;">
+    <?php render_pagination($pagination['page'], $pagination['totalPages']); ?>
+</div>
 
 <?php include '../../footer.php'; ?>

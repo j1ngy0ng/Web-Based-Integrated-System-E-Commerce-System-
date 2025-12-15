@@ -18,8 +18,28 @@ if (is_post() && req('action') == 'delete') {
 // ----------------------------------------------------------------------------
 // FETCH VOUCHERS
 // ----------------------------------------------------------------------------
-$stm = $_db->query("SELECT * FROM vouchers ORDER BY expiry_date DESC");
+// ----------------------------------------------------------------------------
+// Pagination setup
+$page  = max(1, intval(req('page', 1))); // current page from GET
+$limit = 10; // rows per page
+
+// Get total number of vouchers
+$totalRows = $_db->query("SELECT COUNT(*) FROM vouchers")->fetchColumn();
+
+// Use your base.php function to get pagination info
+$pagination = paginate($totalRows, $page, $limit);
+
+$limit  = (int)$pagination['limit'];
+$offset = (int)$pagination['offset'];
+
+// ----------------------------------------------------------------------------
+// Fetch vouchers with limit/offset
+$sql = "SELECT * FROM vouchers ORDER BY expiry_date DESC LIMIT $limit OFFSET $offset";
+$stm = $_db->query($sql);
 $vouchers = $stm->fetchAll();
+
+
+
 
 $_title = 'Manage Vouchers';
 include '../navbar.php';
@@ -125,6 +145,12 @@ include '../navbar.php';
             <?php endif; ?>
         </tbody>
     </table>
+    <!-- Pagination -->
+    <?php
+$params = [];
+render_pagination($pagination['page'], $pagination['totalPages'], $params);
+?>
+
 </div>
 
 <?php include '../footer.php'; ?>

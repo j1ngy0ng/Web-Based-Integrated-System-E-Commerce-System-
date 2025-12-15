@@ -15,6 +15,36 @@ $stm->execute();
 $refunds = $stm->fetchAll();
 
 // --------------------------------------------------------------------
+// Pagination
+$page  = max(1, intval(req('page', 1))); // current page
+$limit = 10;                             // rows per page
+
+// Count total refunds
+$countSql = "
+    SELECT COUNT(*) 
+    FROM refund r
+    JOIN `order` o ON r.orderID = o.orderID
+    JOIN user u ON r.userID = u.id
+";
+$totalRows = $_db->query($countSql)->fetchColumn();
+
+// Use your base.php helper
+$pagination = paginate($totalRows, $page, $limit);
+
+$sql = "
+    SELECT r.*, u.name, o.TotalAmount, o.OrderDate
+    FROM refund r
+    JOIN `order` o ON r.orderID = o.orderID
+    JOIN user u ON r.userID = u.id
+    ORDER BY r.refund_date DESC
+    LIMIT {$pagination['limit']} OFFSET {$pagination['offset']}
+";
+
+$stm = $_db->query($sql);
+$refunds = $stm->fetchAll();
+
+
+// --------------------------------------------------------------------
 $_title = "Refund | List";
 include '../navbar.php';
 ?>
@@ -118,5 +148,9 @@ tr:hover {
         <?php endif ?>
     </tbody>
 </table>
+<div style="width:90%; margin:20px auto; text-align:center;">
+    <?php render_pagination($pagination['page'], $pagination['totalPages']); ?>
+</div>
+
 
 <?php include '../footer.php'; ?>

@@ -237,6 +237,36 @@ if (!isset($_user)) {
     margin-bottom: 20px;
 }
 
+/* ===== Global pagination buttons ===== */
+.btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: #007BFF;
+    color: #fff;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: #fff;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: #fff;
+}
+
+.btn-success {
+    background: #28a745;
+    color: #fff;
+}
+
+
 	/* --------------------------------------
     | Search Section Styles
     | -------------------------------------- */

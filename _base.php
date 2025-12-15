@@ -230,6 +230,39 @@ function highlight($text, $keyword) {
     );
 }
 
+//Pagination calculation
+function paginate($totalRows, $page, $limit) {
+    $totalPages = max(1, ceil($totalRows / $limit));
+    $page = max(1, min($page, $totalPages));
+    $offset = ($page - 1) * $limit;
+
+    return compact('page', 'limit', 'offset', 'totalPages');
+}
+
+function render_pagination($page, $totalPages, $params = []) {
+    if ($totalPages <= 1) return;
+
+    $query = http_build_query($params);
+
+    echo '<div style="display:flex; justify-content:center; gap:8px;">';
+
+    if ($page > 1) {
+        echo "<a class='btn btn-primary' href='?page=" . ($page-1) . "&$query'>◀ Prev</a>";
+    }
+
+    for ($i = 1; $i <= $totalPages; $i++) {
+        $cls = $i == $page ? 'btn-secondary' : 'btn-primary';
+        echo "<a class='btn $cls' href='?page=$i&$query'>$i</a>";
+    }
+
+    if ($page < $totalPages) {
+        echo "<a class='btn btn-primary' href='?page=" . ($page+1) . "&$query'>Next ▶</a>";
+    }
+
+    echo '</div>';
+}
+
+
 // Generate <input type='date'>
 function html_date($key, $min= '', $max = '', $attr = '') {
     $value = encode($GLOBALS[$key] ?? '');
