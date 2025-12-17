@@ -165,8 +165,125 @@ if (is_post()) {
     }
 
     // --------- ADDRESS HANDLERS ---------
-    if (in_array($btn, ['save_address','update_address','select_address','delete_address','use_new_address'])) {
-        include 'cart_address_handlers.php'; // optional
+    if ($btn == 'save_address') {
+        $recipient = req('recipient_name');
+        $phone = req('phone_number');
+        $addr1 = req('address_line1');
+        $addr2 = req('address_line2');
+        $city = req('city');
+        $state = req('state');
+        $postal = req('postal_code');
+        $lat = req('latitude');
+        $lng = req('longitude');
+        $set_default = req('set_default') ? 1 : 0;
+
+        $phone = preg_replace('/\D/', '', $phone);
+
+        if (!preg_match('/^(01[0-9]{8,9}|03[0-9]{8})$/', $phone)) {
+            temp('info', 'Invalid phone number format. Use Malaysian format (e.g., 0123456789)');
+            redirect();
+            return;
+        }
+
+        // If set as default, unset other defaults
+        if ($set_default) {
+            $stm = $_db->prepare("UPDATE shipping_addresses SET is_default = 0 WHERE user_id = ?");
+            $stm->execute([$_user->id]);
+        }
+
+        $stm = $_db->prepare("
+            INSERT INTO shipping_addresses 
+            (user_id, recipient_name, phone_number, address_line1, address_line2, city, state, postal_code, latitude, longitude, is_default)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stm->execute([$_user->id, $recipient, $phone, $addr1, $addr2, $city, $state, $postal, $lat, $lng, $set_default]);
+        
+        $_SESSION['selected_address'] = $_db->lastInsertId();
+            temp('info', 'Address saved successfully!');
+            redirect();
+    }
+
+    if ($btn == 'select_address') {
+        $address_id = req('address_id');
+        $_SESSION['selected_address'] = $address_id;
+        temp('info', 'Delivery address selected.');
+        redirect();
+    }
+
+    if ($btn == 'delete_address') {
+        $address_id = req('address_id');
+        $stm = $_db->prepare("DELETE FROM shipping_addresses WHERE address_id = ? AND user_id = ?");
+        $stm->execute([$address_id, $_user->id]);
+        
+        // If deleted address was selected, auto-select another one
+        if (($_SESSION['selected_address'] ?? null) == $address_id) {
+            unset($_SESSION['selected_address']);
+            
+            // Get remaining addresses
+            $stm = $_db->prepare("SELECT address_id FROM shipping_addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC LIMIT 1");
+            $stm->execute([$_user->id]);
+            $next_addr = $stm->fetch();
+            
+            if ($next_addr) {
+                $_SESSION['selected_address'] = $next_addr->address_id;
+            }
+        }
+        
+        temp('info', 'Address deleted.');
+        redirect();
+    }
+
+    if ($btn == 'use_new_address') {
+        unset($_SESSION['selected_address']);
+        $_SESSION['show_new_address_form'] = true;
+        redirect();
+    }
+
+    if ($btn == 'update_address') {
+        $address_id = req('address_id');
+        $recipient = req('recipient_name');
+        $phone = req('phone_number');
+        $addr1 = req('address_line1');
+        $addr2 = req('address_line2');
+        $city = req('city');
+        $state = req('state');
+        $postal = req('postal_code');
+        $lat = req('latitude');
+        $lng = req('longitude');
+        $set_default = req('set_default') ? 1 : 0;
+
+        $phone = preg_replace('/\D/', '', $phone);
+
+        if (!preg_match('/^(01[0-9]{8,9}|03[0-9]{8})$/', $phone)) {
+            temp('info', 'Invalid phone number format. Use Malaysian format (e.g., 0123456789)');
+            redirect();
+            return;
+        }
+
+        // If set as default, unset other defaults
+        if ($set_default) {
+            $stm = $_db->prepare("UPDATE shipping_addresses SET is_default = 0 WHERE user_id = ? AND address_id != ?");
+            $stm->execute([$_user->id, $address_id]);
+        }
+
+        $stm = $_db->prepare("
+            UPDATE shipping_addresses 
+            SET recipient_name = ?, phone_number = ?, address_line1 = ?, address_line2 = ?,
+                city = ?, state = ?, postal_code = ?, latitude = ?, longitude = ?, is_default = ?
+            WHERE address_id = ? AND user_id = ?
+        ");
+        $stm->execute([
+            $recipient, $phone, $addr1, $addr2, $city, $state, $postal, $lat, $lng, $set_default,
+            $address_id, $_user->id
+        ]);
+        
+        // If this is the address that was selected, keep it selected
+        if (($_SESSION['selected_address'] ?? null) == $address_id) {
+            $_SESSION['selected_address'] = $address_id;
+        }
+        
+        temp('info', 'Address updated successfully!');
+        redirect();
     }
 }
 

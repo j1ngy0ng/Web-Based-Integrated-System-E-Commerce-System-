@@ -598,3 +598,51 @@
 [2025-12-17 09:41:07] Request method: GET
 [2025-12-17 09:41:07] Email received: empty
 [2025-12-17 09:41:07] Remember received: NO
+[2025-12-17 16:55:27] === LOGIN PAGE LOADED ===
+[2025-12-17 16:55:27] Request method: GET
+[2025-12-17 16:55:27] Email received: empty
+[2025-12-17 16:55:27] Remember received: NO
+[2025-12-17 16:55:58] === LOGIN PAGE LOADED ===
+[2025-12-17 16:55:58] Request method: POST
+[2025-12-17 16:55:58] Email received: 1@gmail.com
+[2025-12-17 16:55:58] Remember received: NO
+[2025-12-17 16:55:58] Form submitted via POST
+[2025-12-17 16:55:58] User found: 1@gmail.com (ID: 1)
+[2025-12-17 16:55:58] Password verification SUCCESS
+[2025-12-17 16:55:58] Remember me checkbox was NOT checked
+[2025-12-17 16:56:23] === LOGIN PAGE LOADED ===
+[2025-12-17 16:56:23] Request method: GET
+[2025-12-17 16:56:23] Email received: empty
+[2025-12-17 16:56:23] Remember received: NO
+[2025-12-17 16:56:28] === LOGIN PAGE LOADED ===
+[2025-12-17 16:56:28] Request method: POST
+[2025-12-17 16:56:28] Email received: 2@gmail.com
+[2025-12-17 16:56:28] Remember received: NO
+[2025-12-17 16:56:28] Form submitted via POST
+[2025-12-17 16:56:28] User found: 2@gmail.com (ID: 2)
+[2025-12-17 16:56:28] Password verification SUCCESS
+[2025-12-17 16:56:28] Remember me checkbox was NOT checked
+[2025-12-17 16:56:41] === LOGIN PAGE LOADED ===
+[2025-12-17 16:56:41] Request method: GET
+[2025-12-17 16:56:41] Email received: empty
+[2025-12-17 16:56:41] Remember received: NO
+[2025-12-17 16:56:45] === LOGIN PAGE LOADED ===
+[2025-12-17 16:56:45] Request method: POST
+[2025-12-17 16:56:45] Email received: 1@gmail.com
+[2025-12-17 16:56:45] Remember received: NO
+[2025-12-17 16:56:45] Form submitted via POST
+[2025-12-17 16:56:45] User found: 1@gmail.com (ID: 1)
+[2025-12-17 16:56:45] Password verification SUCCESS
+[2025-12-17 16:56:45] Remember me checkbox was NOT checked
+[2025-12-17 16:57:18] === LOGIN PAGE LOADED ===
+[2025-12-17 16:57:18] Request method: GET
+[2025-12-17 16:57:18] Email received: empty
+[2025-12-17 16:57:18] Remember received: NO
+[2025-12-17 16:57:21] === LOGIN PAGE LOADED ===
+[2025-12-17 16:57:21] Request method: POST
+[2025-12-17 16:57:21] Email received: 2@gmail.com
+[2025-12-17 16:57:21] Remember received: NO
+[2025-12-17 16:57:21] Form submitted via POST
+[2025-12-17 16:57:21] User found: 2@gmail.com (ID: 2)
+[2025-12-17 16:57:21] Password verification SUCCESS
+[2025-12-17 16:57:21] Remember me checkbox was NOT checked
