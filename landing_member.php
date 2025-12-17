@@ -216,7 +216,28 @@ include 'navbar.php';
 .section-header { justify-content: space-between; align-items: center; margin-bottom: 30px; padding-right: 45px; padding-bottom: 15px; border-bottom: 2px solid #006989; }
 #section-flex { display: flex; }
 .section-header h2 { font-size: 2rem; color: #333; }
-.section-controls { display: flex; gap: 10px; }
+.section-controls {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;          /* enable horizontal scroll */
+    white-space: nowrap;       /* keep buttons in one line */
+    padding-bottom: 5px;       /* space for scrollbar */
+    height: 60px;
+    width: 104%;
+}
+
+.section-controls::-webkit-scrollbar {
+    height: 7px;
+}
+
+.section-controls::-webkit-scrollbar-thumb {
+    background: #006989;
+    border-radius: 10px;
+}
+
+.section-controls::-webkit-scrollbar-track {
+    background: #e0e0e0;
+}
 .filter-btn { padding: 8px 20px; border: 1px solid #006989; background: white; color: #006989; border-radius: 5px; cursor: pointer; transition: all 0.3s; }
 .filter-btn.active { background: #006989; color: white; }
 .filter-btn:hover { background: #006989; color: white; }

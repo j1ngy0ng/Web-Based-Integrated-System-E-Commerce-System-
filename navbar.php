@@ -655,7 +655,7 @@ if (!isset($_user)) {
         background: #e0e0e0;
         border-radius: 3px;
         transform: translateY(-50%);
-        z-index: -1;
+        z-index: 0;
     }
 
     .slider-track::after {
@@ -1028,18 +1028,8 @@ if (!isset($_user)) {
                 
                 <div class="slider-container">
                     <div class="slider-wrapper">
-                        <input type="range" 
-                               id="minPriceSlider" 
-                               min="0" 
-                               max="1000" 
-                               value="<?= $minPrice ?? 0 ?>" 
-                               class="price-slider">
-                        <input type="range" 
-                               id="maxPriceSlider" 
-                               min="0" 
-                               max="1000" 
-                               value="<?= $maxPrice ?? 1000 ?>" 
-                               class="price-slider">
+                        <input type="range" id="minPriceSlider" min="0" max="1000" value="<?= $minPrice ?? 0 ?>" class="price-slider">
+                        <input type="range" id="maxPriceSlider" min="0" max="1000" value="<?= $maxPrice ?? 1000 ?>" class="price-slider">
                         <div class="slider-track"></div>
                     </div>
                     

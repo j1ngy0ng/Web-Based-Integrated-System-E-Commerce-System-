@@ -646,3 +646,19 @@
 [2025-12-17 16:57:21] User found: 2@gmail.com (ID: 2)
 [2025-12-17 16:57:21] Password verification SUCCESS
 [2025-12-17 16:57:21] Remember me checkbox was NOT checked
+[2025-12-17 17:31:20] === LOGIN PAGE LOADED ===
+[2025-12-17 17:31:20] Request method: GET
+[2025-12-17 17:31:20] Email received: empty
+[2025-12-17 17:31:20] Remember received: NO
+[2025-12-17 17:31:31] === LOGIN PAGE LOADED ===
+[2025-12-17 17:31:31] Request method: POST
+[2025-12-17 17:31:31] Email received: mailleejx@gmail.com
+[2025-12-17 17:31:31] Remember received: YES
+[2025-12-17 17:31:31] Form submitted via POST
+[2025-12-17 17:31:31] User found: mailleejx@gmail.com (ID: 24)
+[2025-12-17 17:31:31] Password verification SUCCESS
+[2025-12-17 17:31:31] Remember me checkbox WAS checked
+[2025-12-17 17:31:31] Generated selector: 6467986bedc0
+[2025-12-17 17:31:31] Token INSERT successful - rows affected: 1
+[2025-12-17 17:31:31] Cookie set attempt: SUCCESS
+[2025-12-17 17:31:31] Cookie value: 6467986bedc0:1ca7a61c8f2aaaab858c4061ebd9336bffb01532b7bde1af66bcf596811479a0
