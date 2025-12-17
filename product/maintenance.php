@@ -58,6 +58,34 @@ if ($search) {
 }
 // ====================================================================
 
+// ====================================================================
+// PAGINATION
+// ====================================================================
+$page  = max(1, (int) req('page', 1));
+$limit = 10; // products per page
+
+// Count total products (apply SAME search condition)
+$countSql = "
+    SELECT COUNT(*) FROM (
+        SELECT p.productID
+        FROM product p
+        LEFT JOIN ProductCategory c ON p.categoryID = c.categoryID
+        LEFT JOIN order_item oi ON p.productID = oi.productID
+        LEFT JOIN productRating pr ON oi.order_item_id = pr.order_item_id
+        $search_sql
+        GROUP BY p.productID
+    ) x
+";
+
+
+$stm = $_db->prepare($countSql);
+$stm->execute($params);
+$totalRows = $stm->fetchColumn();
+
+// Get pagination info
+$pagination = paginate($totalRows, $page, $limit);
+
+
 // --------------------------------------------------------------------
 // Fetch Products with Average Rating
 $sql = "
@@ -75,11 +103,22 @@ $sql = "
     $search_sql
     GROUP BY p.productID
     ORDER BY $sort $dir
+    LIMIT {$pagination['limit']} OFFSET {$pagination['offset']}
 ";
 
 $stm = $_db->prepare($sql);
 $stm->execute($params);
 $data = $stm->fetchAll();
+
+$paginationParams = [
+    'sort' => $sort,
+    'dir'  => $dir,
+];
+
+if ($search) {
+    $paginationParams['search'] = $search;
+}
+
 
 $_title = "Product | List";
 include '../navbar.php';
@@ -309,5 +348,13 @@ tr.disabled-row .action-btns {
         <?php endif ?>
     </tbody>
 </table>
+
+<div style="width:95%; margin:25px auto; text-align:center;">
+    <?php render_pagination(
+        $pagination['page'],
+        $pagination['totalPages'],
+        $paginationParams
+    ); ?>
+</div>
 
 <?php include '../footer.php'; ?>

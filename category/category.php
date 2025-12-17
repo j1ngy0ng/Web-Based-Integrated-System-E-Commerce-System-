@@ -213,36 +213,45 @@ function sort_link($label, $column, $currentSort, $currentDir, $q, $page = 1)
         <thead>
             <tr>
                 <th><input type="checkbox" id="selectAll"></th>
-                <th>ID</th>
+                <th><?= sort_link('ID', 'categoryID', $sort, $dir, $q, $page) ?></th>
                 <th><?= sort_link('Name', 'categoryName', $sort, $dir, $q, $page) ?></th>
                 <th><?= sort_link('Description', 'description', $sort, $dir, $q, $page) ?></th>
                 <th>Action</th>
             </tr>
         </thead>
-        <tbody>
-            <?php if (!$data): ?>
-                <tr>
-                    <td colspan="5" style="text-align:center; padding:20px; color:#888;">No categories found.</td>
-                </tr>
-            <?php else: ?>
-                <?php $rowNum = ($page - 1) * $limit + 1; ?>
-                <?php foreach ($data as $row): ?>
-                    <tr>
-                        <td><input type="checkbox" name="deleteIDs[]" value="<?= $row->categoryID ?>"></td>
-                        <td><?= $rowNum ?></td>
-                        <td><?= highlight($row->categoryName, $q) ?></td>
-                        <td><?= highlight($row->description, $q) ?></td>
+<tbody>
+<?php if (!$data): ?>
+    <tr>
+        <td colspan="5" style="text-align:center; padding:20px; color:#888;">
+            No categories found.
+        </td>
+    </tr>
+<?php else: ?>
+    <?php foreach ($data as $row): ?>
+        <tr>
+            <td>
+                <input type="checkbox" name="deleteIDs[]" value="<?= $row->categoryID ?>">
+            </td>
 
-                        <td class="action-btns">
-                            <a class="edit-btn" href="categoryDetail.php?categoryID=<?= $row->categoryID ?>">Edit</a>
-                            <a class="delete-btn" href="deleteCategory.php?categoryID=<?= $row->categoryID ?>"
-                                onclick="return confirm('Are you sure?');">Delete</a>
-                        </td>
-                    </tr>
-                <?php $rowNum++;
-                endforeach; ?>
-            <?php endif ?>
-        </tbody>
+            <!-- REAL ID -->
+            <td><?= $row->categoryID ?></td>
+
+            <td><?= highlight($row->categoryName, $q) ?></td>
+            <td><?= highlight($row->description, $q) ?></td>
+
+            <td class="action-btns">
+                <a class="edit-btn"
+                   href="categoryDetail.php?categoryID=<?= $row->categoryID ?>">Edit</a>
+
+                <a class="delete-btn"
+                   href="deleteCategory.php?categoryID=<?= $row->categoryID ?>"
+                   onclick="return confirm('Are you sure?');">Delete</a>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+<?php endif ?>
+</tbody>
+
     </table>
     <div style="width:90%; margin:20px auto; text-align:right;">
         <button type="submit" class="btn btn-danger"
