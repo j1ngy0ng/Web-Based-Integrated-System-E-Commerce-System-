@@ -79,7 +79,7 @@
             <input type="email" name="email" required>
             <button type="submit">Resend Verification Email</button>
         </form>
-        <p><a href="/login.php">Back to Login</a></p>
+        <p><a href="../login.php">Back to Login</a></p>
     </div>
 </body>
 </html>
