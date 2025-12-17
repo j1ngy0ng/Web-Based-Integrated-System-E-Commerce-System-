@@ -570,3 +570,31 @@
 [2025-12-15 22:14:42] User found: 12@gmail.com (ID: 6)
 [2025-12-15 22:14:42] Password verification SUCCESS
 [2025-12-15 22:14:42] Remember me checkbox was NOT checked
+[2025-12-17 09:37:01] === LOGIN PAGE LOADED ===
+[2025-12-17 09:37:01] Request method: GET
+[2025-12-17 09:37:01] Email received: empty
+[2025-12-17 09:37:01] Remember received: NO
+[2025-12-17 09:37:06] === LOGIN PAGE LOADED ===
+[2025-12-17 09:37:06] Request method: POST
+[2025-12-17 09:37:06] Email received: 1@gmail.com
+[2025-12-17 09:37:06] Remember received: NO
+[2025-12-17 09:37:06] Form submitted via POST
+[2025-12-17 09:37:06] User found: 1@gmail.com (ID: 1)
+[2025-12-17 09:37:06] Password verification SUCCESS
+[2025-12-17 09:37:06] Remember me checkbox was NOT checked
+[2025-12-17 09:39:50] === LOGIN PAGE LOADED ===
+[2025-12-17 09:39:50] Request method: GET
+[2025-12-17 09:39:50] Email received: empty
+[2025-12-17 09:39:50] Remember received: NO
+[2025-12-17 09:39:58] === LOGIN PAGE LOADED ===
+[2025-12-17 09:39:58] Request method: POST
+[2025-12-17 09:39:58] Email received: 2@gmail.com
+[2025-12-17 09:39:58] Remember received: NO
+[2025-12-17 09:39:58] Form submitted via POST
+[2025-12-17 09:39:58] User found: 2@gmail.com (ID: 2)
+[2025-12-17 09:39:58] Password verification SUCCESS
+[2025-12-17 09:39:58] Remember me checkbox was NOT checked
+[2025-12-17 09:41:07] === LOGIN PAGE LOADED ===
+[2025-12-17 09:41:07] Request method: GET
+[2025-12-17 09:41:07] Email received: empty
+[2025-12-17 09:41:07] Remember received: NO
