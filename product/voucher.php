@@ -6,6 +6,12 @@ include '../_base.php';
 auth('Admin');
 
 // ----------------------------------------------------------------------------
+// Search
+$q = trim(req('q', ''));
+$search = "%$q%";
+
+
+// ----------------------------------------------------------------------------
 // DELETE LOGIC
 if (is_post() && req('action') == 'delete') {
     $code = req('voucher_code');
@@ -24,7 +30,18 @@ $page  = max(1, intval(req('page', 1))); // current page from GET
 $limit = 10; // rows per page
 
 // Get total number of vouchers
-$totalRows = $_db->query("SELECT COUNT(*) FROM vouchers")->fetchColumn();
+$countSql = "SELECT COUNT(*) FROM vouchers";
+$params = [];
+
+if ($q !== '') {
+    $countSql .= " WHERE voucher_code LIKE ? OR discount_type LIKE ?";
+    $params = [$search, $search];
+}
+
+$stmCount = $_db->prepare($countSql);
+$stmCount->execute($params);
+$totalRows = $stmCount->fetchColumn();
+
 
 // Use your base.php function to get pagination info
 $pagination = paginate($totalRows, $page, $limit);
@@ -34,12 +51,17 @@ $offset = (int)$pagination['offset'];
 
 // ----------------------------------------------------------------------------
 // Fetch vouchers with limit/offset
-$sql = "SELECT * FROM vouchers ORDER BY expiry_date DESC LIMIT $limit OFFSET $offset";
-$stm = $_db->query($sql);
+$sql = "SELECT * FROM vouchers";
+
+if ($q !== '') {
+    $sql .= " WHERE voucher_code LIKE ? OR discount_type LIKE ?";
+}
+
+$sql .= " ORDER BY expiry_date DESC LIMIT $limit OFFSET $offset";
+
+$stm = $_db->prepare($sql);
+$stm->execute($params);
 $vouchers = $stm->fetchAll();
-
-
-
 
 $_title = 'Manage Vouchers';
 include '../navbar.php';
@@ -86,12 +108,26 @@ include '../navbar.php';
 </style>
 
 <div class="page-container">
-    <div class="table-controls-row">
-        <h2 style="margin:0;">Voucher List</h2>
-        <a href="voucher_details.php" class="add-btn">
-            <i class="fa fa-plus"></i> Add Voucher
-        </a>
-    </div>
+<h2 style="margin-bottom:15px;">Voucher List</h2>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+    <!-- Search -->
+    <form method="get" style="display:flex; gap:10px;">
+        <input type="text" name="q"
+               placeholder="Search voucher..."
+               value="<?= htmlspecialchars($q) ?>"
+               style="padding:8px 12px; border-radius:6px; border:1px solid #ccc;">
+
+        <button type="submit" class="btn-action btn-edit">Search</button>
+    </form>
+
+    <!-- Add button -->
+    <a href="voucher_details.php" class="add-btn">
+        <i class="fa fa-plus"></i> Add Voucher
+    </a>
+</div>
+
+
 
     <table>
         <thead>
@@ -113,16 +149,16 @@ include '../navbar.php';
                     $isExpired = strtotime($v->expiry_date) < time();
                 ?>
                 <tr style="<?= $isExpired ? 'opacity:0.6;' : '' ?>">
-                    <td><strong><?= htmlspecialchars($v->voucher_code) ?></strong></td>
+                    <td><strong><?= highlight($v->voucher_code, $q) ?></strong></td>
                     <td>
                         <span class="badge <?= $v->discount_type == 'fixed' ? 'badge-fixed' : 'badge-percent' ?>">
-                            <?= ucfirst($v->discount_type) ?>
+                            <?= highlight(ucfirst($v->discount_type), $q) ?>
                         </span>
                     </td>
                     <td>
-                        <?= $v->discount_type == 'fixed' ? 'RM ' . number_format($v->discount_value, 2) : number_format($v->discount_value, 0) . '%' ?>
+                        <?= $v->discount_type == 'fixed' ? highlight('RM ' . number_format($v->discount_value, 2), $q) : highlight(number_format($v->discount_value, 0) . '%', $q) ?>
                     </td>
-                    <td>RM <?= number_format($v->min_spend, 2) ?></td>
+                    <td><?= highlight('RM ' . number_format($v->min_spend, 2), $q) ?></td>
                     <td><?= date('d M Y', strtotime($v->expiry_date)) ?></td>
                     <td>
                         <?php if ($isExpired): ?>
@@ -147,8 +183,11 @@ include '../navbar.php';
     </table>
     <!-- Pagination -->
     <?php
-$params = [];
+$params = [
+    'q' => $q
+];
 render_pagination($pagination['page'], $pagination['totalPages'], $params);
+
 ?>
 
 </div>

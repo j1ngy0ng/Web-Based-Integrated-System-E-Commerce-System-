@@ -3,6 +3,11 @@ include '../_base.php';
 auth("Admin");
 
 // --------------------------------------------------------------------
+// Search
+$q = trim(req('q', '')); // GET parameter
+$search = "%$q%";
+
+// --------------------------------------------------------------------
 // Fetch refunds with user info and order info
 $stm = $_db->prepare('
     SELECT r.*, u.name, o.TotalAmount, o.OrderDate
@@ -26,7 +31,17 @@ $countSql = "
     JOIN `order` o ON r.orderID = o.orderID
     JOIN user u ON r.userID = u.id
 ";
-$totalRows = $_db->query($countSql)->fetchColumn();
+$params = [];
+
+if ($q !== '') {
+    $countSql .= " WHERE r.refundID LIKE ? OR r.orderID LIKE ? OR u.name LIKE ? OR r.status LIKE ?";
+    $params = [$search, $search, $search, $search];
+}
+
+$stmCount = $_db->prepare($countSql);
+$stmCount->execute($params);
+$totalRows = $stmCount->fetchColumn();
+
 
 // Use your base.php helper
 $pagination = paginate($totalRows, $page, $limit);
@@ -36,12 +51,18 @@ $sql = "
     FROM refund r
     JOIN `order` o ON r.orderID = o.orderID
     JOIN user u ON r.userID = u.id
-    ORDER BY r.refund_date DESC
-    LIMIT {$pagination['limit']} OFFSET {$pagination['offset']}
 ";
 
-$stm = $_db->query($sql);
+if ($q !== '') {
+    $sql .= " WHERE r.refundID LIKE ? OR r.orderID LIKE ? OR u.name LIKE ? OR r.status LIKE ?";
+}
+
+$sql .= " ORDER BY r.refund_date DESC LIMIT {$pagination['limit']} OFFSET {$pagination['offset']}";
+
+$stm = $_db->prepare($sql);
+$stm->execute($params);
 $refunds = $stm->fetchAll();
+
 
 
 // --------------------------------------------------------------------
@@ -100,6 +121,14 @@ tr:hover {
 </style>
 
 <h2 style="text-align:center; margin-top:30px;">Refund List</h2>
+<div style="width:90%; margin:20px auto; display:flex; justify-content:flex-start; gap:10px; flex-wrap:wrap;">
+    <form method="get" style="display:flex; gap:10px;">
+        <input type="text" name="q" placeholder="Search refunds..."
+               value="<?= htmlspecialchars($q) ?>"
+               style="padding:8px 12px; border-radius:6px; border:1px solid #ccc;">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+</div>
 
 <table>
     <thead>
@@ -124,13 +153,13 @@ tr:hover {
         <?php else: ?>
             <?php foreach ($refunds as $r): ?>
                 <tr>
-                    <td><?= $r->refundID ?></td>
-                    <td><?= $r->orderID ?></td>
-                    <td><?= htmlspecialchars($r->name) ?></td>
+                    <td><?= highlight($r->refundID, $q) ?></td>
+                    <td><?= highlight($r->orderID, $q) ?></td>
+                    <td><?= highlight($r->name, $q) ?></td>
                     <td>RM <?= number_format($r->amount, 2) ?></td>
-                    <td><?= $r->status ?></td>
+                    <td><?= highlight($r->status, $q) ?></td>
                     <td><?= $r->refund_date ?></td>
-                    <td><?= htmlspecialchars($r->reason) ?></td>
+                    <td><?= highlight($r->reason, $q) ?></td>
                     <td class="action-btns">
                         <form method="post" action="process_refund.php" onsubmit="return confirm('Are you sure?');">
                             <input type="hidden" name="refundID" value="<?= $r->refundID ?>">
@@ -149,8 +178,7 @@ tr:hover {
     </tbody>
 </table>
 <div style="width:90%; margin:20px auto; text-align:center;">
-    <?php render_pagination($pagination['page'], $pagination['totalPages']); ?>
+    <?php render_pagination($pagination['page'], $pagination['totalPages'], ['q' => $q]); ?>
 </div>
-
 
 <?php include '../footer.php'; ?>

@@ -149,12 +149,12 @@ th select { margin-left: 5px; padding: 2px 5px; font-size: 0.85rem; }
 
 <div style="width:90%; margin: 20px auto; display:flex; justify-content:space-between; align-items:center;">
     <!-- Search Form -->
-    <form method="get" style="display:flex; gap:10px;">
-        <input type="text" name="q" placeholder="Search by name or email..." 
-               value="<?= htmlspecialchars($q) ?>" 
-               style="padding:6px 12px; border-radius:6px; border:1px solid #ccc;">
-        <button type="submit" style="padding:6px 12px; border:none; background:#007bff; color:white; border-radius:6px;">Search</button>
-    </form>
+    <?php
+    $placeholder = 'Search by name or email';
+    include '../member/search_bar.php';
+    ?>
+
+
 
     <!-- Add Member Button -->
     <a href="memberDetail.php" 

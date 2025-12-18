@@ -6,6 +6,11 @@ include '../_base.php';
 auth("Admin");
 
 // --------------------------------------------------------------------
+// Search
+$q = trim(req('q', '')); // GET parameter
+$search = "%$q%";
+
+// --------------------------------------------------------------------
 // Sorting
 $sort = req('sort', 'orderID'); // default column
 $dir  = req('dir', 'asc');      // default order
@@ -24,7 +29,18 @@ $page  = max(1, intval(req('page', 1))); // Current page from GET
 $limit = 10; // Rows per page
 
 // Count total orders
-$totalRows = $_db->query("SELECT COUNT(*) FROM `order`")->fetchColumn();
+$countSql = "SELECT COUNT(*) FROM `order`";
+$params = [];
+
+if ($q !== '') {
+    $countSql .= " WHERE orderID LIKE ? OR userID LIKE ? OR status LIKE ?";
+    $params = [$search, $search, $search];
+}
+
+$stmCount = $_db->prepare($countSql);
+$stmCount->execute($params);
+$totalRows = $stmCount->fetchColumn();
+
 
 // Get pagination info
 $pagination = paginate($totalRows, $page, $limit);
@@ -33,9 +49,18 @@ $offset = (int)$pagination['offset'];
 
 // --------------------------------------------------------------------
 // Fetch paginated orders
-$sql = "SELECT * FROM `order` ORDER BY $sort $dir LIMIT $limit OFFSET $offset";
-$stm = $_db->query($sql); // No execute() needed
+$sql = "SELECT * FROM `order`";
+
+if ($q !== '') {
+    $sql .= " WHERE orderID LIKE ? OR userID LIKE ? OR status LIKE ?";
+}
+
+$sql .= " ORDER BY $sort $dir LIMIT $limit OFFSET $offset";
+
+$stm = $_db->prepare($sql);
+$stm->execute($params);
 $data = $stm->fetchAll();
+
 
 
 // --------------------------------------------------------------------
@@ -102,6 +127,20 @@ tr:hover {
 
 <h2 style="text-align:center; margin-top:30px;">Order List</h2>
 
+<div style="width:90%; margin: 20px auto; display:flex; justify-content:flex-start; gap:10px; flex-wrap:wrap;">
+    <form method="get" style="display:flex; gap:10px;">
+        <input type="text" name="q" placeholder="Search orders..."
+               value="<?= htmlspecialchars($q) ?>"
+               style="padding:8px 12px; border-radius:6px; border:1px solid #ccc;">
+
+        <button type="submit" class="btn btn-primary">Search</button>
+
+        <input type="hidden" name="sort" value="<?= $sort ?>">
+        <input type="hidden" name="dir" value="<?= $dir ?>">
+    </form>
+</div>
+
+
 <table>
     <thead>
         <tr>
@@ -132,9 +171,9 @@ tr:hover {
         <?php else: ?>
             <?php foreach ($data as $row): ?>
                 <tr>
-                    <td><?= $row->orderID ?></td>
-                    <td><?= $row->userID ?></td>
-                    <td><?= htmlspecialchars($row->status) ?></td>
+                    <td><?= highlight($row->orderID, $q) ?></td>
+                    <td><?= highlight($row->userID, $q) ?></td>
+                    <td><?= highlight($row->status, $q) ?></td>
                     <td>RM <?= number_format($row->TotalAmount, 2) ?></td>
                     <td><?= $row->OrderDate ?></td>
 
@@ -152,15 +191,12 @@ tr:hover {
 </table>
 <div style="width:90%; margin:20px auto; text-align:center;">
     <?php
-    render_pagination($pagination['page'], $pagination['totalPages'], [
-        'sort' => $sort,
-        'dir'  => $dir
-    ]);
-    $params = [
+render_pagination($pagination['page'], $pagination['totalPages'], [
     'sort' => $sort,
     'dir'  => $dir,
-    'q'    => $q ?? ''
-];
+    'q'    => $q
+]);
+
 
     ?>
     

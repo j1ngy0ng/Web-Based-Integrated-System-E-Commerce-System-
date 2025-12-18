@@ -188,16 +188,17 @@ function sort_link($label, $column, $currentSort, $currentDir, $q, $page = 1)
 <div class="top-bar">
 
     <!-- SEARCH (GET) -->
-    <form method="get" class="search-bar">
-        <input type="text" name="q"
-            placeholder="Search category..."
-            value="<?= htmlspecialchars($q) ?>">
+    <?php
+    $placeholder = 'Search category...';
 
-        <input type="hidden" name="sort" value="<?= $sort ?>">
-        <input type="hidden" name="dir" value="<?= $dir ?>">
+    $extraFields = [
+        'sort' => $sort,
+        'dir'  => $dir,
+        'page' => 1   // reset to page 1 on new search (important!)
+    ];
 
-        <button type="submit" class="btn btn-primary">Search</button>
-    </form>
+    include '../member/search_bar.php';
+    ?>
 
     <!-- ACTION BUTTONS -->
     <div class="actions">
