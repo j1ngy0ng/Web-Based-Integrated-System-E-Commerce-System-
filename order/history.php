@@ -6,14 +6,41 @@ include '../_base.php';
 auth('Member');
 
 // --------------------------------------------------------------------
+// Pagination
+$page  = max(1, (int) req('page', 1));
+$limit = 10;
+
+// --------------------------------------------------------------------
+// Count total orders
+$stmCount = $_db->prepare('
+    SELECT COUNT(*)
+    FROM `order`
+    WHERE userID = ?
+');
+$stmCount->execute([$_user->id]);
+$totalRows = $stmCount->fetchColumn();
+
+// Create pagination variables
+$pg = paginate($totalRows, $page, $limit);
+extract($pg);   // creates: $page, $offset, $totalPages
+
+
+// --------------------------------------------------------------------
 // Fetch orders belonging to logged-in user
 $stm = $_db->prepare('
     SELECT *
     FROM `order`
-    WHERE userID = ?
+    WHERE userID = :uid
     ORDER BY orderID DESC
+    LIMIT :limit OFFSET :offset
 ');
-$stm->execute([$_user->id]);
+
+$stm->bindValue(':uid', $_user->id, PDO::PARAM_INT);
+$stm->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+$stm->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+
+$stm->execute();
+
 $orders = $stm->fetchAll();
 
 // --------------------------------------------------------------------
@@ -291,9 +318,18 @@ include '../navbar.php';
             </table>
         </div>
         <p style="text-align: center; margin-top: 20px; color: #718096; font-size: 0.9em;">
-            Showing <?= count($orders) ?> record(s)
+            Showing <?= count($orders) ?> of <?= $totalRows ?> order(s)
         </p>
     <?php endif; ?>
 </div>
+
+<?php if ($totalPages > 1): ?>
+    <div style="margin-top:30px; text-align:center;">
+        <?php
+        render_pagination($page, $totalPages);
+        ?>
+    </div>
+<?php endif; ?>
+
 
 <?php include '../footer.php'; ?>
