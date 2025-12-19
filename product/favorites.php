@@ -42,7 +42,6 @@ include '../navbar.php';
 ?>
 
 <style>
-    /* ... (Keep your existing styles) ... */
     .page-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; min-height: 70vh; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     .page-header { text-align: center; margin-bottom: 40px; }
     .page-header h1 { color: #2d3748; font-size: 2.5em; margin-bottom: 10px; background: linear-gradient(135deg, #dc3545, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
