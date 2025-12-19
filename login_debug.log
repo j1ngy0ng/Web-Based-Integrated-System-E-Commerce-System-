@@ -662,3 +662,59 @@
 [2025-12-17 17:31:31] Token INSERT successful - rows affected: 1
 [2025-12-17 17:31:31] Cookie set attempt: SUCCESS
 [2025-12-17 17:31:31] Cookie value: 6467986bedc0:1ca7a61c8f2aaaab858c4061ebd9336bffb01532b7bde1af66bcf596811479a0
+[2025-12-18 13:09:07] === LOGIN PAGE LOADED ===
+[2025-12-18 13:09:07] Request method: GET
+[2025-12-18 13:09:07] Email received: empty
+[2025-12-18 13:09:07] Remember received: NO
+[2025-12-19 08:23:39] === LOGIN PAGE LOADED ===
+[2025-12-19 08:23:39] Request method: GET
+[2025-12-19 08:23:39] Email received: empty
+[2025-12-19 08:23:39] Remember received: NO
+[2025-12-19 08:23:42] === LOGIN PAGE LOADED ===
+[2025-12-19 08:23:42] Request method: POST
+[2025-12-19 08:23:42] Email received: 1@gmail.com
+[2025-12-19 08:23:42] Remember received: NO
+[2025-12-19 08:23:42] Form submitted via POST
+[2025-12-19 08:23:42] User found: 1@gmail.com (ID: 1)
+[2025-12-19 08:23:42] Password verification SUCCESS
+[2025-12-19 08:23:42] Remember me checkbox was NOT checked
+[2025-12-19 19:56:46] === LOGIN PAGE LOADED ===
+[2025-12-19 19:56:46] Request method: GET
+[2025-12-19 19:56:46] Email received: empty
+[2025-12-19 19:56:46] Remember received: NO
+[2025-12-19 19:56:51] === LOGIN PAGE LOADED ===
+[2025-12-19 19:56:51] Request method: POST
+[2025-12-19 19:56:51] Email received: 1@gmail.com
+[2025-12-19 19:56:51] Remember received: NO
+[2025-12-19 19:56:51] Form submitted via POST
+[2025-12-19 19:56:52] User found: 1@gmail.com (ID: 1)
+[2025-12-19 19:56:52] Password verification SUCCESS
+[2025-12-19 19:56:52] Remember me checkbox was NOT checked
+[2025-12-19 19:58:25] === LOGIN PAGE LOADED ===
+[2025-12-19 19:58:25] Request method: GET
+[2025-12-19 19:58:25] Email received: empty
+[2025-12-19 19:58:25] Remember received: NO
+[2025-12-19 19:58:28] === LOGIN PAGE LOADED ===
+[2025-12-19 19:58:28] Request method: POST
+[2025-12-19 19:58:28] Email received: 2@gmail.com
+[2025-12-19 19:58:28] Remember received: NO
+[2025-12-19 19:58:28] Form submitted via POST
+[2025-12-19 19:58:28] User found: 2@gmail.com (ID: 2)
+[2025-12-19 19:58:28] Password verification SUCCESS
+[2025-12-19 19:58:28] Remember me checkbox was NOT checked
+[2025-12-19 19:58:41] === LOGIN PAGE LOADED ===
+[2025-12-19 19:58:41] Request method: GET
+[2025-12-19 19:58:41] Email received: empty
+[2025-12-19 19:58:41] Remember received: NO
+[2025-12-19 20:01:33] === LOGIN PAGE LOADED ===
+[2025-12-19 20:01:33] Request method: GET
+[2025-12-19 20:01:33] Email received: empty
+[2025-12-19 20:01:33] Remember received: NO
+[2025-12-19 20:01:38] === LOGIN PAGE LOADED ===
+[2025-12-19 20:01:38] Request method: POST
+[2025-12-19 20:01:38] Email received: 1@gmail.com
+[2025-12-19 20:01:38] Remember received: NO
+[2025-12-19 20:01:38] Form submitted via POST
+[2025-12-19 20:01:38] User found: 1@gmail.com (ID: 1)
+[2025-12-19 20:01:38] Password verification SUCCESS
+[2025-12-19 20:01:38] Remember me checkbox was NOT checked

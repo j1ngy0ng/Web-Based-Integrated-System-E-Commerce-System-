@@ -11,6 +11,11 @@ $q = trim(req('q', '')); // GET parameter
 $search = "%$q%";
 
 // --------------------------------------------------------------------
+// Status filter (from table header dropdown)
+$statusFilter = req('status', ''); // '' = all
+
+
+// --------------------------------------------------------------------
 // Sorting
 $sort = req('sort', 'orderID'); // default column
 $dir  = req('dir', 'asc');      // default order
@@ -29,12 +34,17 @@ $page  = max(1, intval(req('page', 1))); // Current page from GET
 $limit = 10; // Rows per page
 
 // Count total orders
-$countSql = "SELECT COUNT(*) FROM `order`";
+$countSql = "SELECT COUNT(*) FROM `order` WHERE 1";
 $params = [];
 
 if ($q !== '') {
-    $countSql .= " WHERE orderID LIKE ? OR userID LIKE ? OR status LIKE ?";
-    $params = [$search, $search, $search];
+    $countSql .= " AND (orderID LIKE ? OR userID LIKE ? OR status LIKE ?)";
+    array_push($params, $search, $search, $search);
+}
+
+if ($statusFilter !== '') {
+    $countSql .= " AND status = ?";
+    $params[] = $statusFilter;
 }
 
 $stmCount = $_db->prepare($countSql);
@@ -49,10 +59,14 @@ $offset = (int)$pagination['offset'];
 
 // --------------------------------------------------------------------
 // Fetch paginated orders
-$sql = "SELECT * FROM `order`";
+$sql = "SELECT * FROM `order` WHERE 1";
 
 if ($q !== '') {
-    $sql .= " WHERE orderID LIKE ? OR userID LIKE ? OR status LIKE ?";
+    $sql .= " AND (orderID LIKE ? OR userID LIKE ? OR status LIKE ?)";
+}
+
+if ($statusFilter !== '') {
+    $sql .= " AND status = ?";
 }
 
 $sql .= " ORDER BY $sort $dir LIMIT $limit OFFSET $offset";
@@ -60,6 +74,7 @@ $sql .= " ORDER BY $sort $dir LIMIT $limit OFFSET $offset";
 $stm = $_db->prepare($sql);
 $stm->execute($params);
 $data = $stm->fetchAll();
+
 
 
 
@@ -142,24 +157,61 @@ tr:hover {
 
 
 <table>
-    <thead>
-        <tr>
-            <?php
-            table_headers(
-                [
-                    'orderID'     => 'Order ID',
-                    'userID'      => 'User ID',
-                    'status'      => 'Status',
-                    'TotalAmount' => 'Total (RM)',
-                    'OrderDate'   => 'Order Date',
-                ],
-                $sort,
-                $dir
-            );
-            ?>
-            <th>Action</th>
-        </tr>
-    </thead>
+<thead>
+<tr>
+    <!-- Order ID -->
+    <th>
+        <a href="?<?= http_build_query(array_merge($_GET, ['sort'=>'orderID','dir'=>$sort=='orderID' && $dir=='asc'?'desc':'asc'])) ?>">
+            Order ID
+        </a>
+    </th>
+
+    <!-- User ID -->
+    <th>
+        <a href="?<?= http_build_query(array_merge($_GET, ['sort'=>'userID','dir'=>$sort=='userID' && $dir=='asc'?'desc':'asc'])) ?>">
+            User ID
+        </a>
+    </th>
+
+    <!-- Status FILTER -->
+    <th>
+        Status<br>
+        <form method="get">
+            <?php foreach ($_GET as $k => $v): ?>
+                <?php if ($k !== 'status' && $k !== 'page'): ?>
+                    <input type="hidden" name="<?= $k ?>" value="<?= htmlspecialchars($v) ?>">
+                <?php endif ?>
+            <?php endforeach ?>
+
+            <select name="status" onchange="this.form.submit()" style="width:100%;">
+                <option value="">All</option>
+                <option value="Pending"   <?= $statusFilter=='Pending'?'selected':'' ?>>Pending</option>
+                <option value="Paid"      <?= $statusFilter=='Paid'?'selected':'' ?>>Paid</option>
+                <option value="Shipped"   <?= $statusFilter=='Shipped'?'selected':'' ?>>Shipped</option>
+                <option value="Completed" <?= $statusFilter=='Completed'?'selected':'' ?>>Completed</option>
+                <option value="Cancelled" <?= $statusFilter=='Cancelled'?'selected':'' ?>>Cancelled</option>
+            </select>
+        </form>
+    </th>
+
+    <!-- Total -->
+    <th>
+        <a href="?<?= http_build_query(array_merge($_GET, ['sort'=>'TotalAmount','dir'=>$sort=='TotalAmount' && $dir=='asc'?'desc':'asc'])) ?>">
+            Total (RM)
+        </a>
+    </th>
+
+    <!-- Order Date -->
+    <th>
+        <a href="?<?= http_build_query(array_merge($_GET, ['sort'=>'OrderDate','dir'=>$sort=='OrderDate' && $dir=='asc'?'desc':'asc'])) ?>">
+            Order Date
+        </a>
+    </th>
+
+    <th>Action</th>
+</tr>
+</thead>
+
 
     <tbody>
         <?php if (!$data): ?>
@@ -192,10 +244,12 @@ tr:hover {
 <div style="width:90%; margin:20px auto; text-align:center;">
     <?php
 render_pagination($pagination['page'], $pagination['totalPages'], [
-    'sort' => $sort,
-    'dir'  => $dir,
-    'q'    => $q
+    'sort'   => $sort,
+    'dir'    => $dir,
+    'q'      => $q,
+    'status' => $statusFilter
 ]);
+
 
 
     ?>
