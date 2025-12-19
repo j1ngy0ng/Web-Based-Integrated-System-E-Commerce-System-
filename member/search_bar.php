@@ -1,7 +1,5 @@
 <?php
-// expected variables:
-// $q (search value)
-// $placeholder (optional)
+
 ?>
 
 <form method="get" style="display:flex; gap:10px;">

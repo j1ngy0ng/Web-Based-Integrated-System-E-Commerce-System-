@@ -133,7 +133,7 @@ tr:hover { background: #fafafa; }
 }
 
 th:last-child, td:last-child {
-    min-width: 140px;  /* adjust based on your button widths */
+    min-width: 140px; 
 }
 
 
