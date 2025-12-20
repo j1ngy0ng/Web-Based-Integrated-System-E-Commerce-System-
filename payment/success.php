@@ -218,7 +218,6 @@ function sendReceiptEmail($order, $products, $subtotal, $_db) {
 
         <div class="success-actions">
             <button onclick="printReceipt()" class="btn btn-outline">🖨️ Print Receipt</button>
-            <button onclick="sendReceiptEmail($order, $_db)" class="btn btn-outline" id="resendBtn">📧 Resend Email</button>
             <a href="../order/detail.php?orderID=<?= $order->orderID ?>" class="btn btn-secondary">📋 View Order Details</a>
             <a href="../product/list.php" class="btn btn-primary">🛒 Continue Shopping</a>
         </div>
@@ -481,6 +480,7 @@ function printReceipt() {
     border: 1px solid #006989;
     box-shadow: 0 4px 10px rgba(0, 105, 137, 0.2);
     text-decoration: none;
+    width: 190%;
 }
 
 .btn-primary:hover {

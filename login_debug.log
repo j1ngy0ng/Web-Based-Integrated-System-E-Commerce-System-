@@ -1075,3 +1075,15 @@
 [2025-12-20 10:55:57] Request method: GET
 [2025-12-20 10:55:57] Email received: empty
 [2025-12-20 10:55:57] Remember received: NO
+[2025-12-20 18:24:39] === LOGIN PAGE LOADED ===
+[2025-12-20 18:24:39] Request method: GET
+[2025-12-20 18:24:39] Email received: empty
+[2025-12-20 18:24:39] Remember received: NO
+[2025-12-20 18:24:48] === LOGIN PAGE LOADED ===
+[2025-12-20 18:24:48] Request method: POST
+[2025-12-20 18:24:48] Email received: mailleejx@gmail.com
+[2025-12-20 18:24:48] Remember received: NO
+[2025-12-20 18:24:48] Form submitted via POST
+[2025-12-20 18:24:48] User found: mailleejx@gmail.com (ID: 24)
+[2025-12-20 18:24:48] Password verification SUCCESS
+[2025-12-20 18:24:48] Remember me checkbox was NOT checked
