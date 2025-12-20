@@ -1,2 +1,0 @@
-ALTER TABLE `order`
-ADD COLUMN `redeemed_points` INT(11) DEFAULT 0 AFTER `discount_amount`;

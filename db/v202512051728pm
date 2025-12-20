@@ -1,2 +1,0 @@
-ALTER TABLE user
-ADD COLUMN reward_points INT DEFAULT 0;
