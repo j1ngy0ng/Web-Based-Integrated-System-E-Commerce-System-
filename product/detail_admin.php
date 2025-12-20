@@ -5,7 +5,7 @@ include '../_base.php';
 // BACKEND LOGIC
 // ====================================================================
 
-auth("Admin");
+auth("Admin","Superadmin");
 $productID = req('productID');
 $is_new_product_page_load = empty($productID);
 

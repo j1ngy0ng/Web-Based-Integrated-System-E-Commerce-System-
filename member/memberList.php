@@ -3,7 +3,8 @@ include '../_base.php';
 
 // --------------------------------------------------------------------
 // Authenticated users
-auth("Admin");
+auth("Admin","Superadmin");
+$currentUserRole = $_SESSION['user']->role ?? '';
 
 // --------------------------------------------------------------------
 // Sorting
@@ -284,9 +285,22 @@ th select { margin-left: 5px; padding: 2px 5px; font-size: 0.85rem; }
         </td>
 
         <td class="action-btns">
-            <a class="edit-btn" href="memberDetail.php?id=<?= $row->id ?>">Edit</a>
-            <a class="delete-btn" href="deleteMember.php?id=<?= $row->id ?>" onclick="return confirm('Are you sure?');">Delete</a>
-        </td>
+    <?php 
+    // Only show Edit for Superadmin accounts if current user is Superadmin
+    $canEdit = true;
+    if ($row->role == 'Superadmin' && $currentUserRole != 'Superadmin') {
+        $canEdit = false;
+    }
+
+    if ($canEdit): ?>
+        <a class="edit-btn" href="memberDetail.php?id=<?= $row->id ?>">Edit</a>
+    <?php endif; ?>
+
+    <!-- Delete button: you might want similar restriction if needed -->
+    <?php if ($row->role != 'Superadmin' || $currentUserRole == 'Superadmin'): ?>
+        <a class="delete-btn" href="deleteMember.php?id=<?= $row->id ?>" onclick="return confirm('Are you sure?');">Delete</a>
+    <?php endif; ?>
+</td>
     </tr>
     <?php endforeach ?>
 <?php endif ?>

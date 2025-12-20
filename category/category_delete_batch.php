@@ -1,6 +1,6 @@
 <?php
 include '../_base.php';
-auth("Admin");
+auth("Admin","Superadmin");
 
 if (!is_post() || empty($_POST['deleteIDs'])) {
     temp('err', 'No categories selected');

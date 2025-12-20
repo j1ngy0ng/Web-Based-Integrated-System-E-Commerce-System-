@@ -3,7 +3,7 @@ include '../_base.php';
 auth();
 
 // Only admin can save changes
-if ($_user->role !== 'Admin') {
+if ($_user->role !== 'Admin' && $_user->role !== 'Superadmin') {
     redirect('history.php');
 }
 

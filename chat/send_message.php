@@ -16,7 +16,7 @@ $stm = $_db->prepare("
 $stm->execute([$roomID, $sender, $message]);
 
 // --- Update last_read_at if sender is admin ---
-if ($_user->role === 'Admin') {
+if ($_user->role === 'Admin' || $_user->role === 'Superadmin') {
     $stm = $_db->prepare("
         UPDATE chat_room
         SET last_read_at = NOW()

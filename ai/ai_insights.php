@@ -1,6 +1,6 @@
 <?php
 require_once '../_base.php';
-auth('Admin');
+auth('Admin','Superadmin');
 
 header('Content-Type: application/json');
 

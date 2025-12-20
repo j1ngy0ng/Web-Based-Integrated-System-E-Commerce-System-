@@ -3,11 +3,12 @@ include '../_base.php';
 
 // --------------------------------------------------------------------
 // Authenticated users
-auth("Admin");
+auth("Admin", "Superadmin");
+$currentUserRole = $_SESSION['user']->role ?? '';
 
 // --------------------------------------------------------------------
 // Get member ID from URL (edit mode) or null (add mode)
-$memberID = req('id'); // matches your member list edit links
+$memberID = req('id');
 
 // Default empty member (Add mode)
 $member = new stdClass();
@@ -36,10 +37,17 @@ if ($memberID) {
     }
 
     $member = $m;
+
+    // ----------------------------------------------------------------
+    // Restrict editing Superadmin
+    if ($member->role === 'Superadmin' && $currentUserRole !== 'Superadmin') {
+        temp('err', 'Access denied. Only Superadmin can edit Superadmin accounts.');
+        redirect('memberList.php');
+    }
 }
 
 // --------------------------------------------------------------------
-// Handle POST (both Add and Edit)
+// Handle POST (Add/Edit)
 if (is_post()) {
     $email        = req('email');
     $name         = req('name');
@@ -59,6 +67,17 @@ if (is_post()) {
     if ($name == '') $_err['name'] = 'Name is required';
     if ($role == '') $_err['role'] = 'Role is required';
 
+    // ------------------ Enforce role restrictions ------------------
+    // Admin cannot assign Admin or Superadmin roles
+    if ($currentUserRole === 'Admin' && ($role === 'Admin' || $role === 'Superadmin')) {
+        $_err['role'] = 'You are not allowed to assign this role';
+    }
+
+    // Editing a Superadmin: only Superadmin allowed
+    if ($memberID && $member->role === 'Superadmin' && $currentUserRole !== 'Superadmin') {
+        $_err['role'] = 'You are not allowed to edit a Superadmin account';
+    }
+
     // ------------------ Photo upload ------------------
     if (isset($_FILES['photo']) && $_FILES['photo']['tmp_name']) {
         $ext = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
@@ -73,21 +92,17 @@ if (is_post()) {
         if ($memberID) {
             // ----- Edit mode -----
             if ($password) {
-                // Hash new password with SHA1
                 $pwdHash = sha1($password);
                 $stm = $_db->prepare('
                     UPDATE user 
                     SET email=?, name=?, role=?, password=?, photo=?, phone_number=?, is_active=?, reward_points=?
-                    WHERE id=?
-                ');
+                    WHERE id=?');
                 $stm->execute([$email, $name, $role, $pwdHash, $photoName, $phone_number, $is_active, $reward_points, $memberID]);
             } else {
-                // No password change
                 $stm = $_db->prepare('
                     UPDATE user 
                     SET email=?, name=?, role=?, photo=?, phone_number=?, is_active=?, reward_points=?
-                    WHERE id=?
-                ');
+                    WHERE id=?');
                 $stm->execute([$email, $name, $role, $photoName, $phone_number, $is_active, $reward_points, $memberID]);
             }
             temp('info', 'Member updated');
@@ -96,25 +111,14 @@ if (is_post()) {
             if ($password == '') {
                 $_err['password'] = 'Password is required';
             } else {
-                // Hash password with SHA1
                 $pwdHash = sha1($password);
                 $stm = $_db->prepare('
                     INSERT INTO user 
                     (email, name, role, password, photo, phone_number, is_active, failed_attempts, lock_until, phone_verified, reward_points)
-                    VALUES (?,?,?,?,?,?,?,?,?,?,?)
-                ');
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?)');
                 $stm->execute([
-                    $email,
-                    $name,
-                    $role,
-                    $pwdHash,
-                    $photoName,
-                    $phone_number,
-                    $is_active,
-                    0,      // failed_attempts
-                    null,   // lock_until
-                    0,      // phone_verified
-                    $reward_points
+                    $email, $name, $role, $pwdHash, $photoName, $phone_number,
+                    $is_active, 0, null, 0, $reward_points
                 ]);
                 temp('info', 'Member added');
             }
@@ -124,16 +128,14 @@ if (is_post()) {
     }
 }
 
-
 // --------------------------------------------------------------------
-// Prepare $GLOBALS for html_text / html_textarea helpers
+// Prepare $GLOBALS for form helpers
 $GLOBALS['email'] = $_POST['email'] ?? $member->email;
 $GLOBALS['name']  = $_POST['name'] ?? $member->name;
 $GLOBALS['role']  = $_POST['role'] ?? $member->role;
 $GLOBALS['password'] = '';
 $GLOBALS['phone_number'] = $_POST['phone_number'] ?? $member->phone_number;
 $GLOBALS['is_active'] = $_POST['is_active'] ?? $member->is_active;
-
 ?>
 
 <?php
@@ -229,7 +231,9 @@ include '../navbar.php';
     <label for="role">Role</label>
     <select name="role">
         <option value="">Select role</option>
-        <option value="Admin" <?= $GLOBALS['role'] == 'Admin' ? 'selected' : '' ?>>Admin</option>
+        <?php if ($currentUserRole === 'Superadmin'): ?>
+            <option value="Admin" <?= $GLOBALS['role'] == 'Admin' ? 'selected' : '' ?>>Admin</option>
+        <?php endif; ?>
         <option value="Member" <?= $GLOBALS['role'] == 'Member' ? 'selected' : '' ?>>Member</option>
     </select>
     <?= err('role') ?>

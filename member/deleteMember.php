@@ -2,7 +2,7 @@
 include '../_base.php';
 
 // Authenticated users
-auth("Admin");
+auth("Admin","Superadmin");
 
 // Get member ID from URL
 $memberID = req('id');

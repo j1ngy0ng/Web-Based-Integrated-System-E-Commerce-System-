@@ -9,14 +9,14 @@ $role = $_user->role;
 // --------------------------------------------------------------------
 // Get orderID
 $orderID = req('orderID');
-if (!$orderID) redirect($role === 'Admin' ? 'maintenance.php' : 'history.php');
+if (!$orderID) redirect(($role === 'Admin' || $role === 'Superadmin') ? 'maintenance.php' : 'history.php');
 
 // --------------------------------------------------------------------
 // Fetch order
 $stm = $_db->prepare('SELECT * FROM `order` WHERE orderID = ?');
 $stm->execute([$orderID]);
 $order = $stm->fetch();
-if (!$order) redirect($role === 'Admin' ? 'maintenance.php' : 'history.php');
+if (!$order) redirect(($role === 'Admin' || $role === 'Superadmin')? 'maintenance.php' : 'history.php');
 
 // Members can only view their own orders
 if ($role === 'Member' && $order->userID != $_user->id) redirect('history.php');
@@ -144,7 +144,7 @@ include '../navbar.php';
                 <!-- STATUS -->
                 <div class="form-group">
                     <label class="form-label">Order Status</label>
-                    <?php if ($role === 'Admin'): ?>
+                    <?php if (($role === 'Admin') || $role === 'Superadmin'): ?>
                         <select name="status" class="form-control" <?= $order->status === 'Completed' ? 'disabled' : '' ?>>
                             <?php foreach (['Pending','Paid','Shipped','Completed','Cancelled'] as $s): ?>
                                 <option value="<?= $s ?>" <?= $order->status == $s ? 'selected' : '' ?>><?= $s ?></option>
@@ -298,7 +298,7 @@ include '../navbar.php';
     </div>
 
     <div style="text-align: center;">
-        <button class="btn btn-back" onclick="window.location.href='<?= $role === 'Admin' ? '../order/maintenance.php' : 'history.php' ?>'">
+        <button class="btn btn-back" onclick="window.location.href='<?= $role === 'Admin' || $role === 'Superadmin'? '../order/maintenance.php' : 'history.php' ?>'">
             &larr; Back to List
         </button>
     </div>

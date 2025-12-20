@@ -2,7 +2,7 @@
 include '../_base.php';
 
 // Authenticated users
-auth('Admin');
+auth('Admin','Superadmin');
 
 // Get Code from URL (if editing)
 $code_param = req('code'); 

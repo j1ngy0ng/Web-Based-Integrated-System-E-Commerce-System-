@@ -854,7 +854,7 @@ if (!isset($_user)) {
 				<li class="nav-item"><a class="nav-link" href="/about_us.php">About Us</a></li>
 			<?php endif ?>
 
-			<?php if ($_user?->role == 'Admin'): ?>
+			<?php if (($_user?->role == 'Admin') || ($_user?->role == 'Superadmin')): ?>
 				<li class="nav-item"><a class="nav-link" href="/category/category.php">Manage Category</a></li>
 				<li class="nav-item"><a class="nav-link" href="/product/maintenance.php">Manage Products</a></li>
 				<li class="nav-item"><a class="nav-link" href="/product/voucher.php">Vouchers</a></li>

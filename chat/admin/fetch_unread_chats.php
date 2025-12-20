@@ -1,6 +1,6 @@
 <?php
 include '../../_base.php';
-auth('Admin');
+auth('Admin','Superadmin');
 
 // Fetch latest unread messages per room
 $sqlUnreadRooms = "

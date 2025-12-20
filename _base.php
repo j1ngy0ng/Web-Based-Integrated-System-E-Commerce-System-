@@ -395,7 +395,7 @@ $_user = $_SESSION['user'] ?? null;
 // Login user
 function login($user, $url = '/') {
     $_SESSION['user'] = $user;
-    if($user->role == 'Admin'){
+    if($user->role == 'Admin' || $user->role == 'Superadmin'){
         $url = '/landing_admin.php';
     }else if($user->role == 'Member'){
         $url = '/landing_member.php';
