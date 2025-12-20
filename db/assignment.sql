@@ -629,7 +629,7 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id`, `email`, `password`, `name`, `photo`, `role`, `failed_attempts`, `lock_until`, `is_active`, `phone_number`, `phone_verified`, `email_verified`, `reward_points`) VALUES
-(1, '1@gmail.com', '7c4a8d09ca3762af61e59520943dc26494f8941b', 'Lisa Manobal', '69338863b329b.jpg', 'Admin', 0, NULL, 1, '0123456789', 1, 1, NULL),
+(1, '1@gmail.com', '7c4a8d09ca3762af61e59520943dc26494f8941b', 'Lisa Manobal', '69338863b329b.jpg', 'Superadmin', 0, NULL, 1, '0123456789', 1, 1, NULL),
 (2, '2@gmail.com', '7c4a8d09ca3762af61e59520943dc26494f8941b', 'Kim Jisoo', '69183c6a47c0f.jpg', 'Member', 0, NULL, 1, '0186632127', 1, 1, 629),
 (3, 'njy@gmail.com', '7c4a8d09ca3762af61e59520943dc26494f8941b', 'Ng Jing Yong', '6917f5b722a8f.jpg', 'Member', 0, '2025-12-06 11:41:28', 1, '0186632127', 0, 0, 0),
 (4, 'lwk@gmail.com', '7c4a8d09ca3762af61e59520943dc26494f8941b', 'Lim Wai Kit', '691849633defe.jpg', 'Member', 0, NULL, 1, '0186632127', 0, 0, 0),
