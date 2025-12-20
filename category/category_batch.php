@@ -1,6 +1,6 @@
 <?php
 include '../_base.php';
-auth();
+auth("Admin");
 
 require_once '../vendor/autoload.php';
 use PhpOffice\PhpSpreadsheet\IOFactory;

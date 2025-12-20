@@ -3,7 +3,7 @@ include '../_base.php';
 
 // --------------------------------------------------------------------
 // Authenticated users
-auth();
+auth("Admin");
 
 // --------------------------------------------------------------------
 // Get member ID from URL (edit mode) or null (add mode)
