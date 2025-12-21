@@ -55,15 +55,20 @@ if (is_post()) {
 
         // Update user info
         $stm = $_db->prepare('UPDATE user SET email=?, name=?, phone_number=?, photo=?, phone_verified=? WHERE id=?');
+        
         // reset phone_verified if phone changed
         $verified = ($_user->phone_number == $phone) ? $_user->phone_verified : 0;
         $stm->execute([$email, $name, $phone, $photo, $verified, $_user->id]);
 
+        // Update the global user object
         $_user->email = $email;
         $_user->name = $name;
         $_user->phone_number = $phone;
         $_user->photo = $photo;
         $_user->phone_verified = $verified;
+        
+        // CRITICAL FIX: Save the updated user object back to the session
+        $_SESSION['user'] = $_user; 
 
         // Generate verification token if phone changed
         if (!$verified && $phone) {
@@ -74,6 +79,9 @@ if (is_post()) {
 
             // TODO: send $token via SMS
             temp('info', 'Phone verification code sent. Please verify.');
+            
+            // CRITICAL FIX: Redirect to the in-session verification page immediately
+            redirect('/user/verify_phone_session.php'); 
         }
 
         temp('info', 'Profile updated successfully');
@@ -148,7 +156,6 @@ form button:hover { background-color:#0056b3; }
     <canvas id="camera-canvas" style="display:none;"></canvas>
     <input type="file" name="photo" id="fileElem" accept="image/*" capture="environment" style="display:none;">
 
-    <!-- Edit current photo button -->
     <?php if ($photo): ?>
         <div id="saved-photo" style="margin-top:15px; text-align:center;">
             <p style="font-size:0.9rem; color:#666;">Current Photo</p>

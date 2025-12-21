@@ -1087,3 +1087,67 @@
 [2025-12-20 18:24:48] User found: mailleejx@gmail.com (ID: 24)
 [2025-12-20 18:24:48] Password verification SUCCESS
 [2025-12-20 18:24:48] Remember me checkbox was NOT checked
+[2025-12-21 14:35:39] === LOGIN PAGE LOADED ===
+[2025-12-21 14:35:39] Request method: GET
+[2025-12-21 14:35:39] Email received: empty
+[2025-12-21 14:35:39] Remember received: NO
+[2025-12-21 14:35:39] === LOGIN PAGE LOADED ===
+[2025-12-21 14:35:39] Request method: GET
+[2025-12-21 14:35:39] Email received: empty
+[2025-12-21 14:35:39] Remember received: NO
+[2025-12-21 14:35:39] === LOGIN PAGE LOADED ===
+[2025-12-21 14:35:39] Request method: GET
+[2025-12-21 14:35:39] Email received: empty
+[2025-12-21 14:35:39] Remember received: NO
+[2025-12-21 14:35:42] === LOGIN PAGE LOADED ===
+[2025-12-21 14:35:42] Request method: POST
+[2025-12-21 14:35:42] Email received: 2@gmail.com
+[2025-12-21 14:35:42] Remember received: NO
+[2025-12-21 14:35:42] Form submitted via POST
+[2025-12-21 14:35:42] User found: 2@gmail.com (ID: 2)
+[2025-12-21 14:35:42] Password verification SUCCESS
+[2025-12-21 14:35:42] Remember me checkbox was NOT checked
+[2025-12-21 14:35:46] === LOGIN PAGE LOADED ===
+[2025-12-21 14:35:46] Request method: GET
+[2025-12-21 14:35:46] Email received: empty
+[2025-12-21 14:35:46] Remember received: NO
+[2025-12-21 14:43:15] === LOGIN PAGE LOADED ===
+[2025-12-21 14:43:15] Request method: POST
+[2025-12-21 14:43:15] Email received: 2@gmail.com
+[2025-12-21 14:43:15] Remember received: NO
+[2025-12-21 14:43:15] Form submitted via POST
+[2025-12-21 14:43:15] User found: 2@gmail.com (ID: 2)
+[2025-12-21 14:43:15] Password verification SUCCESS
+[2025-12-21 14:43:15] Remember me checkbox was NOT checked
+[2025-12-21 14:43:24] === LOGIN PAGE LOADED ===
+[2025-12-21 14:43:24] Request method: GET
+[2025-12-21 14:43:24] Email received: empty
+[2025-12-21 14:43:24] Remember received: NO
+[2025-12-21 14:43:29] === LOGIN PAGE LOADED ===
+[2025-12-21 14:43:29] Request method: POST
+[2025-12-21 14:43:29] Email received: 2@gmail.com
+[2025-12-21 14:43:29] Remember received: NO
+[2025-12-21 14:43:29] Form submitted via POST
+[2025-12-21 14:43:29] User found: 2@gmail.com (ID: 2)
+[2025-12-21 14:43:29] Password verification SUCCESS
+[2025-12-21 14:43:29] Remember me checkbox was NOT checked
+[2025-12-21 14:46:47] === LOGIN PAGE LOADED ===
+[2025-12-21 14:46:47] Request method: GET
+[2025-12-21 14:46:47] Email received: empty
+[2025-12-21 14:46:47] Remember received: NO
+[2025-12-21 14:48:09] === LOGIN PAGE LOADED ===
+[2025-12-21 14:48:09] Request method: GET
+[2025-12-21 14:48:09] Email received: empty
+[2025-12-21 14:48:09] Remember received: NO
+[2025-12-21 14:48:12] === LOGIN PAGE LOADED ===
+[2025-12-21 14:48:12] Request method: POST
+[2025-12-21 14:48:12] Email received: jyng-wm23@student.tarc.edu.my
+[2025-12-21 14:48:12] Remember received: NO
+[2025-12-21 14:48:12] Form submitted via POST
+[2025-12-21 14:48:12] User found: jyng-wm23@student.tarc.edu.my (ID: 24)
+[2025-12-21 14:48:12] Password verification SUCCESS
+[2025-12-21 14:48:12] Remember me checkbox was NOT checked
+[2025-12-21 14:48:23] === LOGIN PAGE LOADED ===
+[2025-12-21 14:48:23] Request method: GET
+[2025-12-21 14:48:23] Email received: empty
+[2025-12-21 14:48:23] Remember received: NO

@@ -12,17 +12,20 @@ session_start();
 // ============================================================================
 
 // Is GET request?
-function is_get() {
+function is_get()
+{
     return $_SERVER['REQUEST_METHOD'] == 'GET';
 }
 
 // Is POST request?
-function is_post() {
+function is_post()
+{
     return $_SERVER['REQUEST_METHOD'] == 'POST';
 }
 
 // Obtain GET parameter
-function get($key, $value = null) {
+function get($key, $value = null)
+{
     $value = $_GET[$key] ?? $value;
     if (is_array($value)) {
         return array_map('trim', $value);
@@ -31,7 +34,8 @@ function get($key, $value = null) {
 }
 
 // Obtain POST parameter
-function post($key, $value = null) {
+function post($key, $value = null)
+{
     $value = $_POST[$key] ?? $value;
     if (is_array($value)) {
         return array_map('trim', $value);
@@ -40,7 +44,8 @@ function post($key, $value = null) {
 }
 
 // Obtain REQUEST (GET and POST) parameter
-function req($key, $value = null) {
+function req($key, $value = null)
+{
     $value = $_REQUEST[$key] ?? $value;
     if (is_array($value)) {
         return array_map('trim', $value);
@@ -49,18 +54,19 @@ function req($key, $value = null) {
 }
 
 // Redirect to URL
-function redirect($url = null) {
+function redirect($url = null)
+{
     $url ??= $_SERVER['REQUEST_URI'];
     header("Location: $url");
     exit();
 }
 
 // Set or get temporary session variable
-function temp($key, $value = null) {
+function temp($key, $value = null)
+{
     if ($value !== null) {
         $_SESSION["temp_$key"] = $value;
-    }
-    else {
+    } else {
         $value = $_SESSION["temp_$key"] ?? null;
         unset($_SESSION["temp_$key"]);
         return $value;
@@ -68,9 +74,10 @@ function temp($key, $value = null) {
 }
 
 // Obtain uploaded file --> cast to object
-function get_file($key) {
+function get_file($key)
+{
     $f = $_FILES[$key] ?? null;
-    
+
     if ($f && $f['error'] == 0) {
         return (object)$f;
     }
@@ -79,7 +86,8 @@ function get_file($key) {
 }
 
 // Crop, resize and save photo
-function save_photo($f, $folder = 'photos', $width = 200, $height = 200) {
+function save_photo($f, $folder = 'photos', $width = 200, $height = 200)
+{
     // Generate unique filename
     $photo = uniqid() . '.jpg';
 
@@ -104,29 +112,34 @@ function save_photo($f, $folder = 'photos', $width = 200, $height = 200) {
 }
 
 // Is money?
-function is_money($value) {
+function is_money($value)
+{
     return preg_match('/^\-?\d+(\.\d{1,2})?$/', $value);
 }
 
 // Is email?
-function is_email($value) {
+function is_email($value)
+{
     return filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
 }
 
 // Is date?
-function is_date($value, $format = 'Y-m-d') {
+function is_date($value, $format = 'Y-m-d')
+{
     $d = DateTime::createFromFormat($format, $value);
     return $d && $d->format($format) == $value;
 }
 
 // Is time?
-function is_time($value, $format = 'H:i') {
+function is_time($value, $format = 'H:i')
+{
     $d = DateTime::createFromFormat($format, $value);
     return $d && $d->format($format) == $value;
 }
 
 // Return year list items
-function get_years($min, $max, $reverse = false) {
+function get_years($min, $max, $reverse = false)
+{
     $arr = range($min, $max);
 
     if ($reverse) {
@@ -137,7 +150,8 @@ function get_years($min, $max, $reverse = false) {
 }
 
 // Return month list items
-function get_months() {
+function get_months()
+{
     return [
         1  => 'January',
         2  => 'February',
@@ -155,17 +169,20 @@ function get_months() {
 }
 
 // Return local root path
-function root($path = '') {
+function root($path = '')
+{
     return "$_SERVER[DOCUMENT_ROOT]/$path";
 }
 
 // Return base url (host + port)
-function base($path = '') {
+function base($path = '')
+{
     return "http://$_SERVER[SERVER_NAME]:$_SERVER[SERVER_PORT]/$path";
 }
 
 // Return TRUE if ALL array elements meet the condition given
-function array_all($arr, $fn) {
+function array_all($arr, $fn)
+{
     foreach ($arr as $k => $v) {
         if (!$fn($v, $k)) {
             return false;
@@ -179,48 +196,56 @@ function array_all($arr, $fn) {
 // ============================================================================
 
 // Placeholder for TODO
-function TODO() {
+function TODO()
+{
     echo '<span>TODO</span>';
 }
 
 // Encode HTML special characters
-function encode($value) {
+function encode($value)
+{
     return htmlentities($value);
 }
 
 // Generate <input type='hidden'>
-function html_hidden($key, $attr = '') {
+function html_hidden($key, $attr = '')
+{
     $value = encode($GLOBALS[$key] ?? '');
     echo "<input type='hidden' id='$key' name='$key' value='$value' $attr>";
 }
 
 // Generate <input type='text'>
-function html_text($key, $attr = '') {
+function html_text($key, $attr = '')
+{
     $value = encode($GLOBALS[$key] ?? '');
     echo "<input type='text' id='$key' name='$key' value='$value' $attr>";
 }
 
 // Generate <input type='password'>
-function html_password($key, $attr = '') {
+function html_password($key, $attr = '')
+{
     $value = encode($GLOBALS[$key] ?? '');
     echo "<input type='password' id='$key' name='$key' value='$value' $attr>";
 }
 
 // Generate <input type='number'>
-function html_number($key, $min = '', $max = '', $step = '', $attr = '') {
+function html_number($key, $min = '', $max = '', $step = '', $attr = '')
+{
     $value = encode($GLOBALS[$key] ?? '');
     echo "<input type='number' id='$key' name='$key' value='$value'
                  min='$min' max='$max' step='$step' $attr>";
 }
 
 // Generate <input type='search'>
-function html_search($key, $attr = '') {
+function html_search($key, $attr = '')
+{
     $value = encode($GLOBALS[$key] ?? '');
     echo "<input type='search' id='$key' name='$key' value='$value' $attr>";
 }
 
 //Generate highlight search
-function highlight($text, $keyword) {
+function highlight($text, $keyword)
+{
     if (!$keyword) return htmlspecialchars($text);
 
     return preg_replace(
@@ -231,7 +256,8 @@ function highlight($text, $keyword) {
 }
 
 //Pagination calculation
-function paginate($totalRows, $page, $limit) {
+function paginate($totalRows, $page, $limit)
+{
     $totalPages = max(1, ceil($totalRows / $limit));
     $page = max(1, min($page, $totalPages));
     $offset = ($page - 1) * $limit;
@@ -239,7 +265,8 @@ function paginate($totalRows, $page, $limit) {
     return compact('page', 'limit', 'offset', 'totalPages');
 }
 
-function render_pagination($page, $totalPages, $params = []) {
+function render_pagination($page, $totalPages, $params = [])
+{
     if ($totalPages <= 1) return;
 
     $query = http_build_query($params);
@@ -247,7 +274,7 @@ function render_pagination($page, $totalPages, $params = []) {
     echo '<div style="display:flex; justify-content:center; gap:8px;">';
 
     if ($page > 1) {
-        echo "<a class='btn btn-primary' href='?page=" . ($page-1) . "&$query'>◀ Prev</a>";
+        echo "<a class='btn btn-primary' href='?page=" . ($page - 1) . "&$query'>◀ Prev</a>";
     }
 
     for ($i = 1; $i <= $totalPages; $i++) {
@@ -256,7 +283,7 @@ function render_pagination($page, $totalPages, $params = []) {
     }
 
     if ($page < $totalPages) {
-        echo "<a class='btn btn-primary' href='?page=" . ($page+1) . "&$query'>Next ▶</a>";
+        echo "<a class='btn btn-primary' href='?page=" . ($page + 1) . "&$query'>Next ▶</a>";
     }
 
     echo '</div>';
@@ -264,33 +291,38 @@ function render_pagination($page, $totalPages, $params = []) {
 
 
 // Generate <input type='date'>
-function html_date($key, $min= '', $max = '', $attr = '') {
+function html_date($key, $min = '', $max = '', $attr = '')
+{
     $value = encode($GLOBALS[$key] ?? '');
     echo "<input type='date' id='$key' name='$key' value='$value'
                  min='$min' max='$max' $attr>";
 }
 
 // Generate <input type='time'>
-function html_time($key, $attr = '') {
+function html_time($key, $attr = '')
+{
     $value = encode($GLOBALS[$key] ?? '');
     echo "<input type='time' id='$key' name='$key' value='$value' $attr>";
 }
 
 // Generate <textarea>
-function html_textarea($key, $attr = '') {
+function html_textarea($key, $attr = '')
+{
     $value = encode($GLOBALS[$key] ?? '');
     echo "<textarea type='textarea' id='$key' name='$key' $attr>$value</textarea>";
 }
 
 // Generate SINGLE <input type='checkbox'>
-function html_checkbox($key, $label = '', $attr = '') {
+function html_checkbox($key, $label = '', $attr = '')
+{
     $value = encode($GLOBALS[$key] ?? '');
     $status = $value == 1 ? 'checked' : '';
     echo "<label><input type='checkbox' id='$key' name='$key' value='1' $status $attr>$label</label>";
 }
 
 // Generate <input type='checkbox'> list
-function html_checkboxes($key, $items, $br = false) {
+function html_checkboxes($key, $items, $br = false)
+{
     $values = $GLOBALS[$key] ?? [];
     if (!is_array($values)) $values = [];
 
@@ -306,7 +338,8 @@ function html_checkboxes($key, $items, $br = false) {
 }
 
 // Generate <input type='radio'> list
-function html_radios($key, $items, $br = false) {
+function html_radios($key, $items, $br = false)
+{
     $value = encode($GLOBALS[$key] ?? '');
     echo '<div>';
     foreach ($items as $id => $text) {
@@ -320,7 +353,8 @@ function html_radios($key, $items, $br = false) {
 }
 
 // Generate <select>
-function html_select($key, $items, $default = '- Select One -', $selected = '', $attr = '') {
+function html_select($key, $items, $default = '- Select One -', $selected = '', $attr = '')
+{
     $value = $selected !== '' ? encode($selected) : encode($GLOBALS[$key] ?? '');
     echo "<select id='$key' name='$key' $attr>";
     if ($default !== null) {
@@ -334,12 +368,14 @@ function html_select($key, $items, $default = '- Select One -', $selected = '', 
 }
 
 // Generate <input type='file'>
-function html_file($key, $accept = '', $attr = '') {
+function html_file($key, $accept = '', $attr = '')
+{
     echo "<input type='file' id='$key' name='$key' accept='$accept' $attr>";
 }
 
 // Generate table headers <th>
-function table_headers($fields, $sort, $dir, $extraParams = []) {
+function table_headers($fields, $sort, $dir, $extraParams = [])
+{
     // 1. Convert $extraParams array into a URL query string
     $href = '';
     if (!empty($extraParams)) {
@@ -352,7 +388,7 @@ function table_headers($fields, $sort, $dir, $extraParams = []) {
     foreach ($fields as $k => $v) {
         $d = 'asc'; // Default direction
         $c = '';    // Default class
-        
+
         if ($k == $sort) {
             $d = $dir == 'asc' ? 'desc' : 'asc';
             $c = $dir;
@@ -367,7 +403,8 @@ function table_headers($fields, $sort, $dir, $extraParams = []) {
 // Error Handlings
 // ============================================================================
 
-function alert($message) {
+function alert($message)
+{
     $_SESSION['alert'] = $message;
 }
 
@@ -375,12 +412,12 @@ function alert($message) {
 $_err = [];
 
 // Generate <span class='err'>
-function err($key) {
+function err($key)
+{
     global $_err;
     if ($_err[$key] ?? false) {
         echo "<span class='err'>$_err[$key]</span>";
-    }
-    else {
+    } else {
         echo '<span></span>';
     }
 }
@@ -393,20 +430,22 @@ function err($key) {
 $_user = $_SESSION['user'] ?? null;
 
 // Login user
-function login($user, $url = '/') {
+function login($user, $url = '/')
+{
     $_SESSION['user'] = $user;
-    if($user->role == 'Admin' || $user->role == 'Superadmin'){
+    if ($user->role == 'Admin' || $user->role == 'Superadmin') {
         $url = '/landing_admin.php';
-    }else if($user->role == 'Member'){
+    } else if ($user->role == 'Member') {
         $url = '/landing_member.php';
     }
     redirect($url);
 }
 
 // Logout user
-function logout($url = '/login.php') {
+function logout($url = '/login.php')
+{
     global $_db;
-    
+
     // Delete remember me token if exists
     if (isset($_COOKIE['remember_me'])) {
         $parts = explode(':', $_COOKIE['remember_me']);
@@ -418,29 +457,43 @@ function logout($url = '/login.php') {
         // Clear cookie
         setcookie("remember_me", "", time() - 3600, "/", "", false, true);
     }
-    
+
     unset($_SESSION['user']);
     redirect($url);
 }
 
 // Authorization
-function auth(...$roles) {
+function auth(...$roles)
+{
     global $_user;
+
+    // 1. Check if the user is logged in
     if ($_user) {
-        if ($roles) {
+
+        // 2. Check if a role restriction was provided
+        // Use !empty($roles) to check if the function was called with any arguments.
+        // If called as auth(), $roles is an empty array [], and empty([]) is TRUE, 
+        // so !empty([]) is FALSE, which directs to the 'else' block (OK).
+        if (!empty($roles)) {
+
+            // 3. Role check required: Check if the logged-in user's role is in the allowed list
             if (in_array($_user->role, $roles)) {
-                return; // OK
+                return; // OK - user is logged in AND role is authorized
             }
-        }
-        else {
-            return; // OK
+        } else {
+            // 4. No role check required (e.g., auth() was called with no arguments)
+            return; // OK - user is simply logged in
         }
     }
-    
+
+    // 5. REDIRECT: Execution reaches here if:
+    //    a) $_user is null (not logged in)
+    //    b) The role check in step 3 failed (logged in, but unauthorized role)
     redirect('/login.php');
 }
 
-function is_logged() {
+function is_logged()
+{
     return isset($_SESSION['user']);
 }
 
@@ -456,7 +509,8 @@ function is_logged() {
 // liawcv1@gmail.com            pztq znli gpjg tooe
 
 // Initialize and return mail object
-function get_mail() {
+function get_mail()
+{
     require_once 'lib/PHPMailer.php';
     require_once 'lib/SMTP.php';
 
@@ -478,7 +532,8 @@ function get_mail() {
 // ============================================================================
 
 // Get main product photo
-function get_main_photo($productID) {
+function get_main_photo($productID)
+{
     global $_db;
     $stm = $_db->prepare('
         SELECT photoURL FROM productPhoto 
@@ -489,7 +544,8 @@ function get_main_photo($productID) {
 }
 
 // Get all product photos
-function get_product_photos($productID) {
+function get_product_photos($productID)
+{
     global $_db;
     $stm = $_db->prepare('
         SELECT photoURL, is_main FROM productPhoto 
@@ -501,7 +557,8 @@ function get_product_photos($productID) {
 }
 
 // Get additional product photos (excluding main)
-function get_additional_photos($productID) {
+function get_additional_photos($productID)
+{
     global $_db;
     $stm = $_db->prepare('
         SELECT photoURL FROM productPhoto 
@@ -516,32 +573,35 @@ function get_additional_photos($productID) {
 // Shopping Cart
 // ============================================================================
 
-function get_user_cart($userID) {
+function get_user_cart($userID)
+{
     global $_db;
-    
+
     $stm = $_db->prepare('SELECT cartID FROM cart WHERE userID = ? ORDER BY created_at DESC LIMIT 1');
     $stm->execute([$userID]);
     $cartID = $stm->fetchColumn();
-    
+
     // If no cart exists, create one
     if (!$cartID) {
         $stm = $_db->prepare('INSERT INTO cart (userID) VALUES (?)');
         $stm->execute([$userID]);
         $cartID = $_db->lastInsertId();
     }
-    
+
     return $cartID;
 }
 
-function get_cart() {
+function get_cart()
+{
     return $_SESSION['cart'] ?? [];
 }
 
-function update_cart($id, $unit) {
+function update_cart($id, $unit)
+{
     if (!isset($_SESSION['cart'])) {
         $_SESSION['cart'] = [];
     }
-    
+
     if ($unit >= 1 && $unit <= 10 && is_exists($id, 'product', 'productID')) {
         $_SESSION['cart'][$id] = $unit;
     } else {
@@ -550,13 +610,15 @@ function update_cart($id, $unit) {
     }
 }
 
-function clear_cart() {
+function clear_cart()
+{
     $_SESSION['cart'] = [];
 }
 
-function set_cart($cart = []) {
+function set_cart($cart = [])
+{
     $_SESSION['cart'] = [];
-    
+
     foreach ($cart as $id => $unit) {
         if ($unit >= 1 && $unit <= 10 && is_exists($id, 'product', 'productID')) {
             $_SESSION['cart'][$id] = $unit;
@@ -581,7 +643,8 @@ $_db = new PDO('mysql:dbname=assignment', 'root', '', [
 ]);
 
 // Is unique?
-function is_unique($value, $table, $field) {
+function is_unique($value, $table, $field)
+{
     global $_db;
     $stm = $_db->prepare("SELECT COUNT(*) FROM $table WHERE $field = ?");
     $stm->execute([$value]);
@@ -589,7 +652,8 @@ function is_unique($value, $table, $field) {
 }
 
 // Is exists?
-function is_exists($value, $table, $field) {
+function is_exists($value, $table, $field)
+{
     global $_db;
     $stm = $_db->prepare("SELECT COUNT(*) FROM $table WHERE $field = ?");
     $stm->execute([$value]);
@@ -599,4 +663,3 @@ function is_exists($value, $table, $field) {
 // ============================================================================
 // Global Constants and Variables
 // ============================================================================
-

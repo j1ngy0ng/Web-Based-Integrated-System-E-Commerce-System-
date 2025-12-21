@@ -23,4 +23,5 @@ $stm->execute([$user_id, $phone, $token, $expires]);
 
 // TODO: Integrate actual SMS API here
 temp('info', "Verification code sent: $token (for demo, displayed here)");
-redirect('/user/verify_phone.php');
+
+redirect('/user/verify_phone_session.php');
