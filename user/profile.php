@@ -37,8 +37,12 @@ if (is_post()) {
     // Name validation
     if ($name == '') $_err['name'] = 'Required';
 
-    // Phone validation
-    if ($phone && strlen($phone) > 20) $_err['phone'] = 'Max 20 chars';
+    // Phone validation (Malaysia)
+    if ($phone == '') {
+        $_err['phone'] = 'Phone number is required';
+    } else if (!is_phone($phone)) {
+        $_err['phone'] = 'Invalid Malaysian phone number';
+    }
 
     // Photo validation
     if ($f) {
@@ -55,7 +59,7 @@ if (is_post()) {
 
         // Update user info
         $stm = $_db->prepare('UPDATE user SET email=?, name=?, phone_number=?, photo=?, phone_verified=? WHERE id=?');
-        
+
         // reset phone_verified if phone changed
         $verified = ($_user->phone_number == $phone) ? $_user->phone_verified : 0;
         $stm->execute([$email, $name, $phone, $photo, $verified, $_user->id]);
@@ -66,9 +70,9 @@ if (is_post()) {
         $_user->phone_number = $phone;
         $_user->photo = $photo;
         $_user->phone_verified = $verified;
-        
+
         // CRITICAL FIX: Save the updated user object back to the session
-        $_SESSION['user'] = $_user; 
+        $_SESSION['user'] = $_user;
 
         // Generate verification token if phone changed
         if (!$verified && $phone) {
@@ -79,9 +83,9 @@ if (is_post()) {
 
             // TODO: send $token via SMS
             temp('info', 'Phone verification code sent. Please verify.');
-            
+
             // CRITICAL FIX: Redirect to the in-session verification page immediately
-            redirect('/user/verify_phone_session.php'); 
+            redirect('/user/verify_phone_session.php');
         }
 
         temp('info', 'Profile updated successfully');
@@ -99,20 +103,101 @@ include '../navbar.php';
 <script src="/js/photo-editor.js"></script>
 
 <style>
-form.form { max-width: 450px; margin:50px auto; background:#fff; padding:30px 40px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.1);}
-form label { display:block; margin-top:20px; margin-bottom:8px; font-weight:600;}
-form input[type="text"], form input[type="email"], form input[type="password"] { width:95%; padding:10px 14px; border:1px solid #ccc; border-radius:8px; font-size:1rem;}
-form .err { color:#e74c3c; font-size:0.85rem; margin-top:4px;}
-form section { margin-top:30px; display:flex; gap:10px; justify-content:flex-end;}
-form button { padding:10px 20px; border:none; background-color:#007BFF; color:white; font-weight:600; border-radius:8px; cursor:pointer;}
-form button[type="reset"] { background-color:#6c757d; }
-form button:hover { background-color:#0056b3; }
-#drop-area { border:2px dashed #aaa; padding:20px; text-align:center; border-radius:12px; cursor:pointer; background:#fafafa; }
-#drop-area.highlight { border-color:#007bff; background:#eef5ff; }
-#preview-img { max-width:100%; max-height:300px; border-radius:10px; margin-top:10px; display:none; box-shadow:0 4px 12px rgba(0,0,0,.15);}
-#image-tools button:disabled { opacity:0.6; cursor:not-allowed;}
-#start-crop.active { background-color:#0056b3;}
-#saved-photo img { max-width:100%; max-height:300px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,.15);}
+    form.form {
+        max-width: 450px;
+        margin: 50px auto;
+        background: #fff;
+        padding: 30px 40px;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    form label {
+        display: block;
+        margin-top: 20px;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+    form input[type="text"],
+    form input[type="email"],
+    form input[type="password"] {
+        width: 95%;
+        padding: 10px 14px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    form .err {
+        color: #e74c3c;
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    form section {
+        margin-top: 30px;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    form button {
+        padding: 10px 20px;
+        border: none;
+        background-color: #007BFF;
+        color: white;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    form button[type="reset"] {
+        background-color: #6c757d;
+    }
+
+    form button:hover {
+        background-color: #0056b3;
+    }
+
+    #drop-area {
+        border: 2px dashed #aaa;
+        padding: 20px;
+        text-align: center;
+        border-radius: 12px;
+        cursor: pointer;
+        background: #fafafa;
+    }
+
+    #drop-area.highlight {
+        border-color: #007bff;
+        background: #eef5ff;
+    }
+
+    #preview-img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 10px;
+        margin-top: 10px;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+    }
+
+    #image-tools button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    #start-crop.active {
+        background-color: #0056b3;
+    }
+
+    #saved-photo img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+    }
 </style>
 
 <form method="post" class="form" enctype="multipart/form-data">

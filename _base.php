@@ -137,6 +137,19 @@ function is_time($value, $format = 'H:i')
     return $d && $d->format($format) == $value;
 }
 
+//Is phone number?
+function is_phone($value)
+{
+    // Remove spaces, dashes, brackets
+    $value = preg_replace('/[\s\-()]/', '', $value);
+
+    // Malaysia mobile formats:
+    // 01X-XXXXXXX or 01X-XXXXXXXX
+    // +601X-XXXXXXX or +601X-XXXXXXXX
+    // 601X-XXXXXXX or 601X-XXXXXXXX
+    return preg_match('/^(?:\+?60|0)1[0-9]{8,9}$/', $value);
+}
+
 // Return year list items
 function get_years($min, $max, $reverse = false)
 {

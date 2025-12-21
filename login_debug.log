@@ -1151,3 +1151,19 @@
 [2025-12-21 14:48:23] Request method: GET
 [2025-12-21 14:48:23] Email received: empty
 [2025-12-21 14:48:23] Remember received: NO
+[2025-12-21 15:14:05] === LOGIN PAGE LOADED ===
+[2025-12-21 15:14:05] Request method: GET
+[2025-12-21 15:14:05] Email received: empty
+[2025-12-21 15:14:05] Remember received: NO
+[2025-12-21 15:14:45] === LOGIN PAGE LOADED ===
+[2025-12-21 15:14:45] Request method: POST
+[2025-12-21 15:14:45] Email received: 2@gmail.com
+[2025-12-21 15:14:45] Remember received: NO
+[2025-12-21 15:14:45] Form submitted via POST
+[2025-12-21 15:14:45] User found: 2@gmail.com (ID: 2)
+[2025-12-21 15:14:45] Password verification SUCCESS
+[2025-12-21 15:14:45] Remember me checkbox was NOT checked
+[2025-12-21 15:14:59] === LOGIN PAGE LOADED ===
+[2025-12-21 15:14:59] Request method: GET
+[2025-12-21 15:14:59] Email received: empty
+[2025-12-21 15:14:59] Remember received: NO

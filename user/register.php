@@ -22,6 +22,12 @@ if (is_post()) {
     else if (!is_email($email)) $_err['email'] = 'Invalid email format';
     else if (!is_unique($email, 'user', 'email')) $_err['email'] = 'Email already exists';
 
+    if ($phone == '') {
+        $_err['phone'] = 'Phone number is required';
+    } else if (!is_phone($phone)) {
+        $_err['phone'] = 'Invalid Malaysian phone number';
+    }
+
     if ($password == '') $_err['password'] = 'Password is required';
     else if (strlen($password) < 4) $_err['password'] = 'Password must be at least 4 characters';
 
@@ -95,7 +101,6 @@ if (is_post()) {
             $_SESSION['pre_verify_user_id'] = $user_id;
             redirect('/user/email_verification_notice.php');
             exit();
-
         } catch (Exception $e) {
             temp('error', "Mailer Error: {$mail->ErrorInfo}");
         }
