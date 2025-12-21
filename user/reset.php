@@ -129,6 +129,21 @@ $_title = 'User | Reset Password';
         color: #d9534f;
         font-size: 13px;
     }
+
+    .success {
+        color: #2a8f45;
+        text-align: center;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    .warning,
+    .err {
+        color: #e74c3c;
+        text-align: left;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
 </style>
 
 <form method="post" class="form">
@@ -141,4 +156,3 @@ $_title = 'User | Reset Password';
         <button type="reset">Reset</button>
     </section>
 </form>
-

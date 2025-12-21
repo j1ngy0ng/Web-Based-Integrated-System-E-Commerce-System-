@@ -179,6 +179,21 @@ if (is_post()) {
             object-fit: cover;
             cursor: pointer;
         }
+
+        .success {
+            color: #2a8f45;
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .warning,
+        .err {
+            color: #e74c3c;
+            text-align: left;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 

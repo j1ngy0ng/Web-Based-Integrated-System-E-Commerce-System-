@@ -1167,3 +1167,57 @@
 [2025-12-21 15:14:59] Request method: GET
 [2025-12-21 15:14:59] Email received: empty
 [2025-12-21 15:14:59] Remember received: NO
+[2025-12-21 15:17:32] === LOGIN PAGE LOADED ===
+[2025-12-21 15:17:32] Request method: GET
+[2025-12-21 15:17:32] Email received: empty
+[2025-12-21 15:17:32] Remember received: NO
+[2025-12-21 15:17:38] === LOGIN PAGE LOADED ===
+[2025-12-21 15:17:38] Request method: POST
+[2025-12-21 15:17:38] Email received: 1@gmail.com
+[2025-12-21 15:17:38] Remember received: NO
+[2025-12-21 15:17:38] Form submitted via POST
+[2025-12-21 15:17:38] User found: 1@gmail.com (ID: 1)
+[2025-12-21 15:17:38] Password verification SUCCESS
+[2025-12-21 15:17:38] Remember me checkbox was NOT checked
+[2025-12-21 15:20:13] === LOGIN PAGE LOADED ===
+[2025-12-21 15:20:13] Request method: GET
+[2025-12-21 15:20:13] Email received: empty
+[2025-12-21 15:20:13] Remember received: NO
+[2025-12-21 15:20:24] === LOGIN PAGE LOADED ===
+[2025-12-21 15:20:24] Request method: POST
+[2025-12-21 15:20:24] Email received: 1@gmail.com
+[2025-12-21 15:20:24] Remember received: NO
+[2025-12-21 15:20:24] Form submitted via POST
+[2025-12-21 15:20:24] User found: 1@gmail.com (ID: 1)
+[2025-12-21 15:20:24] Password verification SUCCESS
+[2025-12-21 15:20:24] Remember me checkbox was NOT checked
+[2025-12-21 15:20:31] === LOGIN PAGE LOADED ===
+[2025-12-21 15:20:31] Request method: GET
+[2025-12-21 15:20:31] Email received: empty
+[2025-12-21 15:20:31] Remember received: NO
+[2025-12-21 15:20:34] === LOGIN PAGE LOADED ===
+[2025-12-21 15:20:34] Request method: POST
+[2025-12-21 15:20:34] Email received: 3@gmail.com
+[2025-12-21 15:20:34] Remember received: NO
+[2025-12-21 15:20:34] Form submitted via POST
+[2025-12-21 15:20:34] User found: 3@gmail.com (ID: 9)
+[2025-12-21 15:20:34] Password verification SUCCESS
+[2025-12-21 15:20:34] Remember me checkbox was NOT checked
+[2025-12-21 15:20:42] === LOGIN PAGE LOADED ===
+[2025-12-21 15:20:42] Request method: GET
+[2025-12-21 15:20:42] Email received: empty
+[2025-12-21 15:20:42] Remember received: NO
+[2025-12-21 15:21:51] === LOGIN PAGE LOADED ===
+[2025-12-21 15:21:51] Request method: POST
+[2025-12-21 15:21:51] Email received: empty
+[2025-12-21 15:21:51] Remember received: NO
+[2025-12-21 15:21:51] Form submitted via POST
+[2025-12-21 15:22:11] === LOGIN PAGE LOADED ===
+[2025-12-21 15:22:11] Request method: POST
+[2025-12-21 15:22:11] Email received: empty
+[2025-12-21 15:22:11] Remember received: NO
+[2025-12-21 15:22:11] Form submitted via POST
+[2025-12-21 15:22:19] === LOGIN PAGE LOADED ===
+[2025-12-21 15:22:19] Request method: GET
+[2025-12-21 15:22:19] Email received: empty
+[2025-12-21 15:22:19] Remember received: NO

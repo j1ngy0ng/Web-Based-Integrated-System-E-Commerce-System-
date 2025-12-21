@@ -1,11 +1,14 @@
 <?php
 require_once '_base.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+
 require_once 'vendor/autoload.php';
 
 // --- Debug Logging ---
-function debug_log($message) {
+function debug_log($message)
+{
     $log_file = __DIR__ . '/login_debug.log';
     $timestamp = date('Y-m-d H:i:s');
     $message = "[$timestamp] $message" . PHP_EOL;
@@ -18,25 +21,25 @@ debug_log("Request method: " . $_SERVER['REQUEST_METHOD']);
 // --- Check Remember Me Cookie ---
 if (isset($_COOKIE['remember_me']) && !is_logged()) {
     debug_log("Remember me cookie found: " . $_COOKIE['remember_me']);
-    
+
     list($selector, $validator) = explode(':', $_COOKIE['remember_me']);
-    
+
     if ($selector && $validator) {
         $stm = $_db->prepare("SELECT * FROM remember_tokens WHERE selector = ? AND expires_at > NOW()");
         $stm->execute([$selector]);
         $token = $stm->fetch(PDO::FETCH_ASSOC);
-        
+
         if ($token) {
             debug_log("Token found in database for selector: $selector");
-            
+
             if (hash_equals($token['validator_hash'], hash('sha256', $validator))) {
                 debug_log("Token validation SUCCESS");
-                
+
                 // Get user
                 $stm = $_db->prepare("SELECT * FROM user WHERE id = ?");
                 $stm->execute([$token['user_id']]);
                 $user = $stm->fetch(PDO::FETCH_ASSOC);
-                
+
                 if ($user && $user['is_active']) {
                     login((object)$user);
                     debug_log("Auto-login successful for user: {$user['email']}");
@@ -48,14 +51,14 @@ if (isset($_COOKIE['remember_me']) && !is_logged()) {
             } else {
                 debug_log("Token validation FAILED - hash mismatch");
             }
-            
+
             // Delete invalid/used token
             $stm = $_db->prepare("DELETE FROM remember_tokens WHERE id = ?");
             $stm->execute([$token['id']]);
         } else {
             debug_log("No valid token found in database");
         }
-        
+
         // Clear invalid cookie
         setcookie("remember_me", "", time() - 3600, "/");
     }
@@ -107,21 +110,21 @@ if (is_post()) {
                 // Remember Me - BEFORE login()
                 if (!empty($remember)) {
                     debug_log("Remember me checkbox WAS checked");
-                    
+
                     $selector = bin2hex(random_bytes(6));
                     $validator = bin2hex(random_bytes(32));
                     $hashedValidator = hash('sha256', $validator);
                     $expires = date('Y-m-d H:i:s', time() + (86400 * 30));
 
                     debug_log("Generated selector: $selector");
-                    
+
                     try {
                         $stm = $_db->prepare("INSERT INTO remember_tokens (user_id, selector, validator_hash, expires_at) VALUES (?, ?, ?, ?)");
                         $result = $stm->execute([$user['id'], $selector, $hashedValidator, $expires]);
-                        
+
                         if ($result) {
                             debug_log("Token INSERT successful - rows affected: " . $stm->rowCount());
-                            
+
                             // Set cookie BEFORE redirect
                             $cookieValue = $selector . ':' . $validator;
                             $cookieSet = setcookie("remember_me", $cookieValue, [
@@ -131,7 +134,7 @@ if (is_post()) {
                                 'httponly' => true,
                                 'samesite' => 'Lax'
                             ]);
-                            
+
                             debug_log("Cookie set attempt: " . ($cookieSet ? 'SUCCESS' : 'FAILED'));
                             debug_log("Cookie value: $cookieValue");
                         } else {
@@ -148,7 +151,6 @@ if (is_post()) {
                 login((object)$user);
                 temp('info', 'Login successfully');
                 exit();
-
             } else {
                 debug_log("Password verification FAILED");
                 $failed_attempts = $user['failed_attempts'] + 1;
@@ -171,73 +173,179 @@ if (is_post()) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Chillax - Login</title>
     <style>
-        body { margin:0; font-family: Arial, sans-serif; }
-        .container { display:flex; min-height:100vh; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
         /* Left: Product Info */
-        .hero { flex:1; background:#01A7C2; color:white; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:50px; text-align:center; }
-        .hero h1 { font-size:50px; margin-bottom:20px; }
-        .hero p { font-size:20px; margin-bottom:20px; }
-        .hero ul { list-style: none; padding:0; font-size:18px; }
-        .hero ul li { margin:10px 0; }
+        .hero {
+            flex: 1;
+            background: #01A7C2;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .hero ul {
+            list-style: none;
+            padding: 0;
+            font-size: 18px;
+        }
+
+        .hero ul li {
+            margin: 10px 0;
+        }
+
         /* Right: Login Form */
-        .login { flex:1; display:flex; justify-content:center; align-items:center; background:#f5f5f5; }
-        .box { width:80%; max-width:400px; background:white; padding:40px; border-radius:20px; box-shadow:0 4px 20px rgba(0,0,0,0.1); }
-        input { width:100%; padding:10px; border:1px solid #bbb; border-radius:5px; margin-top:5px; }
-        button { width:100%; background:#4285f4; border:none; padding:12px; color:white; border-radius:5px; cursor:pointer; font-size:16px; margin-top:15px; }
-        button:hover { background:#2f6bd9; }
-        a { text-decoration:none; color:#4285f4; }
-        .error { color:#d9534f; font-size:13px; }
-        label.remember { display:inline-flex; align-items:center; cursor:pointer; margin-top:10px; }
-        label.remember input { width:auto; margin-right:5px; }
+        .login {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5f5f5;
+        }
+
+        .box {
+            width: 80%;
+            max-width: 400px;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bbb;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        button {
+            width: 100%;
+            background: #4285f4;
+            border: none;
+            padding: 12px;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background: #2f6bd9;
+        }
+
+        a {
+            text-decoration: none;
+            color: #4285f4;
+        }
+
+        .error {
+            color: #d9534f;
+            font-size: 13px;
+        }
+
+        label.remember {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        label.remember input {
+            width: auto;
+            margin-right: 5px;
+        }
+
+        .success {
+            color: #2a8f45;
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .warning,
+        .err {
+            color: #e74c3c;
+            text-align: left;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
+
 <body>
-<div class="container">
-    <!-- Hero Section -->
-    <div class="hero">
-        <img id="logo" src="/images/logo.png" alt="Logo" style="height:150px; margin-bottom:20px;">
-        <h1>Welcome to Chillax!</h1>
-        <p>Born from Wellness – The Art of Relaxation</p>
-        <ul>
-            <li>Chillax was founded with a simple mission: to bring harmony between healthcare and beauty. We believe that true beauty comes from within, and wellness is the foundation of confidence.</li>
-        </ul>
-    </div>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <img id="logo" src="/images/logo.png" alt="Logo" style="height:150px; margin-bottom:20px;">
+            <h1>Welcome to Chillax!</h1>
+            <p>Born from Wellness – The Art of Relaxation</p>
+            <ul>
+                <li>Chillax was founded with a simple mission: to bring harmony between healthcare and beauty. We believe that true beauty comes from within, and wellness is the foundation of confidence.</li>
+            </ul>
+        </div>
 
-    <!-- Login Form -->
-    <div class="login">
-        <div class="box">
-            <h2 style="text-align:center;">Login</h2>
-            <form method="post">
-                <label for="email">Email</label>
-                <?php html_text('email'); ?>
-                <?php err('email'); ?>
-                <br><br>
+        <!-- Login Form -->
+        <div class="login">
+            <div class="box">
+                <h2 style="text-align:center;">Login</h2>
+                <form method="post">
+                    <label for="email">Email</label>
+                    <?php html_text('email'); ?>
+                    <?php err('email'); ?>
+                    <br><br>
 
-                <label for="password">Password</label>
-                <?php html_password('password'); ?>
-                <?php err('password'); ?>
-                <br><br>
+                    <label for="password">Password</label>
+                    <?php html_password('password'); ?>
+                    <?php err('password'); ?>
+                    <br><br>
 
-                <label class="remember">
-                    <?php html_checkbox('remember', 'Remember Me'); ?>
-                </label>
-                <br>
+                    <label class="remember">
+                        <?php html_checkbox('remember', 'Remember Me'); ?>
+                    </label>
+                    <br>
 
-                <button type="submit">Login</button>
+                    <button type="submit">Login</button>
 
-                <p style="text-align:center; margin-top:15px;">
-                    <a href="/user/reset.php">Forgot Password?</a>
-                </p>
-                <p style="text-align:center; margin-top:15px;">
-                    <a href="/user/register.php">New User? Register Here</a>
-                </p>
-            </form>
+                    <p style="text-align:center; margin-top:15px;">
+                        <a href="/user/reset.php">Forgot Password?</a>
+                    </p>
+                    <p style="text-align:center; margin-top:15px;">
+                        <a href="/user/register.php">New User? Register Here</a>
+                    </p>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 </body>
+
 </html>
