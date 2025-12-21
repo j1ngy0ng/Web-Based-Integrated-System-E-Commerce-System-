@@ -1221,3 +1221,111 @@
 [2025-12-21 15:22:19] Request method: GET
 [2025-12-21 15:22:19] Email received: empty
 [2025-12-21 15:22:19] Remember received: NO
+[2025-12-21 20:20:39] === LOGIN PAGE LOADED ===
+[2025-12-21 20:20:39] Request method: GET
+[2025-12-21 20:20:39] Email received: empty
+[2025-12-21 20:20:39] Remember received: NO
+[2025-12-21 20:20:48] === LOGIN PAGE LOADED ===
+[2025-12-21 20:20:48] Request method: POST
+[2025-12-21 20:20:48] Email received: mailleejx@gmail.com
+[2025-12-21 20:20:48] Remember received: NO
+[2025-12-21 20:20:48] Form submitted via POST
+[2025-12-21 20:20:48] User found: mailleejx@gmail.com (ID: 24)
+[2025-12-21 20:20:48] Password verification SUCCESS
+[2025-12-21 20:20:48] Remember me checkbox was NOT checked
+[2025-12-21 20:42:35] === LOGIN PAGE LOADED ===
+[2025-12-21 20:42:35] Request method: GET
+[2025-12-21 20:42:35] Email received: empty
+[2025-12-21 20:42:35] Remember received: NO
+[2025-12-21 20:42:41] === LOGIN PAGE LOADED ===
+[2025-12-21 20:42:41] Request method: POST
+[2025-12-21 20:42:41] Email received: 2@gmail.com
+[2025-12-21 20:42:41] Remember received: NO
+[2025-12-21 20:42:41] Form submitted via POST
+[2025-12-21 20:42:41] User found: 2@gmail.com (ID: 2)
+[2025-12-21 20:42:41] Password verification SUCCESS
+[2025-12-21 20:42:41] Remember me checkbox was NOT checked
+[2025-12-21 20:43:00] === LOGIN PAGE LOADED ===
+[2025-12-21 20:43:00] Request method: GET
+[2025-12-21 20:43:00] Email received: empty
+[2025-12-21 20:43:00] Remember received: NO
+[2025-12-21 20:43:07] === LOGIN PAGE LOADED ===
+[2025-12-21 20:43:07] Request method: POST
+[2025-12-21 20:43:07] Email received: mailleejx@gmail.com
+[2025-12-21 20:43:07] Remember received: NO
+[2025-12-21 20:43:07] Form submitted via POST
+[2025-12-21 20:43:07] User found: mailleejx@gmail.com (ID: 24)
+[2025-12-21 20:43:07] Password verification SUCCESS
+[2025-12-21 20:43:07] Remember me checkbox was NOT checked
+[2025-12-21 20:45:43] === LOGIN PAGE LOADED ===
+[2025-12-21 20:45:43] Request method: GET
+[2025-12-21 20:45:43] Email received: empty
+[2025-12-21 20:45:43] Remember received: NO
+[2025-12-21 20:45:48] === LOGIN PAGE LOADED ===
+[2025-12-21 20:45:48] Request method: POST
+[2025-12-21 20:45:48] Email received: 2@gmail.com
+[2025-12-21 20:45:48] Remember received: NO
+[2025-12-21 20:45:48] Form submitted via POST
+[2025-12-21 20:45:48] User found: 2@gmail.com (ID: 2)
+[2025-12-21 20:45:48] Password verification SUCCESS
+[2025-12-21 20:45:48] Remember me checkbox was NOT checked
+[2025-12-21 20:47:07] === LOGIN PAGE LOADED ===
+[2025-12-21 20:47:07] Request method: GET
+[2025-12-21 20:47:07] Email received: empty
+[2025-12-21 20:47:07] Remember received: NO
+[2025-12-21 20:47:22] === LOGIN PAGE LOADED ===
+[2025-12-21 20:47:22] Request method: POST
+[2025-12-21 20:47:22] Email received: 2@gmail.com
+[2025-12-21 20:47:22] Remember received: NO
+[2025-12-21 20:47:22] Form submitted via POST
+[2025-12-21 20:47:22] User found: 2@gmail.com (ID: 2)
+[2025-12-21 20:47:22] Password verification SUCCESS
+[2025-12-21 20:47:22] Remember me checkbox was NOT checked
+[2025-12-21 20:47:31] === LOGIN PAGE LOADED ===
+[2025-12-21 20:47:31] Request method: GET
+[2025-12-21 20:47:31] Email received: empty
+[2025-12-21 20:47:31] Remember received: NO
+[2025-12-21 20:48:00] === LOGIN PAGE LOADED ===
+[2025-12-21 20:48:00] Request method: POST
+[2025-12-21 20:48:00] Email received: mailleejx@gmail.com
+[2025-12-21 20:48:00] Remember received: NO
+[2025-12-21 20:48:00] Form submitted via POST
+[2025-12-21 20:48:00] User found: mailleejx@gmail.com (ID: 24)
+[2025-12-21 20:48:00] Password verification SUCCESS
+[2025-12-21 20:48:00] Remember me checkbox was NOT checked
+[2025-12-21 20:59:26] === LOGIN PAGE LOADED ===
+[2025-12-21 20:59:26] Request method: GET
+[2025-12-21 20:59:26] Email received: empty
+[2025-12-21 20:59:26] Remember received: NO
+[2025-12-21 20:59:38] === LOGIN PAGE LOADED ===
+[2025-12-21 20:59:38] Request method: POST
+[2025-12-21 20:59:38] Email received: mailleejx@gmail.com
+[2025-12-21 20:59:38] Remember received: NO
+[2025-12-21 20:59:38] Form submitted via POST
+[2025-12-21 20:59:38] User found: mailleejx@gmail.com (ID: 24)
+[2025-12-21 20:59:38] Password verification SUCCESS
+[2025-12-21 20:59:38] Remember me checkbox was NOT checked
+[2025-12-21 21:04:58] === LOGIN PAGE LOADED ===
+[2025-12-21 21:04:58] Request method: GET
+[2025-12-21 21:04:58] Email received: empty
+[2025-12-21 21:04:58] Remember received: NO
+[2025-12-21 21:05:03] === LOGIN PAGE LOADED ===
+[2025-12-21 21:05:03] Request method: POST
+[2025-12-21 21:05:03] Email received: 2@gmail.com
+[2025-12-21 21:05:03] Remember received: NO
+[2025-12-21 21:05:03] Form submitted via POST
+[2025-12-21 21:05:03] User found: 2@gmail.com (ID: 2)
+[2025-12-21 21:05:03] Password verification SUCCESS
+[2025-12-21 21:05:03] Remember me checkbox was NOT checked
+[2025-12-21 21:05:40] === LOGIN PAGE LOADED ===
+[2025-12-21 21:05:40] Request method: GET
+[2025-12-21 21:05:40] Email received: empty
+[2025-12-21 21:05:40] Remember received: NO
+[2025-12-21 21:05:47] === LOGIN PAGE LOADED ===
+[2025-12-21 21:05:47] Request method: POST
+[2025-12-21 21:05:47] Email received: 2@gmail.com
+[2025-12-21 21:05:47] Remember received: NO
+[2025-12-21 21:05:47] Form submitted via POST
+[2025-12-21 21:05:47] User found: 2@gmail.com (ID: 2)
+[2025-12-21 21:05:47] Password verification SUCCESS
+[2025-12-21 21:05:47] Remember me checkbox was NOT checked

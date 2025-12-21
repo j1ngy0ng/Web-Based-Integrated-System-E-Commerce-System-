@@ -5,6 +5,8 @@
 // ============================================================================
 
 date_default_timezone_set('Asia/Kuala_Lumpur');
+ini_set('session.use_cookies', 1);
+ini_set('session.use_only_cookies', 1);
 session_start();
 
 // ============================================================================
@@ -585,57 +587,132 @@ function get_additional_photos($productID)
 // ============================================================================
 // Shopping Cart
 // ============================================================================
-
-function get_user_cart($userID)
-{
-    global $_db;
-
-    $stm = $_db->prepare('SELECT cartID FROM cart WHERE userID = ? ORDER BY created_at DESC LIMIT 1');
-    $stm->execute([$userID]);
-    $cartID = $stm->fetchColumn();
-
-    // If no cart exists, create one
-    if (!$cartID) {
-        $stm = $_db->prepare('INSERT INTO cart (userID) VALUES (?)');
-        $stm->execute([$userID]);
-        $cartID = $_db->lastInsertId();
+function get_cart() {
+    global $_db, $_user;
+    
+    // If user is logged in, get cart from database
+    if ($_user) {
+        // Get or create user's cart
+        $stm = $_db->prepare('SELECT cartID FROM cart WHERE userID = ?');
+        $stm->execute([$_user->id]);
+        $cart_record = $stm->fetch();
+        
+        if (!$cart_record) {
+            // Create new cart for user
+            $stm = $_db->prepare('INSERT INTO cart (userID, created_at, updated_at) VALUES (?, NOW(), NOW())');
+            $stm->execute([$_user->id]);
+            $cart_id = $_db->lastInsertId();
+        } else {
+            $cart_id = $cart_record->cartID;
+        }
+        
+        // Get cart items from database
+        $stm = $_db->prepare('SELECT productID, quantity FROM cart_item WHERE cartID = ?');
+        $stm->execute([$cart_id]);
+        $items = $stm->fetchAll();
+        
+        $cart = [];
+        foreach ($items as $item) {
+            $cart[$item->productID] = $item->quantity;
+        }
+        
+        return $cart;
     }
-
-    return $cartID;
+    
+    // Guest users: use session
+    return $_SESSION['cart'] ?? [];
 }
 
-function get_cart()
-{
-    return $_SESSION['cart'] ?? [];
+function save_cart_to_db($cart) {
+    global $_db, $_user;
+    
+    if (!$_user) return; // Only for logged-in users
+    
+    // Get or create cart
+    $stm = $_db->prepare('SELECT cartID FROM cart WHERE userID = ?');
+    $stm->execute([$_user->id]);
+    $cart_record = $stm->fetch();
+    
+    if (!$cart_record) {
+        $stm = $_db->prepare('INSERT INTO cart (userID, created_at, updated_at) VALUES (?, NOW(), NOW())');
+        $stm->execute([$_user->id]);
+        $cart_id = $_db->lastInsertId();
+    } else {
+        $cart_id = $cart_record->cartID;
+    }
+    
+    // Clear existing items
+    $stm = $_db->prepare('DELETE FROM cart_item WHERE cartID = ?');
+    $stm->execute([$cart_id]);
+    
+    // Insert current cart items
+    if (!empty($cart)) {
+        $stm = $_db->prepare('INSERT INTO cart_item (cartID, productID, quantity) VALUES (?, ?, ?)');
+        foreach ($cart as $product_id => $quantity) {
+            $stm->execute([$cart_id, $product_id, $quantity]);
+        }
+    }
+    
+    // Update cart timestamp
+    $stm = $_db->prepare('UPDATE cart SET updated_at = NOW() WHERE cartID = ?');
+    $stm->execute([$cart_id]);
 }
 
 function update_cart($id, $unit)
 {
-    if (!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
-    }
+    global $_user;
+    
+    // Get current cart (from DB if logged in, session if guest)
+    $cart = get_cart();
 
     if ($unit >= 1 && $unit <= 10 && is_exists($id, 'product', 'productID')) {
-        $_SESSION['cart'][$id] = $unit;
+        $cart[$id] = $unit;
     } else {
         // Remove item if unit is 0 or invalid
-        unset($_SESSION['cart'][$id]);
+        unset($cart[$id]);
+    }
+    
+    // Save back to session (for both logged-in and guest)
+    $_SESSION['cart'] = $cart;
+    
+    // Also save to DB if logged in
+    if ($_user) {
+        save_cart_to_db($cart);
     }
 }
 
-function clear_cart()
-{
+function clear_cart() {
+    global $_db, $_user;
+    
     $_SESSION['cart'] = [];
+    
+    if ($_user) {
+        $stm = $_db->prepare('SELECT cartID FROM cart WHERE userID = ?');
+        $stm->execute([$_user->id]);
+        $cart_record = $stm->fetch();
+        
+        if ($cart_record) {
+            $stm = $_db->prepare('DELETE FROM cart_item WHERE cartID = ?');
+            $stm->execute([$cart_record->cartID]);
+        }
+    }
 }
 
 function set_cart($cart = [])
 {
+    global $_user;
+    
     $_SESSION['cart'] = [];
 
     foreach ($cart as $id => $unit) {
         if ($unit >= 1 && $unit <= 10 && is_exists($id, 'product', 'productID')) {
             $_SESSION['cart'][$id] = $unit;
         }
+    }
+    
+    // Save to DB if logged in
+    if ($_user) {
+        save_cart_to_db($_SESSION['cart']);
     }
 }
 

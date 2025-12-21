@@ -1,6 +1,5 @@
 <?php
 include '../_base.php';
-
 // ----------------------------------------------------------------------------
 // 1. PRE-CALCULATE TOTALS & FETCH DATA
 // ----------------------------------------------------------------------------
@@ -93,6 +92,7 @@ if (is_post()) {
         }
 
         $_SESSION['cart'] = $cart;
+        save_cart_to_db($cart);
         $_SESSION['cart_last_updated'] = time();
 
         $count = array_sum($cart);
@@ -121,6 +121,7 @@ if (is_post()) {
         $cart = get_cart();
         unset($cart[$id]);
         $_SESSION['cart'] = $cart;
+        save_cart_to_db($cart);
         if (empty($cart)) unset($_SESSION['voucher']);
         $_SESSION['cart_last_updated'] = time();
         redirect();
@@ -1808,9 +1809,6 @@ include '../navbar.php';
         // Initialize checks
         checkUnavailableItems();
 
-        // Optional: Uncomment if you want auto-delete feature
-        // autoDeleteUnavailableItems();
-
         // Re-check after any cart updates (you might need to trigger this after AJAX calls)
         $(document).on('cartUpdated', function() {
             checkUnavailableItems();
@@ -1831,7 +1829,7 @@ include '../navbar.php';
             return false;
         });
 
-        // Add smooth animations
+        // Smooth animations
         $('.delete-btn, .btn').hover(
             function() {
                 $(this).css('transform', 'translateY(-2px)');
