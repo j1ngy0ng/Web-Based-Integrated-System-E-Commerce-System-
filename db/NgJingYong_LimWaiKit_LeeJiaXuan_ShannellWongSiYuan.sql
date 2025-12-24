@@ -1036,6 +1036,30 @@ ALTER TABLE `token`
   ADD CONSTRAINT `token_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`);
 COMMIT;
 
+
+
+-- Table structure for table `Events`
+CREATE TABLE product_event (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    event_date DATE NOT NULL,
+    event_time TIME,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    is_promo TINYINT(1) DEFAULT 0
+);
+
+CREATE TABLE product_event_item (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    event_id INT NOT NULL,
+    product_id INT NOT NULL,
+    FOREIGN KEY (event_id) REFERENCES product_event(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES product(productID) ON DELETE CASCADE
+);
+
+
+
+
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

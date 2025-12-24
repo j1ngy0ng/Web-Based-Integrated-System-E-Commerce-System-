@@ -187,6 +187,42 @@ if ($_user) {
 $categoriesStm = $_db->query('SELECT * FROM ProductCategory ORDER BY categoryName');
 $categories = $categoriesStm->fetchAll();
 
+
+// Fetch upcoming events for the month
+$year  = req('year') ?: date('Y');
+$month = req('month') ?: date('n');
+
+$a = new DateTime("$year-$month");
+$b = new DateTime("last day of $year-$month");
+
+if ($a->format('N') != 1) $a->modify('previous monday');
+if ($b->format('N') != 7) $b->modify('next sunday');
+
+/* Fetch events with products */
+$stm = $_db->prepare("
+    SELECT e.*, GROUP_CONCAT(pe.product_id) AS product_ids
+    FROM product_event e
+    LEFT JOIN product_event_item pe ON e.id = pe.event_id
+    WHERE e.event_date BETWEEN ? AND ?
+    GROUP BY e.id
+");
+$stm->execute([$a->format('Y-m-d'), $b->format('Y-m-d')]);
+$events = $stm->fetchAll(PDO::FETCH_OBJ);
+
+/* Attach products */
+$data = [];
+foreach ($events as $e) {
+    $e->products = [];
+    if ($e->product_ids) {
+        $ids = explode(',', $e->product_ids);
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stm2 = $_db->prepare("SELECT productID, name FROM product WHERE productID IN ($placeholders)");
+        $stm2->execute($ids);
+        $e->products = $stm2->fetchAll(PDO::FETCH_OBJ);
+    }
+    $data[$e->event_date][] = $e;
+}
+
 $_title = 'Home - Welcome';
 include 'navbar.php';
 ?>
@@ -623,6 +659,187 @@ function filterTopSelling(category) {
         emptyState.style.display = 'none';
     }
 }
+</script>
+
+<!-- Calendar -->
+<div class="cal">
+    <h3>Mon</h3><h3>Tue</h3><h3>Wed</h3><h3>Thu</h3><h3>Fri</h3><h3>Sat</h3><h3>Sun</h3>
+
+    <?php
+    for ($d = clone $a; $d <= $b; $d->modify('+1 day')) {
+        $date = $d->format('Y-m-d');
+        $x = $d->format('n') != $month ? 'x' : '';
+        echo "<div class='day $x' data-date='$date'>";
+        echo "<b>{$d->format('d')}</b>";
+
+        foreach ($data[$date] ?? [] as $e) {
+            $eventData = htmlspecialchars(json_encode([
+                'id' => $e->id,
+                'name' => $e->name,
+                'description' => $e->description,
+                'event_time' => $e->event_time,
+                'is_promo' => $e->is_promo,
+                'products' => $e->products ?? []
+            ]), ENT_QUOTES);
+
+            $promoClass = $e->is_promo ? 'promo' : '';
+            echo "<div class='event $promoClass' data-event='$eventData'>{$e->name}</div>";
+        }
+
+        echo "</div>";
+    }
+    ?>
+</div>
+
+
+<!-- Event modal -->
+<div id="eventModal" class="modal">
+    <div class="box">
+        <h4 id="modalTitle"></h4>
+        <p id="modalTime"></p>
+        <p id="modalDesc"></p>
+        <div id="modalProducts"></div>
+        <button type="button" onclick="closeModal()" class="btn-save">Close</button>
+    </div>
+</div>
+
+
+<style>
+.calendar-compact {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    font-size: 14px;
+    margin-top: 20px;
+}
+.day {
+    background: #f9f9f9;
+    padding: 4px;
+    min-height: 80px;
+    border-radius: 4px;
+}
+.day.other-month {
+    background: #f0f0f0;
+    color: #aaa;
+}
+.day .date {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+.event {
+    background: #36b9cc;
+    color: white;
+    padding: 3px 6px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.event.promo {
+    background: #f39c12 !important;
+}
+
+</style>
+
+
+<style>
+.cal {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+.cal h3 {
+    background: #4e73df;
+    color: #fff;
+    text-align: center;
+    padding: 6px;
+}
+.day {
+    background: #fff;
+    padding: 6px;
+    min-height: 90px;
+    cursor: default;
+    border-radius: 6px;
+}
+.day.x { background: #f0f0f0; color: #999; }
+.event {
+    background: #36b9cc;
+    color: #fff;
+    font-size: 12px;
+    padding: 2px 5px;
+    margin-top: 3px;
+    border-radius: 4px;
+}
+.event.promo { background: #f39c12; }
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.4);
+    justify-content: center;
+    align-items: center;
+}
+.box {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 480px;
+    max-width: 90%;
+}
+.btn-add {
+    background: #4e73df;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 8px;
+    text-decoration: none;
+    display: inline-block;
+    margin: 2px 0;
+}
+
+
+
+</style>
+
+<script>
+ const modal = document.getElementById('eventModal');
+const modalTitle = document.getElementById('modalTitle');
+const modalTime = document.getElementById('modalTime');
+const modalDesc = document.getElementById('modalDesc');
+const modalProducts = document.getElementById('modalProducts');
+
+document.querySelectorAll('.event').forEach(ev => {
+    ev.addEventListener('click', () => {
+        const data = JSON.parse(ev.dataset.event);
+
+        modalTitle.textContent = data.name;
+        modalTime.textContent = "Time: " + data.event_time;
+        modalDesc.textContent = data.description;
+
+        modalProducts.innerHTML = '';
+        if (data.is_promo && data.products.length > 0) {
+            data.products.forEach(p => {
+                modalProducts.insertAdjacentHTML('beforeend',
+                    `<a href="/product/detail.php?id=${p.productID}" class="btn-add" target="_blank">${p.name}</a><br>`
+                );
+            });
+        }
+
+        modal.style.display = 'flex';
+    });
+});
+
+function closeModal() {
+    modal.style.display = 'none';
+}
+
+window.onclick = e => {
+    if (e.target == modal) closeModal();
+};
+
 </script>
 
 <?php include 'footer.php'; ?>

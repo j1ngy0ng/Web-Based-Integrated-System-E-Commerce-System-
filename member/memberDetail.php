@@ -131,7 +131,17 @@ if (is_post()) {
                     (email, name, role, password, photo, phone_number, phone_verified, is_active, failed_attempts, lock_until, reward_points)
                     VALUES (?,?,?,?,?,?,?,?,?,?,?)');
                 $stm->execute([
-                    $email, $name, $role, $pwdHash, $photoName, $phone_number, 0, $is_active, 0, null, $reward_points
+                    $email,
+                    $name,
+                    $role,
+                    $pwdHash,
+                    $photoName,
+                    $phone_number,
+                    0,
+                    $is_active,
+                    0,
+                    null,
+                    $reward_points
                 ]);
                 temp('info', 'Member added');
             }
@@ -160,16 +170,82 @@ include '../navbar.php';
 <script src="/js/photo-editor.js"></script>
 
 <style>
-    form.form { max-width: 500px; margin:50px auto; background:#fff; padding:30px 40px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.1);}
-    form label { display:block; margin-top:20px; font-weight:600;}
-    form input[type="text"], form input[type="email"], form input[type="password"], form select { width:95%; padding:10px 14px; border:1px solid #ccc; border-radius:8px; font-size:1rem;}
-    form .err { color:#e74c3c; font-size:0.85rem; margin-top:4px;}
-    form section { margin-top:30px; display:flex; gap:10px; justify-content:flex-end;}
-    form button { padding:10px 20px; border:none; background-color:#007BFF; color:white; font-size:1rem; font-weight:600; border-radius:8px; cursor:pointer;}
-    form button[type="reset"] { background-color:#6c757d;}
-    #drop-area { border:2px dashed #aaa; padding:20px; text-align:center; border-radius:12px; cursor:pointer; background:#fafafa;}
-    #drop-area.highlight { border-color:#007bff; background:#eef5ff; }
-    #preview-img { max-width:100%; max-height:300px; border-radius:10px; margin-top:10px; display:none; box-shadow:0 4px 12px rgba(0,0,0,.15);}
+    form.form {
+        max-width: 500px;
+        margin: 50px auto;
+        background: #fff;
+        padding: 30px 40px;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    form label {
+        display: block;
+        margin-top: 20px;
+        font-weight: 600;
+    }
+
+    form input[type="text"],
+    form input[type="email"],
+    form input[type="password"],
+    form select {
+        width: 95%;
+        padding: 10px 14px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 1rem;
+    }
+
+    form .err {
+        color: #e74c3c;
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    form section {
+        margin-top: 30px;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    form button {
+        padding: 10px 20px;
+        border: none;
+        background-color: #007BFF;
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    form button[type="reset"] {
+        background-color: #6c757d;
+    }
+
+    #drop-area {
+        border: 2px dashed #aaa;
+        padding: 20px;
+        text-align: center;
+        border-radius: 12px;
+        cursor: pointer;
+        background: #fafafa;
+    }
+
+    #drop-area.highlight {
+        border-color: #007bff;
+        background: #eef5ff;
+    }
+
+    #preview-img {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 10px;
+        margin-top: 10px;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+    }
 </style>
 
 <form method="post" class="form" enctype="multipart/form-data">
@@ -202,7 +278,7 @@ include '../navbar.php';
     <label for="is_active">Status</label>
     <select name="is_active">
         <option value="1" <?= $GLOBALS['is_active'] ? 'selected' : '' ?>>Active</option>
-        <option value="0" <?= !$GLOBALS['is_active'] ? 'selected' : '' ?>>Inactive</option>
+        <option value="0" <?= !$GLOBALS['is_active'] ? 'selected' : '' ?>>Blocked</option>
     </select>
 
     <label for="password"><?= $memberID ? 'New Password (leave blank to keep)' : 'Password' ?></label>

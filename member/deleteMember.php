@@ -2,7 +2,7 @@
 include '../_base.php';
 
 // Authenticated users
-auth("Admin","Superadmin");
+auth("Admin", "Superadmin");
 
 // Get member ID from URL
 $memberID = req('id');
@@ -27,9 +27,13 @@ if ($member->photo && file_exists("../uploads/{$member->photo}")) {
     unlink("../uploads/{$member->photo}");
 }
 
-// Delete member
-$stm = $_db->prepare('DELETE FROM user WHERE id = ?');
+// Soft Delete member
+$stm = $_db->prepare('
+    UPDATE user
+    SET is_active = -1
+    WHERE id = ?
+');
 $stm->execute([$memberID]);
 
-temp('info', 'Member deleted successfully');
+temp('info', 'Member set to inactive successfully');
 redirect('memberList.php');

@@ -564,4 +564,12 @@ include 'navbar.php';
     });
 </script>
 
+<!-- ===================== Calendar ===================== -->
+<div class="dashboard-container" style="margin-top:50px;">
+    <h3>Product Events Calendar</h3>
+    <?php include __DIR__ . '/Event/calendarList.php'; ?>
+
+</div>
+
+
 <?php include 'footer.php'; ?>
