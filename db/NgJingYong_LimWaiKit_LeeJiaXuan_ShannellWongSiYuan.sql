@@ -1042,11 +1042,13 @@ COMMIT;
 CREATE TABLE product_event (
     id INT AUTO_INCREMENT PRIMARY KEY,
     event_date DATE NOT NULL,
-    event_time TIME,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
     name VARCHAR(100) NOT NULL,
     description TEXT,
     is_promo TINYINT(1) DEFAULT 0
 );
+
 
 CREATE TABLE product_event_item (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -1055,8 +1057,6 @@ CREATE TABLE product_event_item (
     FOREIGN KEY (event_id) REFERENCES product_event(id) ON DELETE CASCADE,
     FOREIGN KEY (product_id) REFERENCES product(productID) ON DELETE CASCADE
 );
-
-
 
 
 

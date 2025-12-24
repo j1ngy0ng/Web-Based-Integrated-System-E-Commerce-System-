@@ -1,14 +1,37 @@
 <?php
 include_once __DIR__ . '/../_base.php';
+session_start();
 
-// Get form data
-$id           = req('id'); // hidden input for editing
-$event_date   = req('event_date');
-$name         = req('name');
-$description  = req('description');
-$event_time   = req('event_time') ?: null;
-$is_promo     = req('is_promo') ?: 0;
-$product_ids  = req('product_id') ?? []; 
+
+// ================= Get form data =================
+$id          = req('id'); // hidden input for editing
+$event_date  = req('event_date');
+$name        = req('name');
+$description = req('description');
+$start_time  = req('start_time') ?: null;
+$end_time    = req('end_time') ?: null;
+$is_promo    = req('is_promo') ?: 0;
+$product_ids = req('product_id') ?? []; 
+
+// ================= Validation =================
+$errors = [];
+
+// General required fields
+if (!$event_date) $errors[] = "Event date is required.";
+if (!$name) $errors[] = "Event name is required.";
+
+// Start/end time validation
+$time_error = '';
+if ($start_time && $end_time && $start_time >= $end_time) {
+    $time_error = "End time must be after start time.";
+}
+
+if ($time_error) {
+    $_SESSION['old_input'] = $_POST;
+    $_SESSION['event_errors'] = [$time_error]; // only time error
+    header("Location: ../landing_admin.php");
+    exit;
+}
 
 try {
     // Start transaction
@@ -18,10 +41,10 @@ try {
         // Update existing event
         $stmt = $_db->prepare("
             UPDATE product_event 
-            SET name=?, description=?, event_time=?, is_promo=? 
+            SET name=?, description=?, start_time=?, end_time=?, is_promo=? 
             WHERE id=?
         ");
-        $stmt->execute([$name, $description, $event_time, $is_promo, $id]);
+        $stmt->execute([$name, $description, $start_time, $end_time, $is_promo, $id]);
 
         $event_id = $id;
 
@@ -32,10 +55,10 @@ try {
     } else {
         // Insert new event
         $stmt = $_db->prepare("
-            INSERT INTO product_event (event_date, event_time, name, description, is_promo)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO product_event (event_date, start_time, end_time, name, description, is_promo)
+            VALUES (?, ?, ?, ?, ?, ?)
         ");
-        $stmt->execute([$event_date, $event_time, $name, $description, $is_promo]);
+        $stmt->execute([$event_date, $start_time, $end_time, $name, $description, $is_promo]);
         $event_id = $_db->lastInsertId();
     }
 
@@ -50,7 +73,6 @@ try {
         }
     }
 
-    // Commit
     $_db->commit();
 
     header("Location: ../landing_admin.php?success=1");
@@ -58,5 +80,9 @@ try {
 
 } catch (PDOException $e) {
     $_db->rollBack();
-    die("Error saving event: " . $e->getMessage());
+
+    $_SESSION['event_errors'] = ["Database error: " . $e->getMessage()];
+    $_SESSION['old_input'] = $_POST;
+    header("Location: ../landing_admin.php");
+    exit;
 }

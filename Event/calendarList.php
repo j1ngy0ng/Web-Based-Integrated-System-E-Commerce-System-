@@ -75,21 +75,22 @@ $products = $_db
         echo "<div class='day $x' data-date='$date'>";
         echo "<b>{$d->format('d')}</b>";
 
-foreach ($data[$date] ?? [] as $e) {
-    // Encode data as JSON for JavaScript
-    $eventData = htmlspecialchars(json_encode([
-        'id' => $e->id,
-        'name' => $e->name,
-        'description' => $e->description,
-        'event_time' => $e->event_time,
-        'is_promo' => $e->is_promo,
-        'products' => $e->products ?? [], 
-    ]), ENT_QUOTES);
+        foreach ($data[$date] ?? [] as $e) {
+            $eventData = htmlspecialchars(json_encode([
+                'id' => $e->id,
+                'name' => $e->name,
+                'description' => $e->description,
+                'start_time' => $e->start_time,
+                'end_time' => $e->end_time,
+                'is_promo' => $e->is_promo,
+                'products' => $e->products ?? [],
+            ]), ENT_QUOTES);
 
-    echo "<div class='event' data-event='$eventData'>"
-        . htmlspecialchars($e->name)
-        . "</div>";
-}
+            echo "<div class='event' data-event='$eventData'>"
+                . htmlspecialchars($e->name)
+                . "</div>";
+        }
+
 
 
         echo "</div>";
@@ -99,6 +100,8 @@ foreach ($data[$date] ?? [] as $e) {
 
 <!-- ================= Modal ================= -->
 <div id="eventModal" class="modal">
+
+
     <div class="box">
 
         <h4 id="modalDate"></h4>
@@ -118,9 +121,15 @@ foreach ($data[$date] ?? [] as $e) {
             </div>
 
             <div class="form-row">
-                <label>Event Time</label>
-                <input type="time" name="event_time">
+                <label>Start Time</label>
+                <input type="time" name="start_time">
             </div>
+
+            <div class="form-row">
+                <label>End Time</label>
+                <input type="time" name="end_time">
+            </div>
+
 
             <div class="form-row inline">
                 <label>Promotion Event?</label>
@@ -163,95 +172,95 @@ foreach ($data[$date] ?? [] as $e) {
 <!-- ================= Scripts ================= -->
 <script>
     /* Open modal on day click */
-document.querySelectorAll('.event').forEach(ev => {
-    ev.onclick = e => {
-        const data = JSON.parse(ev.dataset.event);
+    document.querySelectorAll('.event').forEach(ev => {
+        ev.onclick = e => {
+            const data = JSON.parse(ev.dataset.event);
 
-        // Open modal
-        eventModal.style.display = 'flex';
-        modalDate.innerText = ev.closest('.day').dataset.date;
-        event_date.value = ev.closest('.day').dataset.date;
+            eventModal.style.display = 'flex';
+            modalDate.innerText = ev.closest('.day').dataset.date;
+            event_date.value = ev.closest('.day').dataset.date;
 
-        // Fill form fields
-        const form = document.querySelector('.event-form');
-        form.name.value = data.name;
-        form.description.value = data.description;
-        form.event_time.value = data.event_time;
-        form.is_promo.value = data.is_promo;
+            const form = document.querySelector('.event-form');
+            form.name.value = data.name;
+            form.description.value = data.description;
+            form.start_time.value = data.start_time || '';
+            form.end_time.value = data.end_time || '';
+            form.is_promo.value = data.is_promo;
 
-        // Show/hide promo section
-        document.getElementById('promo-section').style.display =
-            data.is_promo == 1 ? 'block' : 'none';
+            document.getElementById('promo-section').style.display =
+                data.is_promo == 1 ? 'block' : 'none';
 
-        // Optional: load products if promo
-        if(data.is_promo == 1 && data.products) {
-            const productsContainer = document.getElementById('products');
-            productsContainer.innerHTML = ''; // clear previous
-            data.products.forEach(p => {
-                productsContainer.insertAdjacentHTML('beforeend', `
+            // Load products if promo
+            if (data.is_promo == 1 && data.products) {
+                const productsContainer = document.getElementById('products');
+                productsContainer.innerHTML = '';
+                data.products.forEach(p => {
+                    productsContainer.insertAdjacentHTML('beforeend', `
                     <div class="product-row">
                         <input type="hidden" name="product_id[]" value="${p.product_id}">
                         <span>${p.name}</span>
                         <button type="button" class="btn-add" onclick="this.parentElement.remove()">−</button>
                     </div>
                 `);
-            });
-        }
+                });
+            }
 
-        // Save event ID for editing
-        if (!form.querySelector('input[name="id"]')) {
-            const idInput = document.createElement('input');
-            idInput.type = 'hidden';
-            idInput.name = 'id';
-            form.appendChild(idInput);
-        }
-        form.querySelector('input[name="id"]').value = data.id;
-    };
-});
-
-// Open modal on day click for creating new event
-document.querySelectorAll('.day').forEach(day => {
-    day.addEventListener('click', e => {
-        // Only open for empty space or if not clicking an existing event
-        if(e.target.classList.contains('event')) return;
-
-        const modal = document.getElementById('eventModal');
-        modal.style.display = 'flex';
-
-        const date = day.dataset.date;
-        document.getElementById('modalDate').innerText = date;
-        document.getElementById('event_date').value = date;
-
-        // Clear form for new event
-        const form = modal.querySelector('form');
-        form.reset();
-        document.getElementById('promo-section').style.display = 'none';
-        document.getElementById('products').innerHTML = '';
-
-        // Remove hidden id input if exists
-        const idInput = form.querySelector('input[name="id"]');
-        if (idInput) idInput.remove();
+            // Save event ID
+            if (!form.querySelector('input[name="id"]')) {
+                const idInput = document.createElement('input');
+                idInput.type = 'hidden';
+                idInput.name = 'id';
+                form.appendChild(idInput);
+            }
+            form.querySelector('input[name="id"]').value = data.id;
+        };
     });
-});
 
-document.querySelector('.event-form').addEventListener('submit', function(e) {
-    const promoSelect = document.getElementById('promo-product-select');
-    const productsContainer = document.getElementById('products');
 
-    if (document.getElementById('is_promo').value == 1 && promoSelect.value) {
-        // Only add if not already added
-        if (!productsContainer.querySelector(`input[value="${promoSelect.value}"]`)) {
-            const productName = promoSelect.options[promoSelect.selectedIndex].text;
-            productsContainer.insertAdjacentHTML('beforeend', `
+    // Open modal on day click for creating new event
+    document.querySelectorAll('.day').forEach(day => {
+        day.addEventListener('click', e => {
+            if (e.target.classList.contains('event')) return;
+
+            const modal = document.getElementById('eventModal');
+            modal.style.display = 'flex';
+
+            const date = day.dataset.date;
+            document.getElementById('modalDate').innerText = date;
+            document.getElementById('event_date').value = date;
+
+            const form = modal.querySelector('form');
+            form.reset();
+            document.getElementById('promo-section').style.display = 'none';
+            document.getElementById('products').innerHTML = '';
+
+            const idInput = form.querySelector('input[name="id"]');
+            if (idInput) idInput.remove();
+
+            form.start_time.value = '';
+            form.end_time.value = '';
+        });
+    });
+
+
+    document.querySelector('.event-form').addEventListener('submit', function(e) {
+        const promoSelect = document.getElementById('promo-product-select');
+        const productsContainer = document.getElementById('products');
+
+        if (document.getElementById('is_promo').value == 1 && promoSelect.value) {
+            // Only add if not already added
+            if (!productsContainer.querySelector(`input[value="${promoSelect.value}"]`)) {
+                const productName = promoSelect.options[promoSelect.selectedIndex].text;
+                productsContainer.insertAdjacentHTML('beforeend', `
                 <div class="product-row">
                     <input type="hidden" name="product_id[]" value="${promoSelect.value}">
                     <span>${productName}</span>
                     <button type="button" class="btn-add" onclick="this.parentElement.remove()">−</button>
                 </div>
             `);
+            }
         }
-    }
-});
+    });
 
 
     /* Promo toggle */
@@ -303,29 +312,30 @@ document.querySelector('.event-form').addEventListener('submit', function(e) {
     document.querySelector('.btn-delete').style.display = eventId ? 'inline-block' : 'none';
 
     function deleteEvent() {
-    if (!confirm("Are you sure you want to delete this event?")) return;
+        if (!confirm("Are you sure you want to delete this event?")) return;
 
-    const form = document.querySelector('.event-form');
-    const eventId = form.querySelector('input[name="id"]').value;
+        const form = document.querySelector('.event-form');
+        const eventId = form.querySelector('input[name="id"]').value;
 
-    if (!eventId) return; // no event selected
+        if (!eventId) return; // no event selected
 
-    // Send request to delete
-    fetch('Event/deleteEvent.php', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: 'id=' + encodeURIComponent(eventId)
-    })
-    .then(res => res.text())
-    .then(res => {
-        // Optionally show success message
-        // Close modal and reload calendar
-        closeModal();
-        location.reload();
-    })
-    .catch(err => alert('Error deleting event: ' + err));
-}
-
+        // Send request to delete
+        fetch('Event/deleteEvent.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'id=' + encodeURIComponent(eventId)
+            })
+            .then(res => res.text())
+            .then(res => {
+                // Optionally show success message
+                // Close modal and reload calendar
+                closeModal();
+                location.reload();
+            })
+            .catch(err => alert('Error deleting event: ' + err));
+    }
 </script>
 
 <!-- ================= Styles ================= -->
@@ -343,13 +353,19 @@ document.querySelector('.event-form').addEventListener('submit', function(e) {
         padding: 6px
     }
 
-    .day {
-        background: #fff;
-        padding: 6px;
-        min-height: 90px;
-        cursor: pointer;
-        border-radius: 6px
-    }
+.day {
+    background: #fff;
+    padding: 6px;
+    min-height: 90px;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;  
+        max-height: 200px;
+    overflow-y: auto;
+}
+
 
     .day.x {
         background: #f0f0f0;
@@ -437,17 +453,18 @@ document.querySelector('.event-form').addEventListener('submit', function(e) {
     }
 
     .btn-delete {
-    background: #e74a3b; /* red color */
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px;
-    font-weight: 600;
-    cursor: pointer;
-}
+        background: #e74a3b;
+        /* red color */
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 10px;
+        font-weight: 600;
+        cursor: pointer;
+    }
 
-.btn-delete:hover {
-    background: #c0392b; /* darker red on hover */
-}
-
+    .btn-delete:hover {
+        background: #c0392b;
+        /* darker red on hover */
+    }
 </style>

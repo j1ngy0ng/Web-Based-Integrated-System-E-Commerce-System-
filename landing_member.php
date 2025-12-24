@@ -662,6 +662,7 @@ function filterTopSelling(category) {
 </script>
 
 <!-- Calendar -->
+<h3 class="calendar-title">Product Events Calendar</h3>
 <div class="cal">
     <h3>Mon</h3><h3>Tue</h3><h3>Wed</h3><h3>Thu</h3><h3>Fri</h3><h3>Sat</h3><h3>Sun</h3>
 
@@ -672,19 +673,22 @@ function filterTopSelling(category) {
         echo "<div class='day $x' data-date='$date'>";
         echo "<b>{$d->format('d')}</b>";
 
-        foreach ($data[$date] ?? [] as $e) {
-            $eventData = htmlspecialchars(json_encode([
-                'id' => $e->id,
-                'name' => $e->name,
-                'description' => $e->description,
-                'event_time' => $e->event_time,
-                'is_promo' => $e->is_promo,
-                'products' => $e->products ?? []
-            ]), ENT_QUOTES);
+foreach ($data[$date] ?? [] as $e) {
+    $eventData = htmlspecialchars(json_encode([
+        'id' => $e->id,
+        'name' => $e->name,
+        'description' => $e->description,
+        'start_time' => $e->start_time,
+        'end_time' => $e->end_time,
+        'is_promo' => $e->is_promo,
+        'products' => $e->products ?? [], 
+    ]), ENT_QUOTES);
 
-            $promoClass = $e->is_promo ? 'promo' : '';
-            echo "<div class='event $promoClass' data-event='$eventData'>{$e->name}</div>";
-        }
+    echo "<div class='event' data-event='$eventData'>"
+        . htmlspecialchars($e->name)
+        . "</div>";
+}
+
 
         echo "</div>";
     }
@@ -742,14 +746,18 @@ function filterTopSelling(category) {
     background: #f39c12 !important;
 }
 
-</style>
+.calendar-title {
+    margin: 0 80px 0px;
+    font-size: 22px;
+    color: #4e73df;
+}
 
 
-<style>
 .cal {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 6px;
+    margin: 0 80px 40px 80px; 
 }
 .cal h3 {
     background: #4e73df;

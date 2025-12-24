@@ -565,11 +565,24 @@ include 'navbar.php';
 </script>
 
 <!-- ===================== Calendar ===================== -->
+<?php
+
+$old = $_SESSION['old_input'] ?? [];
+$errors = $_SESSION['event_errors'] ?? [];
+unset($_SESSION['old_input'], $_SESSION['event_errors']);
+?>
+
 <div class="dashboard-container" style="margin-top:50px;">
     <h3>Product Events Calendar</h3>
     <?php include __DIR__ . '/Event/calendarList.php'; ?>
-
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    <?php if(!empty($errors)): ?>
+        alert("<?= addslashes(implode("\\n", $errors)) ?>"); 
+    <?php endif; ?>
+});
+</script>
 
 <?php include 'footer.php'; ?>
