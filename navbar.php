@@ -3,6 +3,14 @@ if (!isset($_user)) {
     session_start();
     $_user = $_SESSION['user'] ?? null;
 }
+
+$landingPage = match ($_user->role ?? '') {
+    'Member'      => 'landing_member.php',
+    'Admin',
+    'Superadmin'  => 'landing_admin.php',
+    default       => 'index.php',
+};
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -843,9 +851,9 @@ if (!isset($_user)) {
 <body>
 	<nav class="navbar" id="mainNav">
 		<!-- LOGO -->
-			<a class="navbar-brand" href="/landing_<?= strtolower($_user->role) ?>.php">
-				<img id="logo" src="/images/logo.png" alt="Logo">
-			</a>
+			<a class="navbar-brand" href="/<?= $landingPage ?>">
+    <img id="logo" src="/images/logo.png" alt="Logo">
+</a>
 		<ul id="nav-menu">
 			<?php if ($_user?->role == 'Member'): ?>
 				<li class="nav-item"><a class="nav-link" href="/product/list.php">Product</a></li>
