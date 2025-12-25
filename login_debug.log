@@ -1513,3 +1513,15 @@
 [2025-12-24 21:17:10] User found: 1@gmail.com (ID: 1)
 [2025-12-24 21:17:10] Password verification SUCCESS
 [2025-12-24 21:17:10] Remember me checkbox was NOT checked
+[2025-12-25 08:36:24] === LOGIN PAGE LOADED ===
+[2025-12-25 08:36:24] Request method: GET
+[2025-12-25 08:36:24] Email received: empty
+[2025-12-25 08:36:24] Remember received: NO
+[2025-12-25 08:36:27] === LOGIN PAGE LOADED ===
+[2025-12-25 08:36:27] Request method: POST
+[2025-12-25 08:36:27] Email received: 1@gmail.com
+[2025-12-25 08:36:27] Remember received: NO
+[2025-12-25 08:36:27] Form submitted via POST
+[2025-12-25 08:36:27] User found: 1@gmail.com (ID: 1)
+[2025-12-25 08:36:27] Password verification SUCCESS
+[2025-12-25 08:36:27] Remember me checkbox was NOT checked
