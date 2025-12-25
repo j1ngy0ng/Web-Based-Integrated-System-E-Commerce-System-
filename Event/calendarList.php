@@ -44,19 +44,24 @@ $products = $_db
 ?>
 
 <!-- ================= Controls ================= -->
-<form>
-    <select name="year">
+<form method="get">
+    <select name="year" onchange="this.form.submit()">
         <?php for ($y = date('Y') - 4; $y <= date('Y'); $y++): ?>
-            <option value="<?= $y ?>" <?= $y == $year ? 'selected' : '' ?>><?= $y ?></option>
+            <option value="<?= $y ?>" <?= $y == $year ? 'selected' : '' ?>>
+                <?= $y ?>
+            </option>
         <?php endfor; ?>
     </select>
 
-    <select name="month">
+    <select name="month" onchange="this.form.submit()">
         <?php foreach (get_months() as $m => $name): ?>
-            <option value="<?= $m ?>" <?= $m == $month ? 'selected' : '' ?>><?= $name ?></option>
+            <option value="<?= $m ?>" <?= $m == $month ? 'selected' : '' ?>>
+                <?= $name ?>
+            </option>
         <?php endforeach; ?>
     </select>
 </form>
+
 
 <!-- ================= Calendar ================= -->
 <div class="cal">
@@ -107,6 +112,9 @@ $products = $_db
         <h4 id="modalDate"></h4>
 
         <form method="post" action="Event/saveEvent.php" class="event-form">
+            <input type="hidden" name="year" value="<?= $year ?>">
+            <input type="hidden" name="month" value="<?= $month ?>">
+
 
             <input type="hidden" name="event_date" id="event_date">
 
@@ -197,7 +205,7 @@ $products = $_db
                 data.products.forEach(p => {
                     productsContainer.insertAdjacentHTML('beforeend', `
                     <div class="product-row">
-                        <input type="hidden" name="product_id[]" value="${p.product_id}">
+                        <input type="hidden" name="product_id[]" value="${p.productID}">
                         <span>${p.name}</span>
                         <button type="button" class="btn-add" onclick="this.parentElement.remove()">−</button>
                     </div>
@@ -332,7 +340,8 @@ $products = $_db
                 // Optionally show success message
                 // Close modal and reload calendar
                 closeModal();
-                location.reload();
+                location.href = `landing_admin.php?year=<?= $year ?>&month=<?= $month ?>`;
+
             })
             .catch(err => alert('Error deleting event: ' + err));
     }
@@ -353,18 +362,18 @@ $products = $_db
         padding: 6px
     }
 
-.day {
-    background: #fff;
-    padding: 6px;
-    min-height: 90px;
-    cursor: pointer;
-    border-radius: 6px;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;  
+    .day {
+        background: #fff;
+        padding: 6px;
+        min-height: 90px;
+        cursor: pointer;
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
         max-height: 200px;
-    overflow-y: auto;
-}
+        overflow-y: auto;
+    }
 
 
     .day.x {

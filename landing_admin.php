@@ -1,6 +1,6 @@
 <?php
 require_once '_base.php';
-auth('Admin','Superadmin');
+auth('Admin', 'Superadmin');
 
 // ============================================================================
 // 1. STATS DATA
@@ -327,27 +327,27 @@ include 'navbar.php';
 
     <!-- AI INSIGHTS PANEL -->
     <div id="aiPanel">
-    <h4>AI Recommendations</h4>
-    <div id="aiContent">
-        <div class="ai-insight">
-            <h5>Sales</h5>
-            <p id="salesInsight">Click "Analyze Dashboard" to get AI insights...</p>
+        <h4>AI Recommendations</h4>
+        <div id="aiContent">
+            <div class="ai-insight">
+                <h5>Sales</h5>
+                <p id="salesInsight">Click "Analyze Dashboard" to get AI insights...</p>
+            </div>
+            <div class="ai-insight">
+                <h5>Inventory</h5>
+                <p id="inventoryInsight"></p>
+            </div>
+            <div class="ai-insight">
+                <h5>Customer Service</h5>
+                <p id="customerInsight"></p>
+            </div>
+            <div class="ai-insight">
+                <h5>Marketing</h5>
+                <p id="marketingInsight"></p>
+            </div>
         </div>
-        <div class="ai-insight">
-            <h5>Inventory</h5>
-            <p id="inventoryInsight"></p>
-        </div>
-        <div class="ai-insight">
-            <h5>Customer Service</h5>
-            <p id="customerInsight"></p>
-        </div>
-        <div class="ai-insight">
-            <h5>Marketing</h5>
-            <p id="marketingInsight"></p>
-        </div>
+        <button id="aiButton">Analyze Dashboard</button>
     </div>
-    <button id="aiButton">Analyze Dashboard</button>
-</div>
 
     <!-- CHARTS -->
     <div class="charts-row">
@@ -578,11 +578,11 @@ unset($_SESSION['old_input'], $_SESSION['event_errors']);
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    <?php if(!empty($errors)): ?>
-        alert("<?= addslashes(implode("\\n", $errors)) ?>"); 
-    <?php endif; ?>
-});
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if (!empty($errors)): ?>
+            alert("<?= addslashes(implode("\\n", $errors)) ?>");
+        <?php endif; ?>
+    });
 </script>
 
 <?php include 'footer.php'; ?>

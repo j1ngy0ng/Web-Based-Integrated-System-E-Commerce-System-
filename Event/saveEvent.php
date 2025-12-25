@@ -2,6 +2,10 @@
 include_once __DIR__ . '/../_base.php';
 session_start();
 
+$year  = req('year');
+$month = req('month');
+
+
 
 // ================= Get form data =================
 $id          = req('id'); // hidden input for editing
@@ -11,7 +15,7 @@ $description = req('description');
 $start_time  = req('start_time') ?: null;
 $end_time    = req('end_time') ?: null;
 $is_promo    = req('is_promo') ?: 0;
-$product_ids = req('product_id') ?? []; 
+$product_ids = req('product_id') ?? [];
 
 // ================= Validation =================
 $errors = [];
@@ -50,8 +54,7 @@ try {
 
         // Delete old promo products first
         $_db->prepare("DELETE FROM product_event_item WHERE event_id=?")
-             ->execute([$event_id]);
-
+            ->execute([$event_id]);
     } else {
         // Insert new event
         $stmt = $_db->prepare("
@@ -75,9 +78,9 @@ try {
 
     $_db->commit();
 
-    header("Location: ../landing_admin.php?success=1");
-    exit;
+    header("Location: ../landing_admin.php?year=$year&month=$month&success=1");
 
+    exit;
 } catch (PDOException $e) {
     $_db->rollBack();
 
