@@ -38,12 +38,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // ----------------------------------------------------------------------------
 // (3) Check reCAPTCHA
 // ----------------------------------------------------------------------------
-$secretKey = "6Lc34ycsAAAAAOtetg4cZmZiKd6POLavp3MBadHA";
+$secretKey = getenv('RECAPTCHA_SECRET_KEY') ?: '';
 $captcha = $_POST['g-recaptcha-response'] ?? '';
 
-$response = file_get_contents(
-    "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$captcha"
-);
+$response = false;
+if ($secretKey !== '' && $captcha !== '') {
+    $response = file_get_contents(
+        "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$captcha"
+    );
+}
 
 $responseKeys = json_decode($response, true);
 
