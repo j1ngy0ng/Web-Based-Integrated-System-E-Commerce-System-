@@ -720,8 +720,8 @@ function set_cart($cart = [])
 // Stripe configuration
 // ============================================================================
 
-putenv('STRIPE_PUBLISHABLE_KEY=pk_test_51SVROKJ2qvgPlT6ge6aVlR5dpsVRnjZe1kXW385p4CYFq0GW3jmUYdoHmXwLwR0mbvAGrYJuHAgDoAOaRWLOMz8X005MK2GHNz');
-putenv('STRIPE_SECRET_KEY=sk_test_51SVROKJ2qvgPlT6gqClelz0ywQkuujGvF4JW5BuZgRL4yUOZCTzzQZlMLDP7tpohSwlth389xxtk0ohn8PKjydyo00vYsvz3AK');
+putenv('STRIPE_PUBLISHABLE_KEY=' . (getenv('STRIPE_PUBLISHABLE_KEY') ?: ''));
+putenv('STRIPE_SECRET_KEY=' . (getenv('STRIPE_SECRET_KEY') ?: ''));
 
 // ============================================================================
 // Database Setups and Functions

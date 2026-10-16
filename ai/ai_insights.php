@@ -22,7 +22,7 @@ $totalUnreadChats = $_db->query("
 // ---------------------
 // 2. OpenAI API call
 // ---------------------
-$openai_api_key = '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'; // <-- replace
+$openai_api_key = getenv('OPENAI_API_KEY') ?: '';
 
 $prompt = <<<PROMPT
 You are a smart e-commerce assistant. 

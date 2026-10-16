@@ -1,6 +1,8 @@
 <?php
 include '../_base.php';
 
+$recaptchaSiteKey = getenv('RECAPTCHA_SITE_KEY') ?: '';
+
 // ----------------------------------------------------------------------------
 // (1) Authorization (member)
 auth('Member');
@@ -332,7 +334,7 @@ include '../navbar.php';
             </div>
 
             <div class="g-recaptcha mb-3"
-                data-sitekey="6Lc34ycsAAAAALOkGTvBCkWr8JtUbwpsOWk-k0UH"></div>
+                data-sitekey="<?= htmlspecialchars($recaptchaSiteKey) ?>"></div>
             <div id="captcha-error" class="text-danger mb-2"></div>
 
             <div class="payment-actions">

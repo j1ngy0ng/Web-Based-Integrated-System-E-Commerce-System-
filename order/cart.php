@@ -10,6 +10,7 @@ $count = 0;
 $has_unavailable_items = false;
 $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
           strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+$googleMapsApiKey = getenv('GOOGLE_MAPS_API_KEY') ?: '';
 
 if ($cart) {
     foreach ($cart as $id => $unit) {
@@ -1465,7 +1466,9 @@ include '../navbar.php';
         </div>
     <?php endif; ?>
 </div>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCnmt907PtCJ_i5Yd3tIf2_w6CR3Y7KL84&libraries=places&callback=initAutocomplete" async defer></script>
+<?php if ($googleMapsApiKey !== ''): ?>
+<script src="https://maps.googleapis.com/maps/api/js?key=<?= urlencode($googleMapsApiKey) ?>&libraries=places&callback=initAutocomplete" async defer></script>
+<?php endif; ?>
 <script>
     console.log('jQuery loaded:', typeof $ !== 'undefined');
     console.log('Forms found:', $('form').length);
